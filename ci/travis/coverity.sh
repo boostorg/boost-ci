@@ -29,9 +29,9 @@ COVBIN=$(echo $(pwd)/cov-analysis*/bin)
 export PATH=$COVBIN:$PATH
 popd
 
-ci/build.sh clean
+ci/travis/build.sh clean
 rm -rf cov-int/
-cov-build --dir cov-int ci/build.sh
+cov-build --dir cov-int ci/travis/build.sh
 tar cJf cov-int.tar.xz cov-int/
 curl --form token="$COVERITY_SCAN_TOKEN" \
      --form email="$COVERITY_SCAN_NOTIFICATION_EMAIL" \
