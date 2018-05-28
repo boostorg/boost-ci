@@ -36,8 +36,8 @@ env:
     - B2_VARIANT=variant=release,debug
 
 install:
-  - git clone https://github.com/jeking3/boost-ci.git /tmp/boost-ci
-  - cp -pr /tmp/boost-ci/ci .
+  - git clone https://github.com/jeking3/boost-ci.git $TMPDIR/boost-ci
+  - cp -pr $TMPDIR/boost-ci/ci .
   - source ci/travis/install.sh
 
 addons:
