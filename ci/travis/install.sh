@@ -10,6 +10,7 @@
 
 set -ex
 
+export SELF=`basename $TRAVIS_BUILD_DIR`
 cd ..
 git clone -b $TRAVIS_BRANCH --depth 1 https://github.com/boostorg/boost.git boost-root
 cd boost-root
