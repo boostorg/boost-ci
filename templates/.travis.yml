@@ -36,8 +36,8 @@ env:
     - B2_VARIANT=variant=release,debug
 
 install:
-  - git clone https://github.com/jeking3/boost-ci.git $TMPDIR/boost-ci
-  - cp -pr $TMPDIR/boost-ci/ci .
+  - git clone https://github.com/jeking3/boost-ci.git boost-ci
+  - cp -pr boost-ci/ci .
   - source ci/travis/install.sh
 
 addons:
@@ -135,11 +135,14 @@ jobs:
         - cd $BOOST_ROOT/libs/$SELF
         - ci/travis/codecov.sh
 
-    - os: osx
-      osx_image: xcode9
-      env:
-        - TOOLSET=clang
-        - CXXSTD=03,11
+  # does not work with sources install shell yet: see 
+  # https://travis-ci.org/jeking3/tokenizer/jobs/384903189
+  # for a typical failure
+  # - os: osx
+  #   osx_image: xcode9
+  #   env:
+  #     - TOOLSET=clang
+  #     - CXXSTD=03,11
 
     #################### Jobs to run on pushes to master, develop ###################
 

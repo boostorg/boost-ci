@@ -59,4 +59,3 @@ Without any customization the scripts provide the following services:
 | Travis CI | cppcheck | n/a | n/a | n/a |
 | Travis CI | UBSAN | `gcc-7` | default | `debug` |
 | Travis CI | codecov.io | `gcc-7` | default | `debug` |
-| Travis CI | osx | `clang` | default | `debug,release` |
