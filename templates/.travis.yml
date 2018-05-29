@@ -135,7 +135,7 @@ jobs:
         - cd $BOOST_ROOT/libs/$SELF
         - ci/travis/codecov.sh
 
-  # does not work with sources install shell yet: see 
+  # does not work with sourced install shell yet: see 
   # https://travis-ci.org/jeking3/tokenizer/jobs/384903189
   # for a typical failure
   # - os: osx
