@@ -1,4 +1,5 @@
 @ECHO ON
+SET
 cd .. || EXIT /B
 git clone -b %APPVEYOR_REPO_BRANCH% --depth 1 https://github.com/boostorg/boost.git boost-root || EXIT /B
 cd boost-root || EXIT /B
