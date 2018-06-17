@@ -3,6 +3,22 @@
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at http://boost.org/LICENSE_1_0.txt)
 
+#
+# Generic Appveyor build script for boostorg repositories
+#
+# Instructions for customizing this script for your library:
+#
+# 1. Customize the compilers and language levels you want.
+# 2. If you have move than include/, src/, test/, example/, examples/,
+#    benchmark/ or tools/ directories, set the environment variable DEPINST.
+#    For example if your build uses code in "bench/" and "fog/" directories:
+#        - DEPINST: --include bench --include fog
+# 3. Enable pull request builds in your boostorg/<library> account.
+# 4. The default language level is C++03, you can change CXXSTD to modify it.
+#
+# That's it - the scripts will do everything else for you.
+#
+
 version: 1.0.{build}-{branch}
 
 shallow_clone: true
@@ -26,6 +42,7 @@ environment:
     # B2_THREADING: threading=multi,single
     B2_VARIANT: variant=release,debug
     CXXSTD: 03
+    # DEPINST: --include otherdir
 
   matrix:
     - FLAVOR: Visual Studio 2017
