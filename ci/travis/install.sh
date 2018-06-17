@@ -25,7 +25,7 @@ git submodule update -q --init tools/inspect
 cp -r $TRAVIS_BUILD_DIR/* libs/$SELF
 export BOOST_ROOT="`pwd`"
 export PATH="`pwd`":$PATH
-python tools/boostdep/depinst/depinst.py --include example --include examples --include tools $DEPINST $SELF
+python tools/boostdep/depinst/depinst.py --include benchmark --include example --include examples --include tools $DEPINST $SELF
 ./bootstrap.sh
 ./b2 headers
 
