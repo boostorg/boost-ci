@@ -6,10 +6,11 @@
 #      http://www.boost.org/LICENSE_1_0.txt)
 #
 # Executes the install phase for travis
+#
 # If your repository has additional directories beyond
 # "example", "examples", "tools", and "test" then you
-# can add them in the environment variable MOREDEPS.
-# See .travis.yml in Boost.Format for an example.
+# can add them in the environment variable DEPINST.
+# i.e. - DEPINST="--include dirname1 --include dirname2"
 #
 
 set -ex
@@ -24,7 +25,7 @@ git submodule update -q --init tools/inspect
 cp -r $TRAVIS_BUILD_DIR/* libs/$SELF
 export BOOST_ROOT="`pwd`"
 export PATH="`pwd`":$PATH
-python tools/boostdep/depinst/depinst.py --include example --include examples --include tools $MOREDEPS $SELF
+python tools/boostdep/depinst/depinst.py --include example --include examples --include tools $DEPINST $SELF
 ./bootstrap.sh
 ./b2 headers
 
