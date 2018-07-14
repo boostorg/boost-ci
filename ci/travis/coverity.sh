@@ -1,6 +1,6 @@
 #! /bin/bash
 #
-# Copyright 2017 James E. King III
+# Copyright 2017 - 2018 James E. King III
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at
 #      http://www.boost.org/LICENSE_1_0.txt)
@@ -36,7 +36,7 @@ tar cJf cov-int.tar.xz cov-int/
 curl --form token="$COVERITY_SCAN_TOKEN" \
      --form email="$COVERITY_SCAN_NOTIFICATION_EMAIL" \
      --form file=@cov-int.tar.xz \
-     --form version="$(git describe --tags)" \
+     --form version="$TRAVIS_BRANCH" \
      --form description="boostorg/$SELF" \
      https://scan.coverity.com/builds?project="boostorg/$SELF"
 
