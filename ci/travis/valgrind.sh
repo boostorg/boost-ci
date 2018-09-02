@@ -25,6 +25,7 @@ if [[ ! -z "$VALGRIND_COMMIT" ]]; then
   git checkout $VALGRIND_COMMIT
 fi
 
+./autogen.sh
 ./configure --prefix=~/vg
 make -j3
 make -j3 install
