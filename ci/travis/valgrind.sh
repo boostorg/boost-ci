@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 #
 # Copyright 2018 James E. King III
 # Distributed under the Boost Software License, Version 1.0.
@@ -19,7 +19,7 @@ fi
 # valgrind (even 3.13) is missing some suppressions, so...
 
 pushd /tmp
-git clone git clone git://sourceware.org/git/valgrind.git
+git clone git://sourceware.org/git/valgrind.git
 cd valgrind
 if [[ ! -z "$VALGRIND_COMMIT" ]]; then
   git checkout $VALGRIND_COMMIT
