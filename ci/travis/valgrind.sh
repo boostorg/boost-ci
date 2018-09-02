@@ -25,7 +25,8 @@ if [[ ! -z "$VALGRIND_COMMIT" ]]; then
   git checkout $VALGRIND_COMMIT
 fi
 
-make -j3 --prefix=~/vg
+./configure --prefix=~/vg
+make -j3
 make -j3 install
 popd
 
