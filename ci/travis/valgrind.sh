@@ -26,7 +26,7 @@ if [[ ! -z "$VALGRIND_COMMIT" ]]; then
 fi
 
 ./autogen.sh
-./configure --prefix=~/vg
+./configure --prefix=/tmp/vg
 make -j3
 make -j3 install
 popd
