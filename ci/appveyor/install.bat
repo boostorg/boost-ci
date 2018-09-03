@@ -8,4 +8,5 @@ git submodule update -q --init tools/inspect || EXIT /B
 xcopy /s /e /q %APPVEYOR_BUILD_FOLDER% libs\%SELF% || EXIT /B
 python tools/boostdep/depinst/depinst.py --include benchmark --include example --include examples --include tools %DEPINST% %SELF% || EXIT /B
 cmd /c bootstrap || EXIT /B
-b2 headers
+b2 headers || EXIT /B
+cd libs\%SELF%

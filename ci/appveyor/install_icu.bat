@@ -5,9 +5,8 @@
 :: LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 :: Installs icu using vcpkg
+:: Requires: "BITS" set to either "x86" or "x64"
 
 @ECHO ON
-C:\tools\vcpkg\vcpkg.exe install icu:x86-windows || EXIT /B
-C:\tools\vcpkg\vcpkg.exe install icu:x64-windows || EXIT /B
-SET ICU_PATH_32=C:\tools\vcpkg\packages\icu_x86-windows
-SET ICU_PATH_64=C:\tools\vcpkg\packages\icu_x64-windows
+C:\tools\vcpkg\vcpkg.exe install icu:%BITS%-windows || EXIT /B
+SET ICU_PATH=C:\tools\vcpkg\packages\icu_%BITS%-windows
