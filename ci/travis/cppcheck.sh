@@ -27,7 +27,7 @@ wget https://github.com/danmar/cppcheck/archive/$CPPCHKVER.tar.gz
 tar xzf $CPPCHKVER.tar.gz
 mkdir cppcheck-build
 cd cppcheck-build
-cmake ../cppcheck-$CPPCHKVER -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=~/cppcheck
+cmake ../cppcheck-$CPPCHKVER -DCMAKE_CXX_FLAGS=-Wno-inline -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=~/cppcheck
 make -j3 install
 popd
 
