@@ -28,7 +28,7 @@ tar xzf $CPPCHKVER.tar.gz
 mkdir cppcheck-build
 cd cppcheck-build
 # the next line quiets the build substantially:
-sed -i 's/-Winline/-Wno-inline/g' cmake/compileroptions.cmake
+sed -i 's/-Winline/-Wno-inline/g' ../cppcheck-$CPPCHKVER/cmake/compileroptions.cmake
 cmake ../cppcheck-$CPPCHKVER -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_PREFIX=~/cppcheck
 make -j3 install
 popd
