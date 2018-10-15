@@ -17,9 +17,9 @@ if [[ -z "$CXXSTD" ]]; then
 fi
 
 # Travis' ubuntu-trusty comes with cppcheck 1.62 which is pretty old
-# default cppcheck version: 1.82
+# default cppcheck version: 1.85
 if [[ -z "$CPPCHKVER" ]]; then
-    CPPCHKVER=1.82
+    CPPCHKVER=1.85
 fi
 
 pushd ~
@@ -31,8 +31,8 @@ cmake ../cppcheck-$CPPCHKVER -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF 
 make -j3 install
 popd
 
-~/cppcheck/bin/cppcheck -I. --std=c++$CXXSTD --enable=all --error-exitcode=1 \
+~/cppcheck/bin/cppcheck -I${BOOST_ROOT} --std=c++$CXXSTD --enable=all --error-exitcode=1 \
          --force --check-config --suppress=*:boost/preprocessor/tuple/size.hpp \
          -UBOOST_USER_CONFIG -UBOOST_COMPILER_CONFIG -UBOOST_STDLIB_CONFIG -UBOOST_PLATFORM_CONFIG \
-         libs/$SELF 2>&1 | grep -v 'Cppcheck does not need standard library headers'
+         ${BOOST_ROOT}/libs/$SELF 2>&1 | grep -v 'Cppcheck does not need standard library headers'
 
