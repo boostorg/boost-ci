@@ -33,13 +33,15 @@ cmake ../cppcheck-$CPPCHKVER -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF 
 make -j3 install
 popd
 
+STANDARDS=
 while IFS=',' read -ra ADDR; do
     for i in "${ADDR[@]}"; do
         # process "$i"
-        ~/cppcheck/bin/cppcheck -I${BOOST_ROOT} --std=c++$CXXSTD --enable=all --error-exitcode=1 \
-           --std=c++${i} --force --check-config --suppress=*:boost/preprocessor/tuple/size.hpp \
-           -UBOOST_USER_CONFIG -UBOOST_COMPILER_CONFIG -UBOOST_STDLIB_CONFIG -UBOOST_PLATFORM_CONFIG \
-           ${BOOST_ROOT}/libs/$SELF 2>&1 | grep -v 'Cppcheck does not need standard library headers'
+        STANDARDS=${STANDARDS} --std=c++${i}
     done
 done <<< "$CXXSTD"
 
+~/cppcheck/bin/cppcheck -I${BOOST_ROOT} ${STANDARDS} --enable=all --error-exitcode=1 \
+     --force --check-config --suppress=*:boost/preprocessor/tuple/size.hpp \
+     -UBOOST_USER_CONFIG -UBOOST_COMPILER_CONFIG -UBOOST_STDLIB_CONFIG -UBOOST_PLATFORM_CONFIG \
+     ${BOOST_ROOT}/libs/$SELF 2>&1 | grep -v 'Cppcheck does not need standard library headers'
