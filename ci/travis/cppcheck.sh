@@ -37,7 +37,7 @@ STANDARDS=
 while IFS=',' read -ra ADDR; do
     for i in "${ADDR[@]}"; do
         # process "$i"
-        STANDARDS=${STANDARDS} --std=c++${i}
+        STANDARDS="${STANDARDS} --std=c++${i}"
     done
 done <<< "$CXXSTD"
 
