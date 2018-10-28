@@ -11,9 +11,9 @@
 
 set -ex
 
-# default language level: c++03
+# default language levels to check: c++03, c++11, ,c++14
 if [[ -z "$CXXSTD" ]]; then
-    CXXSTD=03
+    CXXSTD=03,11,14
 fi
 
 # Travis' ubuntu-trusty comes with cppcheck 1.62 which is pretty old
@@ -33,8 +33,13 @@ cmake ../cppcheck-$CPPCHKVER -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF 
 make -j3 install
 popd
 
-~/cppcheck/bin/cppcheck -I${BOOST_ROOT} --std=c++$CXXSTD --enable=all --error-exitcode=1 \
-         --force --check-config --suppress=*:boost/preprocessor/tuple/size.hpp \
-         -UBOOST_USER_CONFIG -UBOOST_COMPILER_CONFIG -UBOOST_STDLIB_CONFIG -UBOOST_PLATFORM_CONFIG \
-         ${BOOST_ROOT}/libs/$SELF 2>&1 | grep -v 'Cppcheck does not need standard library headers'
+while IFS=',' read -ra ADDR; do
+    for i in "${ADDR[@]}"; do
+        # process "$i"
+        ~/cppcheck/bin/cppcheck -I${BOOST_ROOT} --std=c++$CXXSTD --enable=all --error-exitcode=1 \
+           --std=c++${i} --force --check-config --suppress=*:boost/preprocessor/tuple/size.hpp \
+           -UBOOST_USER_CONFIG -UBOOST_COMPILER_CONFIG -UBOOST_STDLIB_CONFIG -UBOOST_PLATFORM_CONFIG \
+           ${BOOST_ROOT}/libs/$SELF 2>&1 | grep -v 'Cppcheck does not need standard library headers'
+    done
+done <<< "$CXXSTD"
 
