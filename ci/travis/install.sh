@@ -17,6 +17,9 @@ set -ex
 
 export SELF=`basename $TRAVIS_BUILD_DIR`
 cd ..
+if [ "$SELF" == "interval" ]; then
+    export SELF=numeric/interval
+fi
 git clone -b $TRAVIS_BRANCH --depth 1 https://github.com/boostorg/boost.git boost-root
 cd boost-root
 git submodule update -q --init tools/boostdep
