@@ -83,6 +83,9 @@ anchors:
   gcc-8:    &gcc-8    { apt: { packages: [ "g++-8"     ], sources: [ "ubuntu-toolchain-r-test"   ] } }
 
 jobs:
+  allow_failures:
+    - env: KNOWNFAILURE=true
+
   include:
     # libstdc++
     - { os: "linux", env: [ "TOOLSET=gcc-4.4",   "CXXSTD=98,0x"          ], addons: *gcc-44    }
