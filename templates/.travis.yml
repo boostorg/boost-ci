@@ -84,7 +84,8 @@ anchors:
 
 jobs:
   allow_failures:
-    - env: KNOWNFAILURE=true
+    - env:
+      - COPY="all the environment settings from your job"
 
   include:
     # libstdc++
