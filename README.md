@@ -36,26 +36,45 @@ The files `appveyor.yml` and `.travis.yml` must exist in your repository and wil
 
 These scripts will copy resources from the Boost.CI repository when needed in order to provide scripting necessary to run all these jobs successfully.
 
+Build jobs that will severely impact performance (such as `valgrind`) will define `BOOST_NO_PERFORMANCE_SENSITIVE_TESTS` so those can be skipped or hobbled.
+
 ## Defaults, Builds and Services ##
 
 By default all of the builds target C++03 unless otherwise specified.
+To see what kind of coverage these builds provide, see some build results:
+
+`AppVeyor `: https://ci.appveyor.com/project/jeking3/assign-4i3tt/builds/19659696
+`Travis CI`: https://travis-ci.org/boostorg/assign/builds/444071662
 
 Without any customization the scripts provide the following services:
 
-| CI | description | toolset | address-model | variant |
-| :-- | :------------- | :---- | :---- | :---- |
-| Appveyor | MSVC 2010 | `msvc-10.0` | default  | `debug,release` |
-| Appveyor | MSVC 2012 | `msvc-11.0` | default  | `debug,release` |
-| Appveyor | MSVC 2013 | `msvc-12.0` | default  | `debug,release` |
-| Appveyor | MSVC 2015 | `msvc-14.0` | `32,64` | `debug,release` |
-| Appveyor | MSVC 2017 | `msvc-14.1` | `32,64` | `debug,release` |
-| Appveyor | cygwin | `gcc` | `32` | `debug,release`|
-| Appveyor | cygwin64 | `gcc` | `64` | `debug,release`|
-| Appveyor | mingw | `gcc` | `32` | `debug,release`|
-| Appveyor | mingw64 | `gcc` | `64` | `debug,release`|
-| Travis CI | C++03 | `gcc,gcc-7,clang` | default | `debug,release` |
-| Travis CI | C++11 | `gcc,gcc-7,clang` | default | `debug,release` |
-| Travis CI | valgrind | `clang` | default | `debug` |
-| Travis CI | cppcheck | n/a | n/a | n/a |
-| Travis CI | UBSAN | `gcc-7` | default | `debug` |
-| Travis CI | codecov.io | `gcc-7` | default | `debug` |
+| CI        | description             | toolset     | cxxflags/std                  | address-model | variant         |
+| :-------- | :---------------------- | :---------- | :---------------------------- | :------------ | :-------------- |
+| Appveyor  | MSVC 2017 Latest Strict | `msvc-14.1` | `-std:c++latest -permissive-` | `64`          | `debug,release` |
+| Appveyor  | MSVC 2017 Default       | `msvc-14.1` | default                       | `32,64`       | `debug,release` |
+| Appveyor  | MSVC 2015 Latest        | `msvc-14.0` | `-std:c++latest`              | `64`          | `debug,release` |
+| Appveyor  | MSVC 2015 Default       | `msvc-14.0` | default                       | `32,64`       | `debug,release` |
+| Appveyor  | MSVC 2013               | `msvc-12.0` | default                       | default       | `debug,release` |
+| Appveyor  | MSVC 2012               | `msvc-11.0` | default                       | default       | `debug,release` |
+| Appveyor  | MSVC 2010               | `msvc-10.0` | default                       | default       | `debug,release` |
+| Appveyor  | cygwin                  | `gcc`       | `03,11`                       | `32`          | `debug,release` |
+| Appveyor  | cygwin64                | `gcc`       | `03,11,14,17`                 | `64`          | `debug,release` |
+| Appveyor  | mingw                   | `gcc`       | `03,11`                       | `32`          | `debug,release` |
+| Appveyor  | mingw64                 | `gcc`       | `03,11,14,17`                 | `64`          | `debug,release` |
+| Travis CI | gcc 4.4                 | `gcc-4.4`   | `98,0x`                       | default       | `debug,release` | 
+| Travis CI | gcc 4.6                 | `gcc-4.6`   | `03,0x`                       | default       | `debug,release` | 
+| Travis CI | gcc 4.8                 | `gcc-4.8`   | `03,11`                       | default       | `debug,release` | 
+| Travis CI | gcc 5                   | `gcc-5`     | `03,11`                       | default       | `debug,release` | 
+| Travis CI | gcc 6                   | `gcc-6`     | `03,11,14`                    | default       | `debug,release` | 
+| Travis CI | gcc 7                   | `gcc-7`     | `03,11,14,17`                 | default       | `debug,release` | 
+| Travis CI | gcc 8                   | `gcc-8`     | `03,11,14,17,2a`              | default       | `debug,release` | 
+| Travis CI | clang-3.4               | `clang-3.4` | `03,11,14`                    | default       | `debug,release` | 
+| Travis CI | clang-3.8               | `clang-3.8` | `03,11,14`                    | default       | `debug,release` | 
+| Travis CI | clang-4.0               | `clang-4.0` | `03,11,14`                    | default       | `debug,release` | 
+| Travis CI | clang-5.0               | `clang-5.0` | `03,11,14,17`                 | default       | `debug,release` | 
+| Travis CI | clang-6.0               | `clang-6.0` | `03,11,14,17,2a`              | default       | `debug,release` | 
+| Travis CI | codecov.io              | `gcc-7`     | default                       | default       | `debug`         |
+| Travis CI | covscan                 | `gcc-7`     | default                       | default       | `debug`         |
+| Travis CI | cppcheck                |             | `03,11,14`                    |               |                 |
+| Travis CI | ubsan                   | `gcc-8`     | `03,11,14,17,2a`              | default       | `debug`         |
+| Travis CI | valgrind                | `clang-6.0` | `03,11,14,17,2a`              | default       | `debug`         |
