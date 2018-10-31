@@ -36,7 +36,7 @@ The files `appveyor.yml` and `.travis.yml` must exist in your repository and wil
 
 These scripts will copy resources from the Boost.CI repository when needed in order to provide scripting necessary to run all these jobs successfully.
 
-Build jobs that will severely impact performance (such as `valgrind`) will define `BOOST_NO_PERFORMANCE_SENSITIVE_TESTS` so those can be skipped or hobbled.
+Build jobs that will severely impact performance (such as `valgrind`) will define `BOOST_NO_STRESS_TEST` so those can be skipped or hobbled.
 
 ## Defaults, Builds and Services ##
 

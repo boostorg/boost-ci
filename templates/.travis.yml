@@ -138,7 +138,7 @@ jobs:
         - COMMENT=valgrind
         - TOOLSET=clang-6.0
         - CXXSTD=03,11,14,17,2a
-        - DEFINES="define=BOOST_NO_PERFORMANCE_SENSITIVE_TESTS=1"
+        - DEFINES="define=BOOST_NO_STRESS_TEST=1"
         - B2_VARIANT=variant=debug
         - TESTFLAGS=testing.launcher=valgrind
         - VALGRIND_OPTS=--error-exitcode=1
