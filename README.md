@@ -43,20 +43,20 @@ Build jobs that will severely impact performance (such as `valgrind`) will defin
 By default all of the builds target C++03 unless otherwise specified.
 To see what kind of coverage these builds provide, see some build results:
 
-`AppVeyor `: https://ci.appveyor.com/project/jeking3/assign-4i3tt/builds/19659696
-`Travis CI`: https://travis-ci.org/boostorg/assign/builds/444071662
+`AppVeyor `: https://ci.appveyor.com/project/jeking3/uuid-gaamf/builds/19987101
+`Travis CI`: https://travis-ci.org/boostorg/uuid/builds/449557162
 
 Without any customization the scripts provide the following services:
 
 | CI        | description             | toolset     | cxxflags/std                  | address-model | variant         |
 | :-------- | :---------------------- | :---------- | :---------------------------- | :------------ | :-------------- |
-| Appveyor  | MSVC 2017 Latest Strict | `msvc-14.1` | `-std:c++latest -permissive-` | `64`          | `debug,release` |
-| Appveyor  | MSVC 2017 Default       | `msvc-14.1` | default                       | `32,64`       | `debug,release` |
-| Appveyor  | MSVC 2015 Latest        | `msvc-14.0` | `-std:c++latest`              | `64`          | `debug,release` |
-| Appveyor  | MSVC 2015 Default       | `msvc-14.0` | default                       | `32,64`       | `debug,release` |
-| Appveyor  | MSVC 2013               | `msvc-12.0` | default                       | default       | `debug,release` |
-| Appveyor  | MSVC 2012               | `msvc-11.0` | default                       | default       | `debug,release` |
-| Appveyor  | MSVC 2010               | `msvc-10.0` | default                       | default       | `debug,release` |
+| Appveyor  | MSVC 2017 C++2a Strict  | `msvc-14.1` | `2a`, `-permissive-`          | `64`          | `debug,release` |
+| Appveyor  | MSVC 2017 C++17         | `msvc-14.1` | `17`                          | `32,64`       | `debug,release` |
+| Appveyor  | MSVC 2017 C++14 Default | `msvc-14.1` | default (14)                  | `32,64`       | `debug,release` |
+| Appveyor  | MSVC 2015 C++14 Default | `msvc-14.0` | default (14)                  | `32,64`       | `debug,release` |
+| Appveyor  | MSVC 2013               | `msvc-12.0` | default (most of 11)          | default       | `debug,release` |
+| Appveyor  | MSVC 2012               | `msvc-11.0` | default (some of 11)          | default       | `debug,release` |
+| Appveyor  | MSVC 2010               | `msvc-10.0` | default (some of 0x)          | default       | `debug,release` |
 | Appveyor  | cygwin                  | `gcc`       | `03,11`                       | `32`          | `debug,release` |
 | Appveyor  | cygwin64                | `gcc`       | `03,11,14,17`                 | `64`          | `debug,release` |
 | Appveyor  | mingw                   | `gcc`       | `03,11`                       | `32`          | `debug,release` |
@@ -73,6 +73,7 @@ Without any customization the scripts provide the following services:
 | Travis CI | clang-4.0               | `clang-4.0` | `03,11,14`                    | default       | `debug,release` | 
 | Travis CI | clang-5.0               | `clang-5.0` | `03,11,14,17`                 | default       | `debug,release` | 
 | Travis CI | clang-6.0               | `clang-6.0` | `03,11,14,17,2a`              | default       | `debug,release` | 
+| Travis CI | clang-6.0-libc++        | `clang-6.0` | `03,11,14,17,2a`, `libc++`    | default       | `debug,release` | 
 | Travis CI | codecov.io              | `gcc-7`     | default                       | default       | `debug`         |
 | Travis CI | covscan                 | `gcc-7`     | default                       | default       | `debug`         |
 | Travis CI | cppcheck                |             | `03,11,14`                    |               |                 |
