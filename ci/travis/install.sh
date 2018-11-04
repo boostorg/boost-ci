@@ -22,6 +22,7 @@ if [ "$SELF" == "interval" ]; then
 fi
 git clone -b $TRAVIS_BRANCH --depth 1 https://github.com/boostorg/boost.git boost-root
 cd boost-root
+git submodule update -q --init libs/config
 git submodule update -q --init tools/boostdep
 git submodule update -q --init tools/build
 git submodule update -q --init tools/inspect

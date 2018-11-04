@@ -2,6 +2,7 @@
 cd .. || EXIT /B
 git clone -b %APPVEYOR_REPO_BRANCH% --depth 1 https://github.com/boostorg/boost.git boost-root || EXIT /B
 cd boost-root || EXIT /B
+git submodule update -q --init libs/config || EXIT /B
 git submodule update -q --init tools/boostdep || EXIT /B
 git submodule update -q --init tools/build || EXIT /B
 git submodule update -q --init tools/inspect || EXIT /B
