@@ -30,6 +30,12 @@ Here are all the steps you need to take as a Boost repository maintainer to enab
 1. Update the README.md to put the correct Coverity Scan badge project number into the badge URLs.
 1. This will kick off a build on the develop branch that will include Coverity Scan results.
 
+## Repositories using Boost.CI ###
+
+The [CMT Stale Repo Tracker](https://travis-ci.org/jeking3/boost-merge-reminder) identifies many repositories using Boost.CI and
+the [CMT Status Spreadsheet](https://docs.google.com/spreadsheets/d/1aFdTMdJmmD9L5IyvJx-nj3BrMVztmlNo8QwyEzLD2io/edit?usp=sharing) shows the current state of each.
+There may be additional repositories using Boost.CI that are not listed.  Boost.CI does not track usage internally.
+
 ## How It Works ##
 
 The files `appveyor.yml` and `.travis.yml` must exist in your repository and will contain your customizations for build types, languages, and platforms.  The templates provided will get you started with the build jobs listed below.
