@@ -10,5 +10,7 @@
 :: in case that happens let's see what is going on.
 WHERE cygwin1.dll
 
-appveyor DownloadFile https://cygwin.com/setup-x86.exe
-setup-x86.exe -q
+IF "%PATH:~0,12%" == "C:\cygwin64\" (SET CYGWIN_SUFFIX=_64)
+
+appveyor DownloadFile https://cygwin.com/setup-x86%CYGWIN_SUFFIX%.exe
+setup-x86%CYGWIN_SUFFIX%.exe -q
