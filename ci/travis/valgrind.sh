@@ -16,14 +16,13 @@ if [[ -z "$CXXSTD" ]]; then
     CXXSTD=03
 fi
 
-# valgrind (even 3.13) is missing some suppressions, so...
+# valgrind on travis is 3.10 which is old
+# using valgrind 3.14 but we have to build it
 
 pushd /tmp
 git clone git://sourceware.org/git/valgrind.git
 cd valgrind
-if [[ ! -z "$VALGRIND_COMMIT" ]]; then
-  git checkout $VALGRIND_COMMIT
-fi
+git checkout VALGRIND_3_14_0
 
 ./autogen.sh
 ./configure --prefix=/tmp/vg

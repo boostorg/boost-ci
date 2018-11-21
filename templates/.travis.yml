@@ -79,8 +79,7 @@ anchors:
                                                                            "ubuntu-toolchain-r-test"   ] } }
   clang-6:  &clang-6  { apt: { packages: [ "clang-6.0",
                                            "libc++-dev",
-                                           "libstdc++-8-dev",
-                                           "valgrind"        ], sources: [ "llvm-toolchain-trusty-6.0",
+                                           "libstdc++-8-dev" ], sources: [ "llvm-toolchain-trusty-6.0",
                                                                            "ubuntu-toolchain-r-test"   ] } }
   gcc-44:   &gcc-44   { apt: { packages: [ "g++-4.4"         ], sources: [ "ubuntu-toolchain-r-test"   ] } }
   gcc-46:   &gcc-46   { apt: { packages: [ "g++-4.6"         ], sources: [ "ubuntu-toolchain-r-test"   ] } }
@@ -156,6 +155,9 @@ jobs:
         - TESTFLAGS=testing.launcher=valgrind
         - VALGRIND_OPTS=--error-exitcode=1
       addons: *clang-6
+      script:
+        - cd $BOOST_ROOT/libs/$SELF
+        - ci/travis/valgrind.sh
 
     #################### Jobs to run on pushes to master, develop ###################
 
