@@ -7,7 +7,8 @@
 
 @ECHO ON
 SETLOCAL EnableDelayedExpansion
-
+ECHO "%PATH%"
+WHERE cygwin1.dll
 bash.exe -lc 'wget rawgit.com/transcode-open/apt-cyg/master/apt-cyg -O apt-cyg'
 bash.exe -lc 'chmod +x apt-cyg'
 bash.exe -lc 'mv apt-cyg /usr/local/bin'
