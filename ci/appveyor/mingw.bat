@@ -32,7 +32,7 @@ c:\msys64\usr\bin\env MSYSTEM=%UPPERFLAVOR% c:\msys64\usr\bin\bash -l -c ^
   "cd %CD:\=/% && ./bootstrap.sh --with-toolset=gcc" || EXIT /B
 
 c:\msys64\usr\bin\env MSYSTEM=%UPPERFLAVOR% c:\msys64\usr\bin\bash -l -c ^
-  "cd %CD:\=/% && ./b2 libs/%SELF:\=/% toolset=gcc-%FLAVOR% cxxstd=%CXXSTD% %CXXFLAGS% %DEFINES% %B2_ADDRESS_MODEL% %B2_LINK% %B2_THREADING% %B2_VARIANT% -j3" || EXIT /B
+  "cd %CD:\=/% && ./b2 --abbreviate-paths libs/%SELF:\=/% toolset=gcc-%FLAVOR% cxxstd=%CXXSTD% %CXXFLAGS% %DEFINES% %B2_ADDRESS_MODEL% %B2_LINK% %B2_THREADING% %B2_VARIANT% -j3" || EXIT /B
 
 EXIT /B 0
 
