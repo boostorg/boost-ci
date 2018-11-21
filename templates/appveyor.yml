@@ -5,7 +5,7 @@
 
 #
 # Generic Appveyor build script for boostorg repositories
-# See: https://github.com/jeking3/boost-ci/
+# See: https://github.com/boostorg/boost-ci/
 #
 # Instructions for customizing this script for your library:
 #
@@ -109,7 +109,7 @@ environment:
 
 install:
   - set SELF=%APPVEYOR_PROJECT_NAME:-=_%
-  - git clone https://github.com/jeking3/boost-ci.git C:\boost-ci
+  - git clone https://github.com/boostorg/boost-ci.git C:\boost-ci
   - xcopy /s /e /q /i C:\boost-ci\ci .\ci
   - ci\appveyor\install.bat
 
