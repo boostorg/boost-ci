@@ -14,3 +14,4 @@ IF "%PATH:~0,12%" == "C:\cygwin64\" (SET CYGWIN_SUFFIX=_64)
 
 appveyor DownloadFile https://cygwin.com/setup-x86%CYGWIN_SUFFIX%.exe
 setup-x86%CYGWIN_SUFFIX%.exe -q
+setup-x86%CYGWIN_SUFFIX%.exe -q -P clang
