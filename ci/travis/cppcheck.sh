@@ -17,9 +17,8 @@ if [[ -z "$CXXSTD" ]]; then
 fi
 
 # Travis' ubuntu-trusty comes with cppcheck 1.62 which is pretty old
-# default cppcheck version: 1.85
 if [[ -z "$CPPCHKVER" ]]; then
-    CPPCHKVER=1.85
+    CPPCHKVER=1.86
 fi
 
 pushd ~
