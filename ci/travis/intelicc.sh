@@ -22,7 +22,6 @@ function finish {
 }
 
 pushd /tmp
-sudo apt-get install cpio
 wget http://registrationcenter-download.intel.com/akdlm/irc_nas/tec/14857/parallel_studio_xe_2019_update1_professional_edition_for_cpp_online.tgz
 tar xzf parallel_studio_xe_2019_update1_professional_edition_for_cpp_online.tgz
 cd parallel_studio_xe_2019_update1_professional_edition_for_cpp_online/
@@ -33,7 +32,7 @@ CONTINUE_WITH_OPTIONAL_ERROR=yes
 PSET_INSTALL_DIR=/opt/intel
 CONTINUE_WITH_INSTALLDIR_OVERWRITE=yes
 PSET_MODE=install
-ACTIVATION_SERIAL_NUMBER=${INTEL_ICC_SERIAL_NUMBER}
+ACTIVATION_SERIAL_NUMBER=$INTEL_ICC_SERIAL_NUMBER
 ACTIVATION_TYPE=serial_number
 AMPLIFIER_SAMPLING_DRIVER_INSTALL_TYPE=kit
 AMPLIFIER_DRIVER_ACCESS_GROUP=vtune
