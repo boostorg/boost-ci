@@ -22,7 +22,7 @@ function finish {
 }
 
 pushd /tmp
-wget http://registrationcenter-download.intel.com/akdlm/irc_nas/tec/14857/parallel_studio_xe_2019_update1_professional_edition_for_cpp_online.tgz
+wget --quiet http://registrationcenter-download.intel.com/akdlm/irc_nas/tec/14857/parallel_studio_xe_2019_update1_professional_edition_for_cpp_online.tgz
 tar xzf parallel_studio_xe_2019_update1_professional_edition_for_cpp_online.tgz
 cd parallel_studio_xe_2019_update1_professional_edition_for_cpp_online/
 trap finish EXIT
