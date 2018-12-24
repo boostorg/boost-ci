@@ -66,20 +66,20 @@ script:
 #
 
 anchors:
-  clang-34: &clang-34 { apt: { packages: [ "clang-3.4"       ], sources: [ "llvm-toolchain-trusty-3.4" ] } }
+  clang-34: &clang-34 { apt: { packages: [ "clang-3.4"       ], sources: [ "llvm-toolchain-xenial-3.4" ] } }
   clang-38: &clang-38 { apt: { packages: [ "clang-3.8",
-                                           "libstdc++-6-dev" ], sources: [ "llvm-toolchain-trusty-3.8",
+                                           "libstdc++-6-dev" ], sources: [ "llvm-toolchain-xenial-3.8",
                                                                            "ubuntu-toolchain-r-test"   ] } }
   clang-4:  &clang-4  { apt: { packages: [ "clang-4.0",
-                                           "libstdc++-6-dev" ], sources: [ "llvm-toolchain-trusty-4.0",
+                                           "libstdc++-6-dev" ], sources: [ "llvm-toolchain-xenial-4.0",
                                                                            "ubuntu-toolchain-r-test"   ] } }
   clang-5:  &clang-5  { apt: { packages: [ "clang-5.0",
-                                           "libstdc++-7-dev" ], sources: [ "llvm-toolchain-trusty-5.0",
+                                           "libstdc++-7-dev" ], sources: [ "llvm-toolchain-xenial-5.0",
                                                                            "ubuntu-toolchain-r-test"   ] } }
   clang-6:  &clang-6  { apt: { packages: [ "clang-6.0",
                                            "libc6-dbg",
                                            "libc++-dev",
-                                           "libstdc++-8-dev" ], sources: [ "llvm-toolchain-trusty-6.0",
+                                           "libstdc++-8-dev" ], sources: [ "llvm-toolchain-xenial-6.0",
                                                                            "ubuntu-toolchain-r-test"   ] } }
   gcc-44:   &gcc-44   { apt: { packages: [ "g++-4.4"         ], sources: [ "ubuntu-toolchain-r-test"   ] } }
   gcc-46:   &gcc-46   { apt: { packages: [ "g++-4.6"         ], sources: [ "ubuntu-toolchain-r-test"   ] } }
