@@ -1,6 +1,6 @@
 #! /bin/bash
 #
-# Copyright 2018 James E. King III
+# Copyright 2018 - 2019 James E. King III
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at
 #      http://www.boost.org/LICENSE_1_0.txt)
@@ -11,12 +11,12 @@
 
 set -ex
 
-# default language levels to check: c++03, c++11, ,c++14
+# default language level to check: c++11
 if [[ -z "$CXXSTD" ]]; then
-    CXXSTD=03,11,14
+    CXXSTD=11
 fi
 
-# Travis' ubuntu-trusty comes with cppcheck 1.62 which is pretty old
+# Travis comes with older cppcheck, so...
 if [[ -z "$CPPCHKVER" ]]; then
     CPPCHKVER=1.86
 fi
