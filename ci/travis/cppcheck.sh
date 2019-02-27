@@ -18,7 +18,7 @@ fi
 
 # Travis comes with older cppcheck, so...
 if [[ -z "$CPPCHKVER" ]]; then
-    CPPCHKVER=1.86
+    CPPCHKVER=1.87
 fi
 
 pushd ~
