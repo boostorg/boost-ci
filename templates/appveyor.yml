@@ -10,7 +10,7 @@
 # Instructions for customizing this script for your library:
 #
 # 1. Customize the compilers and language levels you want.
-# 2. If you have move than include/, src/, test/, example/, examples/,
+# 2. If you have more than include/, src/, test/, example/, examples/,
 #    benchmark/ or tools/ directories, set the environment variable DEPINST.
 #    For example if your build uses code in "bench/" and "fog/" directories:
 #      - DEPINST: --include bench --include fog
