@@ -6,7 +6,7 @@ git submodule update -q --init libs/headers || EXIT /B
 git submodule update -q --init tools/boost_install || EXIT /B
 git submodule update -q --init tools/boostdep || EXIT /B
 git submodule update -q --init tools/build || EXIT /B
-xcopy /s /e /q %APPVEYOR_BUILD_FOLDER% libs\%SELF% || EXIT /B
+xcopy /s /e /q /I %APPVEYOR_BUILD_FOLDER% libs\%SELF% || EXIT /B
 python tools/boostdep/depinst/depinst.py --include benchmark --include example --include examples --include tools %DEPINST% %SELF:\=/% || EXIT /B
 cmd /c bootstrap || EXIT /B
 b2 headers
