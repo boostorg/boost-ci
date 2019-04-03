@@ -108,6 +108,8 @@ environment:
       SCRIPT: ci\appveyor\mingw.bat
 
 install:
+  - set BOOST_BRANCH=develop
+  - if "%APPVEYOR_REPO_BRANCH%" == "master" set BOOST_BRANCH=master
   - set SELF=%APPVEYOR_PROJECT_NAME:-=_%
   - git clone https://github.com/boostorg/boost-ci.git C:\boost-ci
   - xcopy /s /e /q /i C:\boost-ci\ci .\ci
