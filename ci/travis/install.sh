@@ -1,6 +1,6 @@
 #! /bin/bash
 #
-# Copyright 2017, 2018 James E. King III
+# Copyright 2017 - 2019 James E. King III
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at
 #      http://www.boost.org/LICENSE_1_0.txt)
@@ -14,6 +14,11 @@
 #
 
 set -ex
+
+function show_bootstrap_log
+{
+    cat bootstrap.log
+}
 
 export SELF=`basename $TRAVIS_BUILD_DIR`
 cd ..
@@ -31,5 +36,7 @@ cp -r $TRAVIS_BUILD_DIR/* libs/$SELF
 export BOOST_ROOT="`pwd`"
 export PATH="`pwd`":$PATH
 python tools/boostdep/depinst/depinst.py --include benchmark --include example --include examples --include tools $DEPINST $SELF
+trap show_bootstrap_log ERR
 ./bootstrap.sh
+trap - ERR
 ./b2 headers
