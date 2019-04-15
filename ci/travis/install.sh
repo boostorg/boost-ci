@@ -37,6 +37,6 @@ export BOOST_ROOT="`pwd`"
 export PATH="`pwd`":$PATH
 python tools/boostdep/depinst/depinst.py --include benchmark --include example --include examples --include tools $DEPINST $SELF
 trap show_bootstrap_log ERR
-./bootstrap.sh
+./bootstrap.sh --with-toolset=${TOOLSET%%-*}
 trap - ERR
 ./b2 headers
