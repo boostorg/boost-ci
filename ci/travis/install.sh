@@ -39,11 +39,12 @@ python tools/boostdep/depinst/depinst.py --include benchmark --include example -
 
 # If clang was installed from LLVM APT it will not have a /usr/bin/clang
 # so we need to add the llvm bin path to the PATH
-
 if [ "${TOOLSET%%-*}" == "clang" ]; then
     ver="${TOOLSET#*-}"
     export PATH=/usr/bin/llvm-${ver}/bin:$PATH
+    ls -ls /usr/bin/llvm-${ver}/bin  # diag
 fi
+
 trap show_bootstrap_log ERR
 ./bootstrap.sh --with-toolset=${TOOLSET%%-*}
 trap - ERR
