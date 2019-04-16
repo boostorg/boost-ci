@@ -42,6 +42,10 @@ python tools/boostdep/depinst/depinst.py --include benchmark --include example -
 if [ "${TOOLSET%%-*}" == "clang" ]; then
     ver="${TOOLSET#*-}"
     export PATH=/usr/lib/llvm-${ver}/bin:$PATH
+    ls -ls /usr/lib/llvm-${ver}/bin
+    hash -r
+    which clang || true
+    which clang++ || true
 fi
 
 trap show_bootstrap_log ERR
