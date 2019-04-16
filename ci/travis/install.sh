@@ -42,7 +42,7 @@ python tools/boostdep/depinst/depinst.py --include benchmark --include example -
 
 if [ "${TOOLSET%%-*}" == "clang" ]; then
     ver="${TOOLSET#*-}"
-    export PATH=/usr/bin/llvm-${ver}/bin
+    export PATH=/usr/bin/llvm-${ver}/bin:$PATH
 fi
 trap show_bootstrap_log ERR
 ./bootstrap.sh --with-toolset=${TOOLSET%%-*}
