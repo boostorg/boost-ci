@@ -42,6 +42,7 @@ python tools/boostdep/depinst/depinst.py --include benchmark --include example -
 if [ "${TOOLSET%%-*}" == "clang" ]; then
     ver="${TOOLSET#*-}"
     export PATH=/usr/bin/llvm-${ver}/bin:$PATH
+    dpkg -L ${TOOLSET}  # diag
     ls -ls /usr/bin/llvm-${ver}/bin  # diag
 fi
 
