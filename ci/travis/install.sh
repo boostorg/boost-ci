@@ -46,6 +46,14 @@ if [ "${TOOLSET%%-*}" == "clang" ]; then
     hash -r || true
     which clang || true
     which clang++ || true
+
+    # Additionally, if TOOLSET is clang variant but CXX is set to g++ then
+    # boost build silently ignores TOOLSET and uses CXX instead
+    if [ "${CXX}" != "clang"* ]; then
+        echo "CXX is set to ${CXX} in this environment which would override"
+        echo "the setting of TOOLSET=clang, therefore we clear CXX here."
+        export CXX=
+    fi
 fi
 
 trap show_bootstrap_log ERR
