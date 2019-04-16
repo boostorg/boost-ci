@@ -36,6 +36,14 @@ cp -r $TRAVIS_BUILD_DIR/* libs/$SELF
 export BOOST_ROOT="`pwd`"
 export PATH="`pwd`":$PATH
 python tools/boostdep/depinst/depinst.py --include benchmark --include example --include examples --include tools $DEPINST $SELF
+
+# If clang was installed from LLVM APT it will not have a /usr/bin/clang
+# so we need to add the llvm bin path to the PATH
+
+if [ "${TOOLSET%%-*}" == "clang" ]; then
+    ver="${TOOLSET#*-}"
+    export PATH=/usr/bin/llvm-${ver}/bin
+fi
 trap show_bootstrap_log ERR
 ./bootstrap.sh --with-toolset=${TOOLSET%%-*}
 trap - ERR
