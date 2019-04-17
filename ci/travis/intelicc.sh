@@ -13,9 +13,11 @@
 #
 # INTEL_ICC_SERIAL_NUMBER           - the Intel ICC serial number to use
 # SELF                              - the boost libs directory name
-# TOOLSET                           - the toolset to use (intel-linux)
+# B2_TOOLSET                        - the toolset to use (intel-linux)
 
 set -ex
+
+. $(dirname "${BASH_SOURCE[0]}")/enforce.sh
 
 function finish {
   rm -rf /tmp/parallel_studio_xe_2019_update1_professional_edition_for_cpp_online/silent.cfg
@@ -52,7 +54,7 @@ rm -f silent.cfg
 export PATH=/opt/intel/bin:$PATH
 popd
 cd ../..
-./bootstrap.sh --with-toolset=$TOOLSET
+./bootstrap.sh --with-toolset=$B2_TOOLSET
 cd libs/$SELF
 ci/travis/build.sh
 

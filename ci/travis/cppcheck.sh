@@ -11,13 +11,10 @@
 
 set -ex
 
-# default language level to check: c++11
-if [[ -z "$CXXSTD" ]]; then
-    CXXSTD=11
-fi
+. $(dirname "${BASH_SOURCE[0]}")/enforce.sh
 
 # Travis comes with older cppcheck, so...
-if [[ -z "$CPPCHKVER" ]]; then
+if [ -z "$CPPCHKVER" ]; then
     CPPCHKVER=1.87
 fi
 
@@ -38,7 +35,7 @@ while IFS=',' read -ra ADDR; do
         # process "$i"
         STANDARDS="${STANDARDS} --std=c++${i}"
     done
-done <<< "$CXXSTD"
+done <<< "$B2_CXXSTD"
 
 ~/cppcheck/bin/cppcheck -I${BOOST_ROOT} ${STANDARDS} --enable=all --error-exitcode=1 \
      --force --check-config --suppress=*:boost/preprocessor/tuple/size.hpp \

@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright 2018 James E. King III
+# Copyright 2018 - 2019 James E. King III
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at
 #      http://www.boost.org/LICENSE_1_0.txt)
@@ -11,18 +11,12 @@
 
 set -ex
 
-# default language level: c++03
-if [[ -z "$CXXSTD" ]]; then
-    CXXSTD=03
-fi
-
-# valgrind on travis is 3.10 which is old
+# valgrind on travis (xenial) is 3.11 which is old
 # using valgrind 3.14 but we have to build it
 
 pushd /tmp
-git clone git://sourceware.org/git/valgrind.git
+git clone -b VALGRIND_3_14_0 git://sourceware.org/git/valgrind.git
 cd valgrind
-git checkout VALGRIND_3_14_0
 
 ./autogen.sh
 ./configure --prefix=/tmp/vg
@@ -33,4 +27,3 @@ popd
 export PATH=/tmp/vg/bin:$PATH
 
 ci/travis/build.sh
-
