@@ -1,6 +1,6 @@
 #! /bin/bash
 #
-# Copyright 2017, 2018 James E. King III
+# Copyright 2017 - 2019 James E. King III
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at
 #      http://www.boost.org/LICENSE_1_0.txt)
@@ -8,14 +8,12 @@
 # Bash script to run in travis to perform codecov.io integration
 #
 
-###
-### NOTE: Make sure you grab .codecov.yml
-###
-
 # assumes cwd is the top level directory of the boost project
 # assumes an environment variable $SELF is the boost project name
 
 set -ex
+
+. ci/travis/enforce.sh
 
 B2_VARIANT=debug
 ci/travis/build.sh cxxflags=-fprofile-arcs cxxflags=-ftest-coverage linkflags=-fprofile-arcs linkflags=-ftest-coverage
