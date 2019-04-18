@@ -1,4 +1,8 @@
 @ECHO ON
+IF DEFINED CXXFLAGS (
+  SET B2_CXXFLAGS=%CXXFLAGS%
+  SET CXXFLAGS=
+)
 cd .. || EXIT /B
 REM BOOST_BRANCH is the superproject branch we check out and build against
 REM except of course the repo being built - that is always what appveyor is handed
