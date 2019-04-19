@@ -19,6 +19,9 @@
 
 set -ex
 
+dpkg -l | grep ca-certificates
+sudo apt-get update && sudo apt-get install ca-certificates
+
 pushd /tmp
 if [[ "$1" != "--skipdownload" ]]; then
   rm -rf coverity_tool.tgz cov-analysis*
