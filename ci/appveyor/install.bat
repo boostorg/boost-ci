@@ -8,9 +8,16 @@ git submodule update -q --init tools/boostdep || EXIT /B
 git submodule update -q --init tools/build || EXIT /B
 xcopy /s /e /q /I %APPVEYOR_BUILD_FOLDER% libs\%SELF% || EXIT /B
 python tools/boostdep/depinst/depinst.py --include benchmark --include example --include examples --include tools %DEPINST% %SELF:\=/% || EXIT /B
+REM Bootstrap is not expecting cxxflags content so we zero it out for the bootstrap only
+SET OLD_CXXFLAGS=%CXXFLAGS%
+SET CXXFLAGS=
+SET OLD_B2_CXXFLAGS=%OLD_B2_CXXFLAGS%
+SET B2_CXXFLAGS=
 cmd /c bootstrap
 IF NOT %ERRORLEVEL% == 0 (
     type bootstrap.log
     EXIT /B 1
 )
+SET CXXFLAGS=%OLD_CXXFLAGS%
+SET B2_CXXFLAGS=%OLD_B2_CXXFLAGS%
 b2 headers
