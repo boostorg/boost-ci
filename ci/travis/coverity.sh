@@ -1,6 +1,6 @@
 #! /bin/bash
 #
-# Copyright 2017 - 2018 James E. King III
+# Copyright 2017 - 2019 James E. King III
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at
 #      http://www.boost.org/LICENSE_1_0.txt)
@@ -22,7 +22,7 @@ set -ex
 pushd /tmp
 if [[ "$1" != "--skipdownload" ]]; then
   rm -rf coverity_tool.tgz cov-analysis*
-  wget -q https://scan.coverity.com/download/linux64 --post-data "token=$COVERITY_SCAN_TOKEN&project=$TRAVIS_REPO_SLUG" -O coverity_tool.tgz
+  wget -nv https://scan.coverity.com/download/linux64 --post-data "token=$COVERITY_SCAN_TOKEN&project=$TRAVIS_REPO_SLUG" -O coverity_tool.tgz
   tar xzf coverity_tool.tgz
 fi
 COVBIN=$(echo $(pwd)/cov-analysis*/bin)
