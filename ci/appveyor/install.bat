@@ -2,7 +2,7 @@
 cd .. || EXIT /B
 REM BOOST_BRANCH is the superproject branch we check out and build against
 REM except of course the repo being built - that is always what appveyor is handed
-if %BOOST_BRANCH% == "" (
+if "%BOOST_BRANCH%" == "" (
     set BOOST_BRANCH=develop
     if "%APPVEYOR_REPO_BRANCH%" == "master" set BOOST_BRANCH=master
 )
