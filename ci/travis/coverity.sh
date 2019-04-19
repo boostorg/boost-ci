@@ -19,16 +19,12 @@
 
 set -ex
 
-# Install the CA certificate coverity uses on scan.coverity.com
-# seems to be missing from the xenial root CAs
-sudo mkdir /usr/share/ca-certificates/extra
-sudo wget -nv https://entrust.com/root-certificates/entrust_l1k.cer -O /usr/share/ca-certificates/extra/entrust_l1k.cer
-sudo update-ca-certificates
+sudo wget -nv https://entrust.com/root-certificates/entrust_l1k.cer -O /tmp/scanca.cer
 
 pushd /tmp
 if [[ "$1" != "--skipdownload" ]]; then
   rm -rf coverity_tool.tgz cov-analysis*
-  wget -nv https://scan.coverity.com/download/linux64 --post-data "token=$COVERITY_SCAN_TOKEN&project=$TRAVIS_REPO_SLUG" -O coverity_tool.tgz
+  curl --cacert /tmp/scanca.cer -L -d "token=$COVERITY_SCAN_TOKEN&project=$TRAVIS_REPO_SLUG" -X POST https://scan.coverity.com/download/linux64 -o coverity_tool.tgz
   tar xzf coverity_tool.tgz
 fi
 COVBIN=$(echo $(pwd)/cov-analysis*/bin)
@@ -39,10 +35,10 @@ ci/travis/build.sh clean
 rm -rf cov-int/
 cov-build --dir cov-int ci/travis/build.sh
 tar cJf cov-int.tar.xz cov-int/
-curl --form token="$COVERITY_SCAN_TOKEN" \
+curl --cacert /tmp/scanca.cer \
+     --form token="$COVERITY_SCAN_TOKEN" \
      --form email="$COVERITY_SCAN_NOTIFICATION_EMAIL" \
      --form file=@cov-int.tar.xz \
      --form version="$BOOST_BRANCH" \
      --form description="$TRAVIS_REPO_SLUG" \
      https://scan.coverity.com/builds?project="$TRAVIS_REPO_SLUG"
-
