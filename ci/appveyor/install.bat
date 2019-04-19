@@ -1,6 +1,6 @@
 @ECHO ON
 cd .. || EXIT /B
-git clone -b %APPVEYOR_REPO_BRANCH% --depth 1 https://github.com/boostorg/boost.git boost-root || EXIT /B
+git clone -b %BOOST_BRANCH% --depth 1 https://github.com/boostorg/boost.git boost-root || EXIT /B
 cd boost-root || EXIT /B
 git submodule update -q --init libs/headers || EXIT /B
 git submodule update -q --init tools/boost_install || EXIT /B
