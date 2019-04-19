@@ -22,8 +22,7 @@ set -ex
 # Install the CA certificate coverity uses on scan.coverity.com
 # seems to be missing from the xenial root CAs
 sudo mkdir /usr/share/ca-certificates/extra
-sudo wget -nv https://entrust.com/root-certificates/entrust_g2_ca.cer -O /usr/share/ca-certificates/extra/entrust_g2_ca.cer
-sudo dpkg-reconfigure ca-certificates
+sudo wget -nv https://entrust.com/root-certificates/entrust_l1k.cer -O /usr/share/ca-certificates/extra/entrust_l1k.cer
 sudo update-ca-certificates
 
 pushd /tmp
