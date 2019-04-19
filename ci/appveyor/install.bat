@@ -1,5 +1,11 @@
 @ECHO ON
 cd .. || EXIT /B
+REM BOOST_BRANCH is the superproject branch we check out and build against
+REM except of course the repo being built - that is always what appveyor is handed
+if %BOOST_BRANCH% == "" (
+    set BOOST_BRANCH=develop
+    if "%APPVEYOR_REPO_BRANCH%" == "master" set BOOST_BRANCH=master
+)
 git clone -b %BOOST_BRANCH% --depth 1 https://github.com/boostorg/boost.git boost-root || EXIT /B
 cd boost-root || EXIT /B
 git submodule update -q --init libs/headers || EXIT /B
