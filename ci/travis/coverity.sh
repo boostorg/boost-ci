@@ -34,6 +34,7 @@ popd
 ci/travis/build.sh clean
 rm -rf cov-int/
 cov-build --dir cov-int ci/travis/build.sh
+tail -50 cov-int/build-log.txt 
 tar cJf cov-int.tar.xz cov-int/
 curl --cacert /tmp/scanca.cer \
      --form token="$COVERITY_SCAN_TOKEN" \
