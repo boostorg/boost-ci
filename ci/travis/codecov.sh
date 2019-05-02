@@ -16,7 +16,12 @@ set -ex
 . ci/travis/enforce.sh
 
 if [ -z "$GCOV" ]; then
-    GCOV=gcov-7
+    if [ "${B2_TOOLSET%%-*}" == "gcc" ]; then
+        ver="${B2_TOOLSET#*-}"
+        GCOV=gcov-${ver}
+    else
+        GCOV=gcov-7 # default
+    fi
 fi
 
 B2_VARIANT=debug
