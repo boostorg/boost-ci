@@ -15,6 +15,10 @@ set -ex
 
 . ci/travis/enforce.sh
 
+if [ -z "$GCOV" ]; then
+    GCOV=gcov-7
+fi
+
 B2_VARIANT=debug
 ci/travis/build.sh cxxflags=-fprofile-arcs cxxflags=-ftest-coverage linkflags=-fprofile-arcs linkflags=-ftest-coverage
 
@@ -25,21 +29,21 @@ cd $TRAVIS_BUILD_DIR
 lcov --version
 
 # coverage files are in ../../b2 from this location
-lcov --gcov-tool=gcov-7 --rc lcov_branch_coverage=1 --base-directory "$BOOST_ROOT/libs/$SELF" --directory "$BOOST_ROOT" --capture --output-file all.info
+lcov --gcov-tool=$GCOV --rc lcov_branch_coverage=1 --base-directory "$BOOST_ROOT/libs/$SELF" --directory "$BOOST_ROOT" --capture --output-file all.info
 
 # all.info contains all the coverage info for all projects - limit to ours
 # first we extract the interesting headers for our project then we use that list to extract the right things
 for f in `for f in include/boost/*; do echo $f; done | cut -f2- -d/`; do echo "*/$f*"; done > /tmp/interesting
 echo headers that matter:
 cat /tmp/interesting
-xargs -L 999999 -a /tmp/interesting lcov --gcov-tool=gcov-7 --rc lcov_branch_coverage=1 --extract all.info {} "*/libs/$SELF/src/*" --output-file coverage.info
+xargs -L 999999 -a /tmp/interesting lcov --gcov-tool=$GCOV --rc lcov_branch_coverage=1 --extract all.info {} "*/libs/$SELF/src/*" --output-file coverage.info
 
 # dump a summary on the console - helps us identify problems in pathing
-lcov --gcov-tool=gcov-7 --rc lcov_branch_coverage=1 --list coverage.info
+lcov --gcov-tool=$GCOV --rc lcov_branch_coverage=1 --list coverage.info
 
 #
 # upload to codecov.io
 #
 curl -s https://codecov.io/bash > .codecov
 chmod +x .codecov
-./.codecov -f coverage.info -X gcov -x "gcov-7"
+./.codecov -f coverage.info -X gcov -x "$GCOV"
