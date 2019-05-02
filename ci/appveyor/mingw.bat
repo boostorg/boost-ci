@@ -1,6 +1,6 @@
 ::
 :: MinGW Build Script for Appveyor, leveraging the MSYS2 installation
-:: Copyright (C) 2018 James E. King III
+:: Copyright (C) 2018 - 2019 James E. King III
 :: Distributed under the Boost Software License, Version 1.0.
 :: (See accompanying file LICENSE_1_0.txt or copy at http://boost.org/LICENSE_1_0.txt)
 ::
@@ -25,6 +25,17 @@ c:\msys64\usr\bin\env MSYSTEM=%UPPERFLAVOR% c:\msys64\usr\bin\bash -l -c ^
   "pacman --sync --needed --noconfirm python3" || EXIT /B
 
 ::
+:: Fix older build script definitions
+::
+
+IF DEFINED CXXFLAGS (SET B2_CXXFLAGS=%CXXSTD%)
+IF DEFINED CXXFLAGS (SET CXXFLAGS=)
+IF DEFINED CXXSTD (SET B2_CXXSTD=%CXXSTD%)
+IF DEFINED CXXSTD (SET CXXSTD=)
+IF DEFINED DEFINES (SET B2_DEFINES=%CXXSTD%)
+IF DEFINED DEFINES (SET DEFINES=)
+
+::
 :: Now build things...
 ::
 
@@ -32,7 +43,7 @@ c:\msys64\usr\bin\env MSYSTEM=%UPPERFLAVOR% c:\msys64\usr\bin\bash -l -c ^
   "cd %CD:\=/% && ./bootstrap.sh --with-toolset=gcc" || EXIT /B
 
 c:\msys64\usr\bin\env MSYSTEM=%UPPERFLAVOR% c:\msys64\usr\bin\bash -l -c ^
-  "cd %CD:\=/% && ./b2 --abbreviate-paths libs/%SELF:\=/% toolset=gcc-%FLAVOR% cxxstd=%CXXSTD% %CXXFLAGS% %DEFINES% %B2_ADDRESS_MODEL% %B2_LINK% %B2_THREADING% %B2_VARIANT% -j3" || EXIT /B
+  "cd %CD:\=/% && ./b2 --abbreviate-paths libs/%SELF:\=/% toolset=gcc-%FLAVOR% cxxstd=%B2_CXXSTD% %B2_CXXFLAGS% %B2_DEFINES% %B2_ADDRESS_MODEL% %B2_LINK% %B2_THREADING% %B2_VARIANT% -j3" || EXIT /B
 
 EXIT /B 0
 
