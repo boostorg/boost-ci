@@ -2,15 +2,19 @@
 
 # Boost.CI #
 
-This repository contains scripts that enable continuous integration with [Appveyor](https://www.appveyor.com/), [codecov.io](https://codecov.io/), 
-[Coverity Scan](https://scan.coverity.com/), and [Travis CI](https://travis-ci.org/).  These scripts are intended to be downloaded and used during boost repository builds to improve project quality.  In most cases the scripts are self-configuring.  Some integrations require additional setup actions to complete.
+This repository contains scripts that enable continuous integration with [Appveyor](https://www.appveyor.com/),
+[Azure Pipelines](https://github.com/marketplace/azure-pipelines), [codecov.io](https://codecov.io/),
+[Coverity Scan](https://scan.coverity.com/), and [Travis CI](https://travis-ci.org/).
+These scripts are intended to be downloaded and used during boost repository builds to improve project quality.
+In most cases the scripts are self-configuring.  Some integrations require additional setup actions to complete.
 
 ## Summary (TL;DR) ##
 
 Here are all the steps you need to take as a Boost repository maintainer to enable all of these CI features in your repository:
 
 1. Checkout `develop` and then make a new branch called `ci`.
-1. Copy the `template/appveyor.yml` file from this repository into the *top level* of your repository.  The file `appveyor.yml` should be in the top level directory of your repository.
+1. Copy the `template/appveyor.yml` file from this repository into the *top level* of your repository. You can also rename name it as `.appveyor.yml`.
+1. Copy the `template/azure-pipelines.yml` file from this repository into the top level or your repository. You can also rename name it as `.azure-pipelines.yml`.
 1. Copy the `template/.travis.yml` file from this repository into the top level or your repository.
 1. Copy the `LICENSE` file from this repository to the top level of your repository.  This adds the `BSL-1.0` designation to your repository on github.
 1. [optional] Copy the `template/README.md` file from this repository to the top level of your repository.  If you already have a README.md then you can take what you need from the template version to improve it, if desired.  Otherwise, you will need to customize README.md for your repository.  One useful step is to fixup the repository name using the command `sed -i 's/template/<myrepositoryname>/g' README.md`, and then update the first line description.
@@ -38,7 +42,7 @@ There may be additional repositories using Boost.CI that are not listed.  Boost.
 
 ## How It Works ##
 
-The files `appveyor.yml` and `.travis.yml` must exist in your repository and will contain your customizations for build types, languages, and platforms.  The templates provided will get you started with the build jobs listed below.
+The files `appveyor.yml`, `azure-pipeline.yml` and `.travis.yml` must exist in your repository and will contain your customizations for build types, languages, and platforms.  The templates provided will get you started with the build jobs listed below.
 
 These scripts will copy resources from the Boost.CI repository when needed in order to provide scripting necessary to run all these jobs successfully.
 
@@ -78,6 +82,39 @@ Without any customization the scripts provide the following services:
 | Appveyor  | cygwin64                | `gcc`       | `11,17`                       | `64`          | `debug,release` |
 | Appveyor  | mingw                   | `gcc`       | `03,11`                       | `32`          | `debug,release` |
 | Appveyor  | mingw64                 | `gcc`       | `11,17`                       | `64`          | `debug,release` |
+| Azure P.  | gcc 4.8                 | `gcc-4.8`   | `03,11`                       | default       | `debug,release` | 
+| Azure P.  | gcc 4.9                 | `gcc-4.9`   | `03,11`                       | default       | `debug,release` | 
+| Azure P.  | gcc 5                   | `gcc-5`     | `11`                          | default       | `debug,release` | 
+| Azure P.  | gcc 6                   | `gcc-6`     | `11,14`                       | default       | `debug,release` | 
+| Azure P.  | gcc 7                   | `gcc-7`     | `11,14,17`                    | default       | `debug,release` | 
+| Azure P.  | gcc 8                   | `gcc-8`     | `14,17,2a`                    | default       | `debug,release` | 
+| Azure P.  | clang-3.5               | `clang-3.5` | `03,11`                       | default       | `debug,release` | 
+| Azure P.  | clang-3.6               | `clang-3.6` | `03,11`                       | default       | `debug,release` | 
+| Azure P.  | clang-3.7               | `clang-3.7` | `03,11`                       | default       | `debug,release` | 
+| Azure P.  | clang-3.8               | `clang-3.8` | `03,11,14`                    | default       | `debug,release` | 
+| Azure P.  | clang-3.9               | `clang-3.8` | `03,11,14`                    | default       | `debug,release` | 
+| Azure P.  | clang-4.0               | `clang-4.0` | `11,14,17`                    | default       | `debug,release` | 
+| Azure P.  | clang-5.0               | `clang-5.0` | `11,14,17`                    | default       | `debug,release` | 
+| Azure P.  | clang-6.0               | `clang-6.0` | `14,17,2a`                    | default       | `debug,release` | 
+| Azure P.  | clang-6.0-libc++        | `clang-6.0` | `03,11,14,17,2a`, `libc++`    | default       | `debug,release` | 
+| Azure P.  | clang-7                 | `clang-7`   | `14,17,2a`                    | default       | `debug,release` | 
+| Azure P.  | clang-8                 | `clang-8`   | `14,17,2a`                    | default       | `debug,release` | 
+| Azure P.  | MSVC 2019 C++2a Strict  | `msvc-14.2` | `2a`, `-permissive-`          | `64`          | `debug,release` |
+| Azure P.  | MSVC 2017 C++2a Strict  | `msvc-14.1` | `2a`, `-permissive-`          | `64`          | `debug,release` |
+| Azure P.  | MSVC 2017 C++17         | `msvc-14.1` | `17`                          | `32,64`       | `debug,release` |
+| Azure P.  | MSVC 2017 C++14 Default | `msvc-14.1` | default (14)                  | `32,64`       | `debug,release` |
+| Azure P.  | MSVC 2015 C++14 Default | `msvc-14.0` | default (14)                  | `32,64`       | `debug,release` |
+| Azure P.  | Xcode 10.1              | `clang`     | `14,17,2a`                    | default       | `debug,release` |
+| Azure P.  | Xcode 10.0              | `clang`     | `14,17,2a`                    | default       | `debug,release` |
+| Azure P.  | Xcode 9.4.1             | `clang`     | `11,14,17`                    | default       | `debug,release` |
+| Azure P.  | Xcode 9.4               | `clang`     | `11,14,17`                    | default       | `debug,release` |
+| Azure P.  | Xcode 9.3.1             | `clang`     | `11,14`                       | default       | `debug,release` |
+| Azure P.  | Xcode 9.3               | `clang`     | `11,14`                       | default       | `debug,release` |
+| Azure P.  | Xcode 9.2               | `clang`     | `11,14`                       | default       | `debug,release` |
+| Azure P.  | Xcode 9.1               | `clang`     | `03,11`                       | default       | `debug,release` |
+| Azure P.  | Xcode 9.0.1             | `clang`     | `03,11`                       | default       | `debug,release` |
+| Azure P.  | Xcode 9.0               | `clang`     | `03,11`                       | default       | `debug,release` |
+| Azure P.  | Xcode 8.3.3             | `clang`     | `03,11`                       | default       | `debug,release` |
 | Travis CI | gcc 4.8                 | `gcc-4.8`   | `03,11`                       | default       | `debug,release` | 
 | Travis CI | gcc 4.9                 | `gcc-4.9`   | `03,11`                       | default       | `debug,release` | 
 | Travis CI | gcc 5                   | `gcc-5`     | `11`                          | default       | `debug,release` | 
