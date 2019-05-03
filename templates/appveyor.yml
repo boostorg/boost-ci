@@ -27,6 +27,9 @@ branches:
   only:
     - develop
     - master
+    - feature/*
+    - fix/*
+    - pr/*
 
 matrix:
   # Adding MAYFAIL to any matrix job allows it to fail but the build stays green:
