@@ -50,10 +50,10 @@ branches:
   only:
     - master
     - develop
-    - bugfix/*
-    - feature/*
-    - fix/*
-    - pr/*
+    - /bugfix\/.*/
+    - /feature\/.*/
+    - /fix\/.*/
+    - /pr\/.*/
 
 script:
   - cd $BOOST_ROOT/libs/$SELF
