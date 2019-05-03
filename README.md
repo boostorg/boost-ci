@@ -44,13 +44,24 @@ These scripts will copy resources from the Boost.CI repository when needed in or
 
 Build jobs that will severely impact performance (such as `valgrind`) will define `BOOST_NO_STRESS_TEST` so those can be skipped or hobbled.
 
+## Topic Branch Support ##
+
+The configuration for Travis CI and Appveyor allow for automated branch builds on branch pushes matching these names:
+
+- master
+- develop
+- bugfix/*
+- feature/*
+- fix/*
+- pr/*
+
 ## Defaults, Builds and Services ##
 
 By default all of the builds target C++11 unless otherwise specified.
 To see what kind of coverage these builds provide, see some build results:
 
-`AppVeyor `: https://ci.appveyor.com/project/jeking3/uuid-gaamf/builds/19987101
-`Travis CI`: https://travis-ci.org/boostorg/uuid/builds/449557162
+    AppVeyor : https://ci.appveyor.com/project/jeking3/uuid-gaamf/builds/19987101
+    Travis CI: https://travis-ci.org/boostorg/uuid/builds/449557162
 
 Without any customization the scripts provide the following services:
 
@@ -68,6 +79,7 @@ Without any customization the scripts provide the following services:
 | Appveyor  | mingw                   | `gcc`       | `03,11`                       | `32`          | `debug,release` |
 | Appveyor  | mingw64                 | `gcc`       | `11,17`                       | `64`          | `debug,release` |
 | Travis CI | gcc 4.8                 | `gcc-4.8`   | `03,11`                       | default       | `debug,release` | 
+| Travis CI | gcc 4.9                 | `gcc-4.9`   | `03,11`                       | default       | `debug,release` | 
 | Travis CI | gcc 5                   | `gcc-5`     | `11`                          | default       | `debug,release` | 
 | Travis CI | gcc 6                   | `gcc-6`     | `11,14`                       | default       | `debug,release` | 
 | Travis CI | gcc 7                   | `gcc-7`     | `11,14,17`                    | default       | `debug,release` | 
@@ -80,8 +92,8 @@ Without any customization the scripts provide the following services:
 | Travis CI | clang-7                 | `clang-7`   | `14,17,2a`                    | default       | `debug,release` | 
 | Travis CI | clang-8                 | `clang-8`   | `14,17,2a`                    | default       | `debug,release` | 
 | Travis CI | osx (clang)             | `clang`     | `03,11,17`                    | default       | `debug,release` |
-| Travis CI | codecov.io              | `gcc-7`     | default                       | default       | `debug`         |
-| Travis CI | covscan                 | `gcc-7`     | default                       | default       | `debug`         |
+| Travis CI | codecov.io              | `gcc-8`     | default                       | default       | `debug`         |
+| Travis CI | covscan                 | `clang`     | default                       | default       | `debug`         |
 | Travis CI | cppcheck                |             | `03,11,14`                    |               |                 |
 | Travis CI | ubsan                   | `gcc-8`     | `03,11,14,17,2a`              | default       | `debug`         |
 | Travis CI | valgrind                | `clang-6.0` | `03,11,14,17,2a`              | default       | `debug`         |

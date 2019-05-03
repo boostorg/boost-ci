@@ -48,8 +48,9 @@ addons:
 
 branches:
   only:
-    - develop
     - master
+    - develop
+    - bugfix/*
     - feature/*
     - fix/*
     - pr/*
