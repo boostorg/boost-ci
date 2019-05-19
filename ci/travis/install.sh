@@ -69,6 +69,10 @@ if [ "${B2_TOOLSET%%-*}" == "clang" ]; then
 fi
 
 trap show_bootstrap_log ERR
-./bootstrap.sh --with-toolset=${B2_TOOLSET%%-*}
+if [[ "${B2_TOOLSET}" == "gcc-"* ]] || [[ "${B2_TOOLSET}" == "clang-"* ]]; then
+    ./bootstrap.sh --with-toolset=${B2_TOOLSET%%-*}
+else
+    ./bootstrap.sh --with-toolset=${B2_TOOLSET}
+fi
 trap - ERR
 ./b2 headers
