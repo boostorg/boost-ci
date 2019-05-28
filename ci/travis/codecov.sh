@@ -24,17 +24,24 @@ if [ -z "$GCOV" ]; then
     fi
 fi
 
-# lcov needs this
-sudo apt install --no-install-recommends -y libperlio-gzip-perl libjson-perl
+# lcov after 1.14 needs this
+# sudo apt install --no-install-recommends -y libperlio-gzip-perl libjson-perl
+
+# install the latest lcov we know works
+# some older .travis.yml files install the tip which may be unstable
+rm -rf /tmp/lcov
+pushd /tmp
+git clone -b v1.14 https://github.com/linux-test-project/lcov.git
+export PATH=/tmp/lcov/bin:$PATH
+which lcov
+lcov --version
+popd
 
 B2_VARIANT=debug
 ci/travis/build.sh cxxflags=-fprofile-arcs cxxflags=-ftest-coverage linkflags=-fprofile-arcs linkflags=-ftest-coverage
 
 # switch back to the original source code directory
 cd $TRAVIS_BUILD_DIR
-
-# get the version of lcov
-lcov --version
 
 # coverage files are in ../../b2 from this location
 lcov --gcov-tool=$GCOV --rc lcov_branch_coverage=1 --base-directory "$BOOST_ROOT/libs/$SELF" --directory "$BOOST_ROOT" --capture --output-file all.info
