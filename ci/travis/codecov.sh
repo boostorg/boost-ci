@@ -25,7 +25,7 @@ if [ -z "$GCOV" ]; then
 fi
 
 # lcov needs this
-sudo apt install --no-install--recommends -y libperlio-gzip-perl libjson-perl
+sudo apt install --no-install-recommends -y libperlio-gzip-perl libjson-perl
 
 B2_VARIANT=debug
 ci/travis/build.sh cxxflags=-fprofile-arcs cxxflags=-ftest-coverage linkflags=-fprofile-arcs linkflags=-ftest-coverage
