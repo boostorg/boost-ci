@@ -67,13 +67,14 @@ To see what kind of coverage these builds provide, see some build results:
     AppVeyor : https://ci.appveyor.com/project/jeking3/uuid-gaamf/builds/19987101
     Travis CI: https://travis-ci.org/boostorg/uuid/builds/449557162
 
-Without any customization the scripts provide the following services:
+Without any customization the scripts can provide the following services:
 
 | CI        | description             | toolset     | cxxflags/std                  | address-model | variant         |
 | :-------- | :---------------------- | :---------- | :---------------------------- | :------------ | :-------------- |
 | Appveyor  | MSVC 2019 C++2a Strict  | `msvc-14.2` | `2a`, `-permissive-`          | `64`          | `release`       |
 | Appveyor  | MSVC 2017 C++2a Strict  | `msvc-14.1` | `2a`, `-permissive-`          | `64`          | `release`       |
 | Appveyor  | MSVC 2017 C++17         | `msvc-14.1` | `17`                          | `64`          | `debug`         |
+| Appveyor  | MSVC 2017 C++17         | `clang-win` | `11`                          | `64`          | `release`       |
 | Appveyor  | MSVC 2017 C++14 Default | `msvc-14.1` | default (14)                  | `32,64`       | `release`       |
 | Appveyor  | MSVC 2015 C++14 Default | `msvc-14.0` | default (14)                  | `32,64`       | `debug`         |
 | Appveyor  | MSVC 2013               | `msvc-12.0` | default (most of 11)          | default       | `release`       |
@@ -122,7 +123,7 @@ Without any customization the scripts provide the following services:
 | Travis CI | gcc 6                   | `gcc-6`     | `11,14`                       | default       | `release`       | 
 | Travis CI | gcc 7                   | `gcc-7`     | `14,17`                       | default       | `release`       | 
 | Travis CI | gcc 8                   | `gcc-8`     | `17,2a`                       | default       | `release`       | 
-| Travis CI | gcc 8                   | `gcc-9`     | `17,2a`                       | default       | `release`       | 
+| Travis CI | gcc 9                   | `gcc-9`     | `17,2a`                       | default       | `release`       | 
 | Travis CI | clang-3.8               | `clang-3.8` | `03,11`                       | default       | `release`       | 
 | Travis CI | clang-4.0               | `clang-4.0` | `11,14`                       | default       | `release`       | 
 | Travis CI | clang-5.0               | `clang-5.0` | `11,14`                       | default       | `release`       | 
@@ -133,5 +134,7 @@ Without any customization the scripts provide the following services:
 | Travis CI | osx (clang)             | `clang`     | `03,11,17`                    | default       | `release`       |
 | Travis CI | codecov.io              | `gcc-8`     | default                       | default       | `debug`         |
 | Travis CI | covscan                 | `clang`     | default                       | default       | `debug`         |
+| Travis CI | asan                    | `gcc-8`     | `03,11,14`                    | default       | `debug`         |
+| Travis CI | tsan                    | `gcc-8`     | `03,11,14`                    | default       | `debug`         |
 | Travis CI | ubsan                   | `gcc-8`     | `03,11,14`                    | default       | `debug`         |
 | Travis CI | valgrind                | `clang-6.0` | `03,11,14`                    | default       | `debug`         |
