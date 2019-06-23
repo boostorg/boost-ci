@@ -28,10 +28,7 @@ export PATH=~/bdde/bin/linux:$PATH
 # this prepares the VM for multiarch docker
 apt-get install -y --no-install-recommends qemu-user-static
 docker run --rm --privileged multiarch/qemu-user-static:register --reset
-cp /usr/bin/qemu-ppc64-static ~/bdde
 
-# now we can build the bootstrap for the target in the docker container
+# now we can bootstrap and build just like normal, but it is in the container
 bdde -c "cd $BOOST_ROOT && ./bootstrap.sh"
-
-# and now we can build whatever boost repository inside the container
 bdde -c "b2 . toolset=$B2_TOOLSET cxxstd=$B2_CXXSTD $B2_CXXFLAGS $B2_DEFINES $B2_INCLUDE $B2_LINKFLAGS $B2_TESTFLAGS $B2_ADDRESS_MODEL $B2_LINK $B2_THREADING $B2_VARIANT -j${B2_JOBS} $*"
