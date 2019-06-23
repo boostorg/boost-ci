@@ -26,7 +26,6 @@ export PATH=~/bdde/bin/linux:$PATH
 . $(dirname "${BASH_SOURCE[0]}")/enforce.sh
 
 # this prepares the VM for multiarch docker
-apt-get install -y --no-install-recommends qemu-user-static
 docker run --rm --privileged multiarch/qemu-user-static:register --reset
 
 # now we can bootstrap and build just like normal, but it is in the container
