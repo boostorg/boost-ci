@@ -27,6 +27,7 @@ export PATH=~/bdde/bin/linux:$PATH
 
 # this prepares the VM for multiarch docker
 docker run --rm --privileged multiarch/qemu-user-static:register --reset
+bdde -c "echo pulled image"
 
 # now we can bootstrap and build just like normal, but it is in the container
 bdde -c "cd $BOOST_ROOT && ./bootstrap.sh"
