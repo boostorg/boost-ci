@@ -30,5 +30,5 @@ docker run --rm --privileged multiarch/qemu-user-static:register --reset
 bdde -c "echo pulled image"
 
 # now we can bootstrap and build just like normal, but it is in the container
-bdde -c "cd $BOOST_ROOT && ./bootstrap.sh"
+BOOST_STEM=boost bdde -c "./bootstrap.sh"
 bdde -c "b2 . toolset=$B2_TOOLSET cxxstd=$B2_CXXSTD $B2_CXXFLAGS $B2_DEFINES $B2_INCLUDE $B2_LINKFLAGS $B2_TESTFLAGS $B2_ADDRESS_MODEL $B2_LINK $B2_THREADING $B2_VARIANT -j${B2_JOBS} $*"
