@@ -8,6 +8,8 @@ This repository contains scripts that enable continuous integration with [Appvey
 These scripts are intended to be downloaded and used during boost repository builds to improve project quality.
 In most cases the scripts are self-configuring.  Some integrations require additional setup actions to complete.
 
+Boost.CI also allows you to run a big-endian build on Travis CI.
+
 ## Summary (TL;DR) ##
 
 Here are all the steps you need to take as a Boost repository maintainer to enable all of these CI features in your repository:
@@ -132,6 +134,7 @@ Without any customization the scripts can provide the following services:
 | Travis CI | clang-7                 | `clang-7`   | `17,2a`                       | default       | `release`       | 
 | Travis CI | clang-8                 | `clang-8`   | `17,2a`                       | default       | `release`       | 
 | Travis CI | osx (clang)             | `clang`     | `03,11,17`                    | default       | `release`       |
+| Travis CI | big-endian              | `gcc`       | default                       | default       | `debug`         |
 | Travis CI | codecov.io              | `gcc-8`     | default                       | default       | `debug`         |
 | Travis CI | covscan                 | `clang`     | default                       | default       | `debug`         |
 | Travis CI | asan                    | `gcc-8`     | `03,11,14`                    | default       | `debug`         |

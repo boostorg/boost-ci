@@ -18,7 +18,9 @@
 # 3. If you want to enable Coverity Scan, you need to provide the environment
 #    variables COVERITY_SCAN_TOKEN and COVERITY_SCAN_NOTIFICATION_EMAIL in
 #    your github settings.
-# 4. Enable pull request builds in your boostorg/<library> account.
+# 4. If you want to enable a big-endian build, you need to uncomment the
+#    big-endian build job.
+# 5. Enable pull request builds in your boostorg/<library> account.
 #
 # That's it - the scripts will do everything else for you.
 
@@ -44,6 +46,10 @@ addons:
       - binutils-gold
       - gdb
       - libc6-dbg
+      - qemu-user-static
+
+services:
+  - docker
 
 branches:
   only:
@@ -130,9 +136,23 @@ jobs:
                             "B2_CXXFLAGS=-stdlib=libc++"                   ], addons: *clang-6   }
     - { os: "osx"  , env: [ "B2_TOOLSET=clang",       "B2_CXXSTD=03,11,17" ]                     }
 
-    # to enable Intel ICC define INTEL_ICC_SERIAL_NUMBER and the following:
+    # to enable Intel ICC define INTEL_ICC_SERIAL_NUMBER and the following (under development):
     # - { os: "linux", env: [ "B2_TOOLSET=intel-linux", "B2_CXXSTD=11,14,17" ], addons: *gcc-7,
     #     script: cd $BOOST_ROOT/libs/$SELF && ci/travis/intelicc.sh                               }
+
+    # uncomment to enable a big-endian build job, just note that it is 5-10 times slower
+    # than a regular build and travis has a 50 minute time limit per job
+    # - os: linux
+    #   env:
+    #     - COMMENT=big-endian
+    #     - B2_CXXSTD=03
+    #     - B2_TOOLSET=gcc
+    #     - B2_DEFINES="define=BOOST_NO_STRESS_TEST=1"
+    #     - BDDE_OS=red
+    #     - BDDE_ARCH=ppc64
+    #   script:
+    #     - cd $BOOST_ROOT/libs/$SELF
+    #     - ci/travis/bdde.sh
 
     - os: linux
       env:
@@ -173,7 +193,6 @@ jobs:
         - B2_CXXSTD=03,11,14
         - B2_CXXFLAGS="undefined-sanitizer=norecover"
         - B2_DEFINES="define=BOOST_NO_STRESS_TEST=1"
-        # https://github.com/boostorg/build/issues/451 using the gold linker to work around an issue
         - B2_LINKFLAGS="linkflags=-fuse-ld=gold"
         - UBSAN_OPTIONS=print_stacktrace=1
       addons: *gcc-8
