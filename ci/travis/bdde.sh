@@ -33,4 +33,4 @@ bdde -c "echo pulled image"
 # and avoid any permissions issues
 chmod -R 777 /home/travis/build
 BOOST_STEM=boost bdde -c "./bootstrap.sh"
-bdde -c "b2 . toolset=$B2_TOOLSET cxxstd=$B2_CXXSTD $B2_CXXFLAGS $B2_DEFINES $B2_INCLUDE $B2_LINKFLAGS $B2_TESTFLAGS $B2_ADDRESS_MODEL $B2_LINK $B2_THREADING $B2_VARIANT -j${B2_JOBS} $*"
+BOOST_STEM=boost bdde -c "b2 libs/$SELF toolset=$B2_TOOLSET cxxstd=$B2_CXXSTD $B2_CXXFLAGS $B2_DEFINES $B2_INCLUDE $B2_LINKFLAGS $B2_TESTFLAGS $B2_ADDRESS_MODEL $B2_LINK $B2_THREADING $B2_VARIANT -j${B2_JOBS} $*"
