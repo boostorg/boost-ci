@@ -33,7 +33,7 @@ rm -rf /tmp/lcov
 pushd /tmp
 git clone -b v1.14 https://github.com/linux-test-project/lcov.git
 export PATH=/tmp/lcov/bin:$PATH
-which lcov
+command -v lcov
 lcov --version
 popd
 

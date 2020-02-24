@@ -284,7 +284,7 @@ stages:
         set -e
         uname -a
         sudo xcode-select -switch ${XCODE_APP}
-        which clang++
+        command -v clang++
 
         git clone --branch master https://github.com/boostorg/boost-ci.git boost-ci
         cp -pr boost-ci/ci boost-ci/.codecov.yml .
