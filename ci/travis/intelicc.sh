@@ -17,7 +17,7 @@
 
 set -ex
 
-. $(dirname "${BASH_SOURCE[0]}")/enforce.sh
+. $(dirname "${BASH_SOURCE[0]}")/../enforce.sh
 
 if [ -z "$INTEL_ICC_SERIAL_NUMBER" ]; then
     echo "ERROR: you did not set the INTEL_ICC_SERIAL_NUMBER environment variable"

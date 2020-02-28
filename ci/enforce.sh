@@ -17,8 +17,13 @@ function enforce_b2
 
     if [ -z "${!new_varname}" ]; then
         if [ ! -z "${!old_varname}" ]; then
+            if [ "$TRAVIS" = "true" ]; then
+                local ci_script=".travis.yml"
+            elif [ -n "$AGENT_OS" ]; then
+                local ci_script=".azure-pipelines.yml or azure-pipelines.yml"
+            fi
             echo
-            echo "WARNING: Your .azure-pipelines.yml or azure-pipelines.yml file needs to be updated:"
+            echo "WARNING: Your ${ci_script} file needs to be updated:"
             echo "         use ${new_varname} instead of ${old_varname}"
             echo
             export ${new_varname}="${!old_varname}"

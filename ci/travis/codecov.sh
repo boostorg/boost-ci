@@ -13,7 +13,7 @@
 
 set -ex
 
-. $(dirname "${BASH_SOURCE[0]}")/enforce.sh
+. $(dirname "${BASH_SOURCE[0]}")/../enforce.sh
 
 if [ -z "$GCOV" ]; then
     ver=7 # default

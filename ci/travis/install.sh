@@ -19,7 +19,7 @@ if [ "$TRAVIS_OS_NAME" == "osx" ]; then
     unset -f cd
 fi
 
-. $(dirname "${BASH_SOURCE[0]}")/enforce.sh
+. $(dirname "${BASH_SOURCE[0]}")/../enforce.sh
 
 function show_bootstrap_log
 {
