@@ -23,7 +23,7 @@ set -ex
 git clone https://github.com/jeking3/bdde.git ~/bdde
 export PATH=~/bdde/bin/linux:$PATH
 
-. $(dirname "${BASH_SOURCE[0]}")/enforce.sh
+. $(dirname "${BASH_SOURCE[0]}")/../enforce.sh
 
 # this prepares the VM for multiarch docker
 docker run --rm --privileged multiarch/qemu-user-static:register --reset
