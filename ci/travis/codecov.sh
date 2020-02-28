@@ -40,7 +40,7 @@ command -v lcov
 lcov --version
 popd
 
-B2_VARIANT=variant=debug
+B2_VARIANT=debug
 $(dirname "${BASH_SOURCE[0]}")/build.sh cxxflags=--coverage linkflags=--coverage 
 #cxxflags=-fprofile-arcs cxxflags=-ftest-coverage linkflags=-fprofile-arcs linkflags=-ftest-coverage
 
