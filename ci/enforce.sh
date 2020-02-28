@@ -49,3 +49,14 @@ if [ -z "${B2_JOBS}" ]; then
     cpus=$(cat /proc/cpuinfo | grep 'processor' | wc -l)
     export B2_JOBS=$((cpus + 1))
 fi
+
+# Strip (now) superflous prefix from variables (legacy support)
+# Skipped:
+# B2_CXXFLAGS: (Ab)used for sanitizers
+# B2_THREADING: can be threading= or threadapi=
+B2_DEFINES="${B2_DEFINES#define=}"
+B2_INCLUDE="${B2_INCLUDE#include=}"
+B2_LINKFLAGS="${B2_LINKFLAGS#linkflags=}"
+B2_ADDRESS_MODEL="${B2_ADDRESS_MODEL#address-model=}"
+B2_LINK="${B2_LINK#link=}"
+B2_VARIANT="${B2_VARIANT#variant=}"
