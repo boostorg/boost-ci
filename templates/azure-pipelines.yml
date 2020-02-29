@@ -89,7 +89,7 @@ stages:
           CXX: clang++-7
           PACKAGES: clang-7
           LLVM_REPO: llvm-toolchain-xenial-7
-        Clang 6:
+        Clang 6 libc++:
           B2_TOOLSET: clang
           B2_CXXSTD: 03,11,14,17,2a
           B2_CXXFLAGS: -stdlib=libc++
