@@ -155,16 +155,19 @@ jobs:
     #     - cd $BOOST_ROOT/libs/$SELF
     #     - ci/travis/bdde.sh
 
-    - os: linux
-      env:
-        - COMMENT=codecov.io
-        - B2_CXXSTD=03,11
-        - B2_TOOLSET=gcc-8
-        - B2_DEFINES="define=BOOST_NO_STRESS_TEST=1"
-      addons: *gcc-8
-      script:
-        - cd $BOOST_ROOT/libs/$SELF
-        - ci/travis/codecov.sh
+
+    # Disable for boost-ci CI self-check to avoid this
+    # lcov: ERROR: no valid records found in tracefile coverage.info
+    # - os: linux
+    #   env:
+    #     - COMMENT=codecov.io
+    #     - B2_CXXSTD=03,11
+    #     - B2_TOOLSET=gcc-8
+    #     - B2_DEFINES="define=BOOST_NO_STRESS_TEST=1"
+    #   addons: *gcc-8
+    #   script:
+    #     - cd $BOOST_ROOT/libs/$SELF
+    #     - ci/travis/codecov.sh
 
     - os: linux
       env:
