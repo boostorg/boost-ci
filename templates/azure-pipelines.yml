@@ -151,9 +151,9 @@ stages:
         sudo -E apt-get update
         sudo -E apt-get -yq --no-install-suggests --no-install-recommends install ${PACKAGES}
 
-        git clone --branch master https://github.com/boostorg/boost-ci.git boost-ci
-        cp -pr boost-ci/ci boost-ci/.codecov.yml .
-        rm -rf boost-ci
+        git clone --branch master https://github.com/boostorg/boost-ci.git boost-ci-cloned
+        cp -prf boost-ci-cloned/ci boost-ci-cloned/.codecov.yml .
+        rm -rf boost-ci-cloned
         source ci/azure-pipelines/install.sh
 
         # AzP requires to run special task in order to export
@@ -214,8 +214,9 @@ stages:
         for /f "tokens=2 delims=/" %%a in ("%SELF%") do set SELF=%%a
         set BOOST_ROOT=%BUILD_SOURCESDIRECTORY%\boost-root
 
-        git clone --branch master https://github.com/boostorg/boost-ci.git boost-ci
-        xcopy /s /e /q /i boost-ci\ci .\ci
+        git clone --branch master https://github.com/boostorg/boost-ci.git boost-ci-cloned
+        xcopy /s /e /q /i /y boost-ci-cloned\ci .\ci
+        rmdir /s /q boost-ci-cloned
         cmd /k ci\azure-pipelines\install.bat
 
         echo ##vso[task.setvariable variable=SELF]%SELF%
@@ -286,9 +287,9 @@ stages:
         sudo xcode-select -switch ${XCODE_APP}
         which clang++
 
-        git clone --branch master https://github.com/boostorg/boost-ci.git boost-ci
-        cp -pr boost-ci/ci boost-ci/.codecov.yml .
-        rm -rf boost-ci
+        git clone --branch master https://github.com/boostorg/boost-ci.git boost-ci-cloned
+        cp -prf boost-ci-cloned/ci boost-ci-cloned/.codecov.yml .
+        rm -rf boost-ci-cloned
         source ci/azure-pipelines/install.sh
 
         # AzP requires to run special task in order to export

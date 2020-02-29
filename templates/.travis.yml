@@ -36,8 +36,9 @@ env:
     - B2_VARIANT=variant=release
 
 install:
-  - git clone https://github.com/boostorg/boost-ci.git boost-ci
-  - cp -pr boost-ci/ci boost-ci/.codecov.yml .
+  - git clone https://github.com/boostorg/boost-ci.git boost-ci-cloned
+  - cp -prf boost-ci-cloned/ci boost-ci-cloned/.codecov.yml .
+  - rm -rf boost-ci-cloned
   - source ci/travis/install.sh
 
 addons:
