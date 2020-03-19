@@ -55,13 +55,13 @@ if [ "${B2_TOOLSET%%-*}" == "clang" ]; then
     export PATH=/usr/lib/llvm-${ver}/bin:$PATH
     ls -ls /usr/lib/llvm-${ver}/bin || true
     hash -r || true
-    which clang || true
-    which clang++ || true
+    command -v clang || true
+    command -v clang++ || true
 
     # Additionally, if B2_TOOLSET is clang variant but CXX is set to g++
     # (it is on Travis CI) then boost build silently ignores B2_TOOLSET and
     # uses CXX instead
-    if [ "${CXX}" != "clang"* ]; then
+    if [[ "${CXX}" != "clang"* ]]; then
         echo "CXX is set to ${CXX} in this environment which would override"
         echo "the setting of B2_TOOLSET=clang, therefore we clear CXX here."
         export CXX=
