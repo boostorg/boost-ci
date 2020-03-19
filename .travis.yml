@@ -114,16 +114,60 @@ jobs:
       - COPY="all the environment settings from your job"
 
   include:
-    - os: linux
-      env:
-        - COMMENT=codecov.io
-        - B2_CXXSTD=03,11
-        - B2_TOOLSET=gcc-8
-        - B2_DEFINES="define=BOOST_NO_STRESS_TEST=1"
-      addons: *gcc-8
-      script:
-        - cd $BOOST_ROOT/libs/$SELF
-        - ci/travis/codecov.sh
+    # libstdc++
+    - { os: "linux", dist: "trusty",  # xenial has libstdc++ from gcc 5.4.0 with newer ABI
+                     env: [ "B2_TOOLSET=gcc-4.8",     "B2_CXXSTD=03,11"    ], addons: *gcc-48    }
+    - { os: "linux", dist: "trusty",  # xenial has libstdc++ from gcc 5.4.0 with newer ABI
+                     env: [ "B2_TOOLSET=gcc-4.9",     "B2_CXXSTD=03,11"    ], addons: *gcc-49    }
+    - { os: "linux", env: [ "B2_TOOLSET=gcc-5",       "B2_CXXSTD=03,11"    ], addons: *gcc-5     }
+    - { os: "linux", env: [ "B2_TOOLSET=gcc-6",       "B2_CXXSTD=11,14"    ], addons: *gcc-6     }
+    - { os: "linux", env: [ "B2_TOOLSET=gcc-7",       "B2_CXXSTD=14,17"    ], addons: *gcc-7     }
+    - { os: "linux", env: [ "B2_TOOLSET=gcc-8",       "B2_CXXSTD=17,2a"    ], addons: *gcc-8     }
+    - { os: "linux", env: [ "B2_TOOLSET=gcc-9",       "B2_CXXSTD=17,2a"    ], addons: *gcc-9     }
+    - { os: "linux", dist: "trusty",  # xenial has libstdc++ from gcc 5.4.0 with newer ABI
+                     env: [ "B2_TOOLSET=clang-3.8",   "B2_CXXSTD=03,11"    ], addons: *clang-38  }
+    - { os: "linux", env: [ "B2_TOOLSET=clang-4.0",   "B2_CXXSTD=11,14"    ], addons: *clang-4   }
+    - { os: "linux", env: [ "B2_TOOLSET=clang-5.0",   "B2_CXXSTD=11,14"    ], addons: *clang-5   }
+    - { os: "linux", env: [ "B2_TOOLSET=clang-6.0",   "B2_CXXSTD=14,17"    ], addons: *clang-6   }
+    - { os: "linux", env: [ "B2_TOOLSET=clang-7",     "B2_CXXSTD=17,2a"    ], addons: *clang-7   }
+    - { os: "linux", env: [ "B2_TOOLSET=clang-8",     "B2_CXXSTD=17,2a"    ], addons: *clang-8   }
+
+    # libc++
+    - { os: "linux", env: [ "B2_TOOLSET=clang-6.0",   "B2_CXXSTD=03,11,14",
+                            "B2_CXXFLAGS=-stdlib=libc++"                   ], addons: *clang-6   }
+    - { os: "osx"  , env: [ "B2_TOOLSET=clang",       "B2_CXXSTD=03,11,17" ]                     }
+
+    # to enable Intel ICC define INTEL_ICC_SERIAL_NUMBER and the following (under development):
+    # - { os: "linux", env: [ "B2_TOOLSET=intel-linux", "B2_CXXSTD=11,14,17" ], addons: *gcc-7,
+    #     script: cd $BOOST_ROOT/libs/$SELF && ci/travis/intelicc.sh                               }
+
+    # uncomment to enable a big-endian build job, just note that it is 5-10 times slower
+    # than a regular build and travis has a 50 minute time limit per job
+    # - os: linux
+    #   env:
+    #     - COMMENT=big-endian
+    #     - B2_CXXSTD=03
+    #     - B2_TOOLSET=gcc
+    #     - B2_DEFINES="define=BOOST_NO_STRESS_TEST=1"
+    #     - BDDE_OS=red
+    #     - BDDE_ARCH=ppc64
+    #   script:
+    #     - cd $BOOST_ROOT/libs/$SELF
+    #     - ci/travis/bdde.sh
+
+
+    # Disable for boost-ci CI self-check to avoid this
+    # lcov: ERROR: no valid records found in tracefile coverage.info
+    # - os: linux
+    #   env:
+    #     - COMMENT=codecov.io
+    #     - B2_CXXSTD=03,11
+    #     - B2_TOOLSET=gcc-8
+    #     - B2_DEFINES="define=BOOST_NO_STRESS_TEST=1"
+    #   addons: *gcc-8
+    #   script:
+    #     - cd $BOOST_ROOT/libs/$SELF
+    #     - ci/travis/codecov.sh
 
     - os: linux
       env:
@@ -170,47 +214,6 @@ jobs:
       script:
         - cd $BOOST_ROOT/libs/$SELF
         - ci/travis/valgrind.sh
-
-    # libstdc++
-    - { os: "linux", dist: "trusty",  # xenial has libstdc++ from gcc 5.4.0 with newer ABI
-                     env: [ "B2_TOOLSET=gcc-4.8",     "B2_CXXSTD=03,11"    ], addons: *gcc-48    }
-    - { os: "linux", dist: "trusty",  # xenial has libstdc++ from gcc 5.4.0 with newer ABI
-                     env: [ "B2_TOOLSET=gcc-4.9",     "B2_CXXSTD=03,11"    ], addons: *gcc-49    }
-    - { os: "linux", env: [ "B2_TOOLSET=gcc-5",       "B2_CXXSTD=03,11"    ], addons: *gcc-5     }
-    - { os: "linux", env: [ "B2_TOOLSET=gcc-6",       "B2_CXXSTD=11,14"    ], addons: *gcc-6     }
-    - { os: "linux", env: [ "B2_TOOLSET=gcc-7",       "B2_CXXSTD=14,17"    ], addons: *gcc-7     }
-    - { os: "linux", env: [ "B2_TOOLSET=gcc-8",       "B2_CXXSTD=17,2a"    ], addons: *gcc-8     }
-    - { os: "linux", env: [ "B2_TOOLSET=gcc-9",       "B2_CXXSTD=17,2a"    ], addons: *gcc-9     }
-    - { os: "linux", dist: "trusty",  # xenial has libstdc++ from gcc 5.4.0 with newer ABI
-                     env: [ "B2_TOOLSET=clang-3.8",   "B2_CXXSTD=03,11"    ], addons: *clang-38  }
-    - { os: "linux", env: [ "B2_TOOLSET=clang-4.0",   "B2_CXXSTD=11,14"    ], addons: *clang-4   }
-    - { os: "linux", env: [ "B2_TOOLSET=clang-5.0",   "B2_CXXSTD=11,14"    ], addons: *clang-5   }
-    - { os: "linux", env: [ "B2_TOOLSET=clang-6.0",   "B2_CXXSTD=14,17"    ], addons: *clang-6   }
-    - { os: "linux", env: [ "B2_TOOLSET=clang-7",     "B2_CXXSTD=17,2a"    ], addons: *clang-7   }
-    - { os: "linux", env: [ "B2_TOOLSET=clang-8",     "B2_CXXSTD=17,2a"    ], addons: *clang-8   }
-
-    # libc++
-    - { os: "linux", env: [ "B2_TOOLSET=clang-6.0",   "B2_CXXSTD=03,11,14",
-                            "B2_CXXFLAGS=-stdlib=libc++"                   ], addons: *clang-6   }
-    - { os: "osx"  , env: [ "B2_TOOLSET=clang",       "B2_CXXSTD=03,11,17" ]                     }
-
-    # to enable Intel ICC define INTEL_ICC_SERIAL_NUMBER and the following (under development):
-    # - { os: "linux", env: [ "B2_TOOLSET=intel-linux", "B2_CXXSTD=11,14,17" ], addons: *gcc-7,
-    #     script: cd $BOOST_ROOT/libs/$SELF && ci/travis/intelicc.sh                               }
-
-    # uncomment to enable a big-endian build job, just note that it is 5-10 times slower
-    # than a regular build and travis has a 50 minute time limit per job
-    # - os: linux
-    #   env:
-    #     - COMMENT=big-endian
-    #     - B2_CXXSTD=03
-    #     - B2_TOOLSET=gcc
-    #     - B2_DEFINES="define=BOOST_NO_STRESS_TEST=1"
-    #     - BDDE_OS=red
-    #     - BDDE_ARCH=ppc64
-    #   script:
-    #     - cd $BOOST_ROOT/libs/$SELF
-    #     - ci/travis/bdde.sh
 
     # - os: linux
     #   env:
