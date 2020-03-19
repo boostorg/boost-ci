@@ -92,8 +92,8 @@ if [ "${B2_TOOLSET%%-*}" == "clang" ]; then
     export PATH=/usr/lib/llvm-${ver}/bin:$PATH
     ls -ls /usr/lib/llvm-${ver}/bin || true
     hash -r || true
-    which clang || true
-    which clang++ || true
+    command -v clang || true
+    command -v clang++ || true
 
     # Additionally, if B2_TOOLSET is clang variant but CXX is set to g++
     # (it is on Linux images) then boost build silently ignores B2_TOOLSET and
@@ -124,4 +124,4 @@ if ! command -v ${CXX}; then
     echo "WARNING: Compiler ${CXX} was not installed properly"
     #exit 1
 fi
-echo "using ${B2_TOOLSET} : : $(which ${CXX}) : ${B2_CXXFLAGS} ;" > ${HOME}/user-config.jam
+echo "using ${B2_TOOLSET} : : $(command -v ${CXX}) : ${B2_CXXFLAGS} ;" > ${HOME}/user-config.jam
