@@ -13,7 +13,7 @@
 
 set -ex
 
-. ci/travis/enforce.sh
+. $(dirname "${BASH_SOURCE[0]}")/enforce.sh
 
 if [ -z "$GCOV" ]; then
     if [ "${B2_TOOLSET%%-*}" == "gcc" ]; then
@@ -38,7 +38,7 @@ lcov --version
 popd
 
 B2_VARIANT=variant=debug
-ci/travis/build.sh cxxflags=--coverage linkflags=--coverage 
+$(dirname "${BASH_SOURCE[0]}")/build.sh cxxflags=--coverage linkflags=--coverage 
 #cxxflags=-fprofile-arcs cxxflags=-ftest-coverage linkflags=-fprofile-arcs linkflags=-ftest-coverage
 
 # switch back to the original source code directory
