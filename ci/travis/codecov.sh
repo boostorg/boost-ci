@@ -16,12 +16,15 @@ set -ex
 . $(dirname "${BASH_SOURCE[0]}")/enforce.sh
 
 if [ -z "$GCOV" ]; then
+    ver=7 # default
     if [ "${B2_TOOLSET%%-*}" == "gcc" ]; then
-        ver="${B2_TOOLSET#*-}"
-        GCOV=gcov-${ver}
-    else
-        GCOV=gcov-7 # default
+        if [[ "$B2_TOOLSET" =~ gcc- ]]; then
+            ver="${B2_TOOLSET##*gcc-}"
+        elif [[ "$TRAVIS_COMPILER" =~ gcc- ]]; then
+            ver="${TRAVIS_COMPILER##*gcc-}"
+        fi
     fi
+    GCOV=gcov-${ver}
 fi
 
 # lcov after 1.14 needs this
