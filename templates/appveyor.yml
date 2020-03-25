@@ -129,7 +129,6 @@ environment:
       SCRIPT: ci\appveyor\mingw.bat
 
 install:
-  - set SELF=%APPVEYOR_PROJECT_NAME:-=_%
   - git clone https://github.com/boostorg/boost-ci.git C:\boost-ci-cloned
   - xcopy /s /e /q /i /y C:\boost-ci-cloned\ci .\ci
   - rmdir /s /q C:\boost-ci-cloned
@@ -137,12 +136,4 @@ install:
 
 build: off
 
-test_script:
-  - set SELF=%APPVEYOR_PROJECT_NAME:-=_%
-  - PATH=%ADDPATH%%PATH%
-  # The definition of B2_TOOLCXX omits B2_CXXSTD= if it was not defined above
-  - IF NOT DEFINED B2_CXXSTD (SET B2_TOOLCXX=toolset=%B2_TOOLSET%) ELSE (SET B2_TOOLCXX=toolset=%B2_TOOLSET% cxxstd=%B2_CXXSTD%)
-  # Echo the complete build command to the build log
-  - IF NOT DEFINED SCRIPT                         (ECHO b2 libs/%SELF:\=/%/test %B2_TOOLCXX% %B2_CXXFLAGS% %B2_DEFINES% %B2_THREADING% %B2_ADDRESS_MODEL% %B2_LINK% %B2_THREADING% %B2_VARIANT% -j3)
-  # Now go build...
-  - IF DEFINED SCRIPT (call libs\%SELF%\%SCRIPT%) ELSE (b2 libs/%SELF:\=/%/test %B2_TOOLCXX% %B2_CXXFLAGS% %B2_DEFINES% %B2_THREADING% %B2_ADDRESS_MODEL% %B2_LINK% %B2_THREADING% %B2_VARIANT% -j3)
+test_script: ci\build.bat
