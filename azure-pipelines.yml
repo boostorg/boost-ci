@@ -18,6 +18,16 @@
 #
 # That's it - the script will do everything else for you.
 
+trigger:
+  branches:
+    include:
+    - develop
+    - master
+    - bugfix/*
+    - feature/*
+    - fix/*
+    - pr/*
+
 pr:
   branches:
     include:
