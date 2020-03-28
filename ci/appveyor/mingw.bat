@@ -19,10 +19,10 @@ CALL :TOUPPER UPPERFLAVOR
 
 FOR %%a IN ("gcc" "icu" "libiconv" "openssl" "xz" "zlib") DO (
     c:\msys64\usr\bin\env MSYSTEM=%UPPERFLAVOR% c:\msys64\usr\bin\bash -l -c ^
-      "pacman --sync --needed --noconfirm %FLAVOR%/mingw-w64-%ARCH%-%%a" || EXIT /B
+      "pacman --sync --needed --noconfirm %FLAVOR%/mingw-w64-%ARCH%-%%a" || EXIT /B 1
 )
 c:\msys64\usr\bin\env MSYSTEM=%UPPERFLAVOR% c:\msys64\usr\bin\bash -l -c ^
-  "pacman --sync --needed --noconfirm python3" || EXIT /B
+  "pacman --sync --needed --noconfirm python3" || EXIT /B 1
 
 ::
 :: Fix older build script definitions
@@ -40,10 +40,10 @@ IF DEFINED DEFINES (SET DEFINES=)
 ::
 
 c:\msys64\usr\bin\env MSYSTEM=%UPPERFLAVOR% c:\msys64\usr\bin\bash -l -c ^
-  "cd %CD:\=/% && ./bootstrap.sh --with-toolset=gcc" || EXIT /B
+  "cd %CD:\=/% && ./bootstrap.sh --with-toolset=gcc" || EXIT /B 1
 
 c:\msys64\usr\bin\env MSYSTEM=%UPPERFLAVOR% c:\msys64\usr\bin\bash -l -c ^
-  "cd %CD:\=/% && ./b2 --abbreviate-paths libs/%SELF:\=/%/test toolset=gcc-%FLAVOR% cxxstd=%B2_CXXSTD% %B2_CXXFLAGS% %B2_DEFINES% %B2_ADDRESS_MODEL% %B2_LINK% %B2_THREADING% %B2_VARIANT% -j3" || EXIT /B
+  "cd %CD:\=/% && ./b2 --abbreviate-paths libs/%SELF:\=/%/test toolset=gcc-%FLAVOR% cxxstd=%B2_CXXSTD% %B2_CXXFLAGS% %B2_DEFINES% %B2_ADDRESS_MODEL% %B2_LINK% %B2_THREADING% %B2_VARIANT% -j3" || EXIT /B 1
 
 EXIT /B 0
 
