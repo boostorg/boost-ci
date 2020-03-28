@@ -1,3 +1,9 @@
+REM Generic install script for Windows
+REM The following CI specific environment variables need to be set:
+REM - SELF
+REM - BOOST_CI_TARGET_BRANCH
+REM - BOOST_CI_SRC_FOLDER
+
 @ECHO ON
 
 cd .. || EXIT /B
