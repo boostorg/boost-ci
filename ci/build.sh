@@ -15,7 +15,9 @@ set -ex
 
 export UBSAN_OPTIONS=print_stacktrace=1
 
-"$BOOST_ROOT"/b2 . \
+cd "$BOOST_ROOT"
+
+./b2 libs/$SELF/test \
     toolset="$B2_TOOLSET" \
     cxxstd="$B2_CXXSTD" \
     $B2_CXXFLAGS \
