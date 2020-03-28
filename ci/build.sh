@@ -21,7 +21,7 @@ cd "$BOOST_ROOT"
     toolset="$B2_TOOLSET" \
     cxxstd="$B2_CXXSTD" \
     $B2_CXXFLAGS \
-    ${B2_DEFINES:+defines=$B2_DEFINES} \
+    ${B2_DEFINES:+define=$B2_DEFINES} \
     ${B2_INCLUDE:+include=$B2_INCLUDE} \
     ${B2_LINKFLAGS:+linkflags=$B2_LINKFLAGS} \
     ${B2_TESTFLAGS} \
@@ -32,8 +32,8 @@ cd "$BOOST_ROOT"
     ${B2_THREADING} \
     ${B2_VARIANT:+variant=$B2_VARIANT} \
     ${B2_ASAN:+address-sanitizer=norecover} \
-    ${B2_UBSAN:+thread-sanitizer=norecover} \
-    ${B2_TSAN:+undefined-sanitizer=norecover} \
+    ${B2_TSAN:+thread-sanitizer=norecover} \
+    ${B2_UBSAN:+undefined-sanitizer=norecover} \
     -j${B2_JOBS} \
     ${B2_FLAGS} \
     "$@"

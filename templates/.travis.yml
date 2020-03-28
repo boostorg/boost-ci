@@ -204,7 +204,7 @@ jobs:
     #     - COMMENT=big-endian
     #     - B2_CXXSTD=03
     #     - B2_TOOLSET=gcc
-    #     - B2_DEFINES="define=BOOST_NO_STRESS_TEST=1"
+    #     - B2_DEFINES="BOOST_NO_STRESS_TEST=1"
     #     - BDDE_OS=red
     #     - BDDE_ARCH=ppc64
     #   script:
