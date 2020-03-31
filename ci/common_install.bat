@@ -31,3 +31,8 @@ IF NOT %ERRORLEVEL% == 0 (
 SET B2_CXXFLAGS=%OLD_B2_CXXFLAGS%
 
 b2 headers
+
+if DEFINED B2_CI_VERSION (
+	REM Go back to lib folder to allow ci\build.bat to work
+	cd libs\%SELF%
+)

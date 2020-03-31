@@ -194,8 +194,7 @@ stages:
         rmdir /s /q boost-ci-cloned
         cmd /k ci\azure-pipelines\install.bat
       displayName: 'Install'
-    - script: |
-        %BOOST_ROOT%\libs\%SELF%\ci\build.bat
+    - script: ci\build.bat
       displayName: 'Build'
 
   - job: 'macOS'
