@@ -16,7 +16,7 @@ function enforce_b2
     local new_varname=B2_${old_varname}
 
     if [ -z "${!new_varname}" ]; then
-        if [ ! -z "${!old_varname}" ]; then
+        if [ -n "${!old_varname}" ]; then
             if [ "$TRAVIS" = "true" ]; then
                 local ci_script=".travis.yml"
             elif [ -n "$AGENT_OS" ]; then
@@ -46,17 +46,43 @@ fi
 
 # default parallel build jobs: number of CPUs available + 1
 if [ -z "${B2_JOBS}" ]; then
-    cpus=$(cat /proc/cpuinfo | grep 'processor' | wc -l)
+    cpus=$(grep -c 'processor' /proc/cpuinfo)
     export B2_JOBS=$((cpus + 1))
 fi
 
-# Strip (now) superflous prefix from variables (legacy support)
-# Skipped:
-# B2_CXXFLAGS: (Ab)used for sanitizers
-# B2_THREADING: can be threading= or threadapi=
-B2_DEFINES="${B2_DEFINES#define=}"
-B2_INCLUDE="${B2_INCLUDE#include=}"
-B2_LINKFLAGS="${B2_LINKFLAGS#linkflags=}"
-B2_ADDRESS_MODEL="${B2_ADDRESS_MODEL#address-model=}"
-B2_LINK="${B2_LINK#link=}"
-B2_VARIANT="${B2_VARIANT#variant=}"
+# For old versions strip prefix from variables
+if [ -z "$B2_CI_VERSION" ]; then
+    # Skipped:
+    # B2_CXXFLAGS: (Ab)used for sanitizers
+    # B2_THREADING: can be threading= or threadapi=
+    B2_DEFINES="${B2_DEFINES#define=}"
+    B2_INCLUDE="${B2_INCLUDE#include=}"
+    B2_LINKFLAGS="${B2_LINKFLAGS#linkflags=}"
+    B2_ADDRESS_MODEL="${B2_ADDRESS_MODEL#address-model=}"
+    B2_LINK="${B2_LINK#link=}"
+    B2_VARIANT="${B2_VARIANT#variant=}"
+else
+    B2_CXXFLAGS=${B2_CXXFLAGS:+cxxflags=$B2_CXXFLAGS}
+fi
+
+# Build cmdline arguments for B2 as an array to preserve quotes
+B2_ARGS=(
+    "toolset=$B2_TOOLSET"
+    "cxxstd=$B2_CXXSTD"
+    $B2_CXXFLAGS
+    ${B2_DEFINES:+define=$B2_DEFINES}
+    ${B2_INCLUDE:+include=$B2_INCLUDE}
+    ${B2_LINKFLAGS:+linkflags=$B2_LINKFLAGS}
+    ${B2_TESTFLAGS}
+    ${B2_ADDRESS_MODEL:+address-model=$B2_ADDRESS_MODEL}
+    ${B2_LINK:+link=$B2_LINK}
+    ${B2_VISIBILITY:+visibility=$B2_VISIBILITY}
+    ${B2_STDLIB:+"-stdlib=$B2_STDLIB"}
+    ${B2_THREADING}
+    ${B2_VARIANT:+variant=$B2_VARIANT}
+    ${B2_ASAN:+address-sanitizer=norecover}
+    ${B2_TSAN:+thread-sanitizer=norecover}
+    ${B2_UBSAN:+undefined-sanitizer=norecover}
+    -j${B2_JOBS}
+    ${B2_FLAGS}
+)

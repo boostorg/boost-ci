@@ -40,6 +40,7 @@ matrix:
 
 environment:
   global:
+    B2_CI_VERSION: 1
     # see: http://www.boost.org/build/doc/html/bbv2/overview/invocation.html#bbv2.overview.invocation.properties
     # to use the default for a given environment, comment it out; recommend you build debug and release however:
     # on Windows it is important to exercise all the possibilities, especially shared vs static, however most

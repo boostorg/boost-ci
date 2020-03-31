@@ -1,6 +1,11 @@
 @ECHO OFF
 setlocal enabledelayedexpansion
 
+IF NOT DEFINED B2_CI_VERSION (
+    echo You need to set B2_CI_VERSION in your CI script
+    exit /B 1
+)
+
 PATH=%ADDPATH%%PATH%
 
 SET B2_TOOLCXX=toolset=%B2_TOOLSET%

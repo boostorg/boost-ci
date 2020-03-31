@@ -17,23 +17,4 @@ export UBSAN_OPTIONS=print_stacktrace=1
 
 cd "$BOOST_ROOT"
 
-./b2 libs/$SELF/test \
-    toolset="$B2_TOOLSET" \
-    cxxstd="$B2_CXXSTD" \
-    $B2_CXXFLAGS \
-    ${B2_DEFINES:+define=$B2_DEFINES} \
-    ${B2_INCLUDE:+include=$B2_INCLUDE} \
-    ${B2_LINKFLAGS:+linkflags=$B2_LINKFLAGS} \
-    ${B2_TESTFLAGS} \
-    ${B2_ADDRESS_MODEL:+address-model=$B2_ADDRESS_MODEL} \
-    ${B2_LINK:+link=$B2_LINK} \
-    ${B2_VISIBILITY:+visibility=$B2_VISIBILITY} \
-    ${B2_STDLIB:+"-stdlib=$B2_STDLIB"} \
-    ${B2_THREADING} \
-    ${B2_VARIANT:+variant=$B2_VARIANT} \
-    ${B2_ASAN:+address-sanitizer=norecover} \
-    ${B2_TSAN:+thread-sanitizer=norecover} \
-    ${B2_UBSAN:+undefined-sanitizer=norecover} \
-    -j${B2_JOBS} \
-    ${B2_FLAGS} \
-    "$@"
+./b2 "libs/$SELF/test" "${B2_ARGS[@]}" "$@"
