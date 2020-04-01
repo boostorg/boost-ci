@@ -46,7 +46,7 @@ fi
 
 # default parallel build jobs: number of CPUs available + 1
 if [ -z "${B2_JOBS}" ]; then
-    cpus=$(grep -c 'processor' /proc/cpuinfo)
+    cpus=$(grep -c 'processor' /proc/cpuinfo || python -c 'import multiprocessing as mp; print(mp.cpu_count())' || echo "2")
     export B2_JOBS=$((cpus + 1))
 fi
 
