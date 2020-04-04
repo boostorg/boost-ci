@@ -20,14 +20,14 @@ set BOOST_ROOT=%cd%
 
 python tools/boostdep/depinst/depinst.py --include benchmark --include example --include examples --include tools %DEPINST% %SELF:\=/% || EXIT /B 1
 
-REM Bootstrap is not expecting cxxflags content so we zero it out for the bootstrap only
-SET OLD_CXXFLAGS=%CXXFLAGS%
-SET CXXFLAGS=
+REM Bootstrap is not expecting B2_CXXFLAGS content so we zero it out for the bootstrap only
+SET OLD_B2_CXXFLAGS=%B2_CXXFLAGS%
+SET B2_CXXFLAGS=
 cmd /c bootstrap
 IF NOT %ERRORLEVEL% == 0 (
     type bootstrap.log
     EXIT /B 1
 )
-SET CXXFLAGS=%OLD_CXXFLAGS%
+SET B2_CXXFLAGS=%OLD_B2_CXXFLAGS%
 
 b2 headers
