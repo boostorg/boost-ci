@@ -192,7 +192,7 @@ stages:
         git clone --branch master https://github.com/boostorg/boost-ci.git boost-ci-cloned
         xcopy /s /e /q /i /y boost-ci-cloned\ci .\ci
         rmdir /s /q boost-ci-cloned
-        cmd /k ci\azure-pipelines\install.bat
+        ci\azure-pipelines\install.bat
       displayName: 'Install'
     - script: ci\build.bat
       displayName: 'Build'
