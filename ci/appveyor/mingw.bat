@@ -19,32 +19,35 @@ CALL :TOUPPER UPPERFLAVOR
 
 FOR %%a IN ("gcc" "icu" "libiconv" "openssl" "xz" "zlib") DO (
     c:\msys64\usr\bin\env MSYSTEM=%UPPERFLAVOR% c:\msys64\usr\bin\bash -l -c ^
-      "pacman --sync --needed --noconfirm %FLAVOR%/mingw-w64-%ARCH%-%%a" || EXIT /B
+      "pacman --sync --needed --noconfirm %FLAVOR%/mingw-w64-%ARCH%-%%a" || EXIT /B 1
 )
 c:\msys64\usr\bin\env MSYSTEM=%UPPERFLAVOR% c:\msys64\usr\bin\bash -l -c ^
-  "pacman --sync --needed --noconfirm python3" || EXIT /B
+  "pacman --sync --needed --noconfirm python3" || EXIT /B 1
 
 ::
 :: Fix older build script definitions
 ::
-
-IF DEFINED CXXFLAGS (SET B2_CXXFLAGS=%CXXSTD%)
-IF DEFINED CXXFLAGS (SET CXXFLAGS=)
-IF DEFINED CXXSTD (SET B2_CXXSTD=%CXXSTD%)
-IF DEFINED CXXSTD (SET CXXSTD=)
-IF DEFINED DEFINES (SET B2_DEFINES=%CXXSTD%)
-IF DEFINED DEFINES (SET DEFINES=)
+if NOT DEFINED B2_CI_VERSION (
+  IF DEFINED CXXSTD (SET B2_CXXSTD=%CXXSTD%)
+  IF DEFINED CXXSTD (SET CXXSTD=)
+  :: Those 2 were broken
+  IF DEFINED CXXFLAGS (EXIT /B 1)
+  IF DEFINED DEFINES (EXIT /B 1)
+  :: This is done by build.bat now
+  IF DEFINED B2_CXXSTD (SET B2_CXXSTD=cxxstd=%B2_CXXSTD%)
+)
 
 ::
 :: Now build things...
 ::
 
-c:\msys64\usr\bin\env MSYSTEM=%UPPERFLAVOR% c:\msys64\usr\bin\bash -l -c ^
-  "cd %CD:\=/% && ./bootstrap.sh --with-toolset=gcc" || EXIT /B
+SET B2_TOOLCXX=toolset=gcc-%FLAVOR%
 
 c:\msys64\usr\bin\env MSYSTEM=%UPPERFLAVOR% c:\msys64\usr\bin\bash -l -c ^
-  "cd %CD:\=/% && ./b2 --abbreviate-paths libs/%SELF:\=/%/test toolset=gcc-%FLAVOR% cxxstd=%B2_CXXSTD% %B2_CXXFLAGS% %B2_DEFINES% %B2_ADDRESS_MODEL% %B2_LINK% %B2_THREADING% %B2_VARIANT% -j3" || EXIT /B
+  "cd %CD:\=/% && ./bootstrap.sh --with-toolset=gcc" || EXIT /B 1
 
+c:\msys64\usr\bin\env MSYSTEM=%UPPERFLAVOR% c:\msys64\usr\bin\bash -l -c ^
+  "cd %CD:\=/% && ./b2 --abbreviate-paths libs/%SELF:\=/%/test %B2_TOOLCXX% %B2_CXXSTD% %B2_CXXFLAGS% %B2_DEFINES% %B2_THREADING% %B2_ADDRESS_MODEL% %B2_LINK% %B2_VARIANT% -j3" || EXIT /B 1
 EXIT /B 0
 
 ::

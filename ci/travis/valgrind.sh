@@ -25,6 +25,6 @@ make -j3 install
 popd
 
 export PATH=/tmp/vg/bin:$PATH
-export B2_INCLUDE=include=/tmp/vg/include
+export B2_INCLUDE=/tmp/vg/include
 
 ci/travis/build.sh

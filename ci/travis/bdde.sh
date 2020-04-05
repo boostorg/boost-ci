@@ -23,7 +23,7 @@ set -ex
 git clone https://github.com/jeking3/bdde.git ~/bdde
 export PATH=~/bdde/bin/linux:$PATH
 
-. $(dirname "${BASH_SOURCE[0]}")/enforce.sh
+. $(dirname "${BASH_SOURCE[0]}")/../enforce.sh
 
 # this prepares the VM for multiarch docker
 docker run --rm --privileged multiarch/qemu-user-static:register --reset
@@ -33,4 +33,4 @@ bdde "echo this just pulls the image"
 # and avoid any permissions issues
 chmod -R 777 /home/travis/build
 BOOST_STEM=boost bdde "./bootstrap.sh"
-BOOST_STEM=boost bdde "b2 libs/$SELF toolset=$B2_TOOLSET cxxstd=$B2_CXXSTD $B2_CXXFLAGS $B2_DEFINES $B2_INCLUDE $B2_LINKFLAGS $B2_TESTFLAGS $B2_ADDRESS_MODEL $B2_LINK $B2_THREADING $B2_VARIANT -j${B2_JOBS} $*"
+BOOST_STEM=boost bdde ./b2 "libs/$SELF/test" "${B2_ARGS[@]}" "$@"

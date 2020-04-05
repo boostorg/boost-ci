@@ -9,4 +9,12 @@
 # cwd should be $BOOST_ROOT/libs/$SELF before running
 #
 
-. $(dirname "${BASH_SOURCE[0]}")/../build.sh
+set -ex
+
+. "$(dirname "${BASH_SOURCE[0]}")"/enforce.sh
+
+export UBSAN_OPTIONS=print_stacktrace=1
+
+cd "$BOOST_ROOT"
+
+./b2 "libs/$SELF/test" "${B2_ARGS[@]}" "$@"

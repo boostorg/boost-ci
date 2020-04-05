@@ -29,11 +29,12 @@ language: cpp
 
 env:
   global:
+    - B2_CI_VERSION=1
   # see: http://www.boost.org/build/doc/html/bbv2/overview/invocation.html#bbv2.overview.invocation.properties
-  # - B2_ADDRESS_MODEL=address-model=64,32
-  # - B2_LINK=link=shared,static
+  # - B2_ADDRESS_MODEL=64,32
+  # - B2_LINK=shared,static
   # - B2_THREADING=threading=multi,single
-    - B2_VARIANT=variant=release
+    - B2_VARIANT=release
 
 install:
   - git clone https://github.com/boostorg/boost-ci.git boost-ci-cloned
@@ -114,6 +115,62 @@ jobs:
       - COPY="all the environment settings from your job"
 
   include:
+    - os: linux
+      env:
+        - COMMENT=codecov.io
+        - B2_CXXSTD=03,11
+        - B2_TOOLSET=gcc-8
+        - B2_DEFINES="BOOST_NO_STRESS_TEST=1"
+      addons: *gcc-8
+      script:
+        - cd $BOOST_ROOT/libs/$SELF
+        - ci/travis/codecov.sh
+
+    - os: linux
+      env:
+        - COMMENT=asan
+        - B2_VARIANT=debug
+        - B2_TOOLSET=gcc-8
+        - B2_CXXSTD=03,11,14
+        - B2_ASAN=1
+        - B2_DEFINES="BOOST_NO_STRESS_TEST=1"
+      addons: *gcc-8
+
+    - os: linux
+      env:
+        - COMMENT=tsan
+        - B2_VARIANT=debug
+        - B2_TOOLSET=gcc-8
+        - B2_CXXSTD=03,11,14
+        - B2_TSAN=1
+        - B2_DEFINES="BOOST_NO_STRESS_TEST=1"
+      addons: *gcc-8
+
+    - os: linux
+      env:
+        - COMMENT=ubsan
+        - B2_VARIANT=debug
+        - B2_TOOLSET=gcc-8
+        - B2_CXXSTD=03,11,14
+        - B2_UBSAN=1
+        - B2_DEFINES="BOOST_NO_STRESS_TEST=1"
+        - B2_LINKFLAGS="-fuse-ld=gold"
+      addons: *gcc-8
+
+    - os: linux
+      env:
+        - COMMENT=valgrind
+        - B2_TOOLSET=clang-6.0
+        - B2_CXXSTD=03,11,14
+        - B2_DEFINES="BOOST_NO_STRESS_TEST=1"
+        - B2_VARIANT=debug
+        - B2_TESTFLAGS=testing.launcher=valgrind
+        - VALGRIND_OPTS=--error-exitcode=1
+      addons: *clang-6
+      script:
+        - cd $BOOST_ROOT/libs/$SELF
+        - ci/travis/valgrind.sh
+
     # libstdc++
     - { os: "linux", dist: "trusty",  # xenial has libstdc++ from gcc 5.4.0 with newer ABI
                      env: [ "B2_TOOLSET=gcc-4.8",     "B2_CXXSTD=03,11"    ], addons: *gcc-48    }
@@ -134,7 +191,7 @@ jobs:
 
     # libc++
     - { os: "linux", env: [ "B2_TOOLSET=clang-6.0",   "B2_CXXSTD=03,11,14",
-                            "B2_CXXFLAGS=-stdlib=libc++"                   ], addons: *clang-6   }
+                            "B2_STDLIB=libc++"                             ], addons: *clang-6   }
     - { os: "osx"  , env: [ "B2_TOOLSET=clang",       "B2_CXXSTD=03,11,17" ]                     }
 
     # to enable Intel ICC define INTEL_ICC_SERIAL_NUMBER and the following (under development):
@@ -148,72 +205,12 @@ jobs:
     #     - COMMENT=big-endian
     #     - B2_CXXSTD=03
     #     - B2_TOOLSET=gcc
-    #     - B2_DEFINES="define=BOOST_NO_STRESS_TEST=1"
+    #     - B2_DEFINES="BOOST_NO_STRESS_TEST=1"
     #     - BDDE_OS=red
     #     - BDDE_ARCH=ppc64
     #   script:
     #     - cd $BOOST_ROOT/libs/$SELF
     #     - ci/travis/bdde.sh
-
-
-    # Disable for boost-ci CI self-check to avoid this
-    # lcov: ERROR: no valid records found in tracefile coverage.info
-    # - os: linux
-    #   env:
-    #     - COMMENT=codecov.io
-    #     - B2_CXXSTD=03,11
-    #     - B2_TOOLSET=gcc-8
-    #     - B2_DEFINES="define=BOOST_NO_STRESS_TEST=1"
-    #   addons: *gcc-8
-    #   script:
-    #     - cd $BOOST_ROOT/libs/$SELF
-    #     - ci/travis/codecov.sh
-
-    - os: linux
-      env:
-        - COMMENT=asan
-        - B2_VARIANT=variant=debug
-        - B2_TOOLSET=gcc-8
-        - B2_CXXSTD=03,11,14
-        - B2_CXXFLAGS="address-sanitizer=norecover"
-        - B2_DEFINES="define=BOOST_NO_STRESS_TEST=1"
-      addons: *gcc-8
-
-    - os: linux
-      env:
-        - COMMENT=tsan
-        - B2_VARIANT=variant=debug
-        - B2_TOOLSET=gcc-8
-        - B2_CXXSTD=03,11,14
-        - B2_CXXFLAGS="thread-sanitizer=norecover"
-        - B2_DEFINES="define=BOOST_NO_STRESS_TEST=1"
-      addons: *gcc-8
-
-    - os: linux
-      env:
-        - COMMENT=ubsan
-        - B2_VARIANT=variant=debug
-        - B2_TOOLSET=gcc-8
-        - B2_CXXSTD=03,11,14
-        - B2_CXXFLAGS="undefined-sanitizer=norecover"
-        - B2_DEFINES="define=BOOST_NO_STRESS_TEST=1"
-        - B2_LINKFLAGS="linkflags=-fuse-ld=gold"
-        - UBSAN_OPTIONS=print_stacktrace=1
-      addons: *gcc-8
-
-    - os: linux
-      env:
-        - COMMENT=valgrind
-        - B2_TOOLSET=clang-6.0
-        - B2_CXXSTD=03,11,14
-        - B2_DEFINES="define=BOOST_NO_STRESS_TEST=1"
-        - B2_VARIANT=variant=debug
-        - B2_TESTFLAGS=testing.launcher=valgrind
-        - VALGRIND_OPTS=--error-exitcode=1
-      addons: *clang-6
-      script:
-        - cd $BOOST_ROOT/libs/$SELF
-        - ci/travis/valgrind.sh
 
     # - os: linux
     #   env:
