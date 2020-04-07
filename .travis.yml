@@ -188,6 +188,7 @@ jobs:
     - { env: [ "B2_TOOLSET=clang-6.0",   "B2_CXXSTD=14,17"    ], addons: *clang-6   }
     - { env: [ "B2_TOOLSET=clang-7",     "B2_CXXSTD=17,2a"    ], addons: *clang-7   }
     - { env: [ "B2_TOOLSET=clang-8",     "B2_CXXSTD=17,2a"    ], addons: *clang-8   }
+    - { env: [ "B2_TOOLSET=clang-9",     "B2_CXXSTD=03,11,14,17,2a" ], addons: *clang-8   }
 
     # libc++
     - { env: [ "B2_TOOLSET=clang-6.0",   "B2_CXXSTD=03,11,14",
