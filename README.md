@@ -69,7 +69,7 @@ To see what kind of coverage these builds provide, see some build results:
     AppVeyor : https://ci.appveyor.com/project/jeking3/uuid-gaamf/builds/19987101
     Travis CI: https://travis-ci.org/boostorg/uuid/builds/449557162
 
-Without any customization the scripts can provide the following services:
+Without any customization the scripts can provide the following services (example, see the actual CI scripts for current configurations):
 
 | CI        | description             | toolset     | cxxflags/std                  | address-model | variant         |
 | :-------- | :---------------------- | :---------- | :---------------------------- | :------------ | :-------------- |
