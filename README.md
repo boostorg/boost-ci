@@ -15,11 +15,11 @@ Boost.CI also allows you to run a big-endian build on Travis CI.
 Here are all the steps you need to take as a Boost repository maintainer to enable all of these CI features in your repository:
 
 1. Checkout `develop` and then make a new branch called `ci`.
-1. Copy the `template/appveyor.yml` file from this repository into the *top level* of your repository. You can also rename name it as `.appveyor.yml`.
-1. Copy the `template/azure-pipelines.yml` file from this repository into the top level or your repository. You can also rename name it as `.azure-pipelines.yml`.
-1. Copy the `template/.travis.yml` file from this repository into the top level or your repository.
+1. Copy the `.appveyor.yml` file from this repository into the *top level* of your repository.
+1. Copy the `.azure-pipelines.yml` file from this repository into the top level or your repository.
+1. Copy the `.travis.yml` file from this repository into the top level or your repository.
 1. Copy the `LICENSE` file from this repository to the top level of your repository.  This adds the `BSL-1.0` designation to your repository on github.
-1. [optional] Copy the `template/README.md` file from this repository to the top level of your repository.  If you already have a README.md then you can take what you need from the template version to improve it, if desired.  Otherwise, you will need to customize README.md for your repository.  One useful step is to fixup the repository name using the command `sed -i 's/template/<myrepositoryname>/g' README.md`, and then update the first line description.
+1. [optional] Copy the `README.template.md` file from this repository to the top level `README.md` of your repository.  If you already have a README.md then you can take what you need from the template version to improve it, if desired.  Otherwise, you will need to customize README.md for your repository.  One useful step is to fixup the repository name using the command `sed -i 's/template/<myrepositoryname>/g' README.md`, and then update the first line description.
 1. In Appveyor, add a project for your fork of the repository.  No customization is needed.
 1. In Travis CI, add a project for your fork of the repository.  Later you will customize it for Coverity Scan, but for now no settings changes are necessary.
 1. Commit these changes and push to your personal fork in the ci branch.
@@ -44,7 +44,7 @@ There may be additional repositories using Boost.CI that are not listed.  Boost.
 
 ## How It Works ##
 
-The files `appveyor.yml`, `azure-pipeline.yml` and `.travis.yml` must exist in your repository and will contain your customizations for build types, languages, and platforms.  The templates provided will get you started with the build jobs listed below.
+The files `.appveyor.yml`, `.azure-pipeline.yml` and `.travis.yml` must exist in your repository and will contain your customizations for build types, languages, and platforms.  The templates provided will get you started with the build jobs listed below.
 
 These scripts will copy resources from the Boost.CI repository when needed in order to provide scripting necessary to run all these jobs successfully.
 
@@ -69,7 +69,7 @@ To see what kind of coverage these builds provide, see some build results:
     AppVeyor : https://ci.appveyor.com/project/jeking3/uuid-gaamf/builds/19987101
     Travis CI: https://travis-ci.org/boostorg/uuid/builds/449557162
 
-Without any customization the scripts can provide the following services:
+Without any customization the scripts can provide the following services (example, see the actual CI scripts for current configurations):
 
 | CI        | description             | toolset     | cxxflags/std                  | address-model | variant         |
 | :-------- | :---------------------- | :---------- | :---------------------------- | :------------ | :-------------- |
