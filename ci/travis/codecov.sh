@@ -63,6 +63,5 @@ lcov --gcov-tool=$GCOV --rc lcov_branch_coverage=${LCOV_BRANCH_COVERAGE:-1} --li
 #
 # upload to codecov.io
 #
-curl -s https://codecov.io/bash > .codecov
-chmod +x .codecov
-./.codecov -f coverage.info -X gcov -x "$GCOV"
+wget https://codecov.io/bash -O .codecov
+bash .codecov -f coverage.info -X gcov -x "$GCOV"
