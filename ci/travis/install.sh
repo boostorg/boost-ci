@@ -25,4 +25,18 @@ fi
 export BOOST_CI_TARGET_BRANCH="$TRAVIS_BRANCH"
 export BOOST_CI_SRC_FOLDER="$TRAVIS_BUILD_DIR"
 
+# Translate the `compiler: xxx` setting from travis into a toolset when B2_TOOLSET isn't set
+export B2_COMPILER=$TRAVIS_COMPILER
+if [ "${B2_TOOLSET:-}" == "" ]; then
+    if [[ "$TRAVIS_COMPILER" =~ clang ]]; then
+        export B2_TOOLSET=clang
+    elif [[ "$TRAVIS_COMPILER" =~ g\+\+ ]]; then
+        export B2_TOOLSET=gcc
+    else
+        echo "Unknown TRAVIS_COMPILER=$TRAVIS_COMPILER. Set B2_TOOLSET instead!" >&2
+        false
+    fi
+    echo "using $B2_TOOLSET : : $TRAVIS_COMPILER ;" > ~/user-config.jam
+fi
+
 . $(dirname "${BASH_SOURCE[0]}")/../common_install.sh

@@ -72,6 +72,9 @@ anchors:
   llvm-toolchain-xenial-9: &llvm-toolchain-xenial-9
     sourceline: 'deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-9 main'
     key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+  llvm-toolchain-xenial-10: &llvm-toolchain-xenial-10
+    sourceline: 'deb https://apt.llvm.org/xenial/ llvm-toolchain-xenial-10 main'
+    key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
   clang-33: &clang-33 { apt: { packages: [ "clang-3.3"]                                          } }
   clang-34: &clang-34 { apt: { packages: [ "clang-3.4"]                                          } }
   clang-35: &clang-35 { apt: { packages: [ "clang-3.5"], sources: [ *ubuntu-toolchain-r-test ]   } }
@@ -101,7 +104,9 @@ anchors:
                                           "libstdc++-8-dev" ], sources: [ "llvm-toolchain-xenial-8",
                                                                           *ubuntu-toolchain-r-test   ] } }
   clang-9:  &clang-9  { apt: { packages: [ "clang-9" ],        sources: [ *llvm-toolchain-xenial-9,
-                                                                        *ubuntu-toolchain-r-test    ] } }
+                                                                          *ubuntu-toolchain-r-test    ] } }
+  clang-10: &clang-10 { apt: { packages: [ "clang-10"],        sources: [ *llvm-toolchain-xenial-10,
+                                                                          *ubuntu-toolchain-r-test    ] } }
 
   gcc-44: &gcc-44 { apt: { packages: [ "g++-4.4" ], sources: [ *ubuntu-toolchain-r-test ] } }
   gcc-46: &gcc-46 { apt: { packages: [ "g++-4.6" ], sources: [ *ubuntu-toolchain-r-test ] } }
@@ -120,47 +125,47 @@ jobs:
       - COPY="all the environment settings from your job"
 
   include:
-    - env:
+    - compiler: g++-8
+      env:
         - COMMENT=codecov.io
         - B2_CXXSTD=03,11
-        - B2_TOOLSET=gcc-8
         - B2_DEFINES="BOOST_NO_STRESS_TEST=1"
       addons: *gcc-8
       script:
         - cd $BOOST_ROOT/libs/$SELF
         - ci/travis/codecov.sh
 
-    - env:
+    - compiler: g++-8
+      env:
         - COMMENT=asan
         - B2_VARIANT=debug
-        - B2_TOOLSET=gcc-8
         - B2_CXXSTD=03,11,14
         - B2_ASAN=1
         - B2_DEFINES="BOOST_NO_STRESS_TEST=1"
       addons: *gcc-8
 
-    - env:
+    - compiler: g++-8
+      env:
         - COMMENT=tsan
         - B2_VARIANT=debug
-        - B2_TOOLSET=gcc-8
         - B2_CXXSTD=03,11,14
         - B2_TSAN=1
         - B2_DEFINES="BOOST_NO_STRESS_TEST=1"
       addons: *gcc-8
 
-    - env:
+    - compiler: g++-8
+      env:
         - COMMENT=ubsan
         - B2_VARIANT=debug
-        - B2_TOOLSET=gcc-8
         - B2_CXXSTD=03,11,14
         - B2_UBSAN=1
         - B2_DEFINES="BOOST_NO_STRESS_TEST=1"
         - B2_LINKFLAGS="-fuse-ld=gold"
       addons: *gcc-8
 
-    - env:
+    - compiler: clang-6.0
+      env:
         - COMMENT=valgrind
-        - B2_TOOLSET=clang-6.0
         - B2_CXXSTD=03,11,14
         - B2_DEFINES="BOOST_NO_STRESS_TEST=1"
         - B2_VARIANT=debug
@@ -173,28 +178,28 @@ jobs:
 
     # libstdc++
     - { dist: "trusty",  # xenial has libstdc++ from gcc 5.4.0 with newer ABI
-        env: [ "B2_TOOLSET=gcc-4.8",     "B2_CXXSTD=03,11"    ], addons: *gcc-48    }
+        compiler: g++-4.8  , env: [ "B2_CXXSTD=03,11"    ], addons: *gcc-48    }
     - { dist: "trusty",  # xenial has libstdc++ from gcc 5.4.0 with newer ABI
-        env: [ "B2_TOOLSET=gcc-4.9",     "B2_CXXSTD=03,11"    ], addons: *gcc-49    }
-    - { env: [ "B2_TOOLSET=gcc-5",       "B2_CXXSTD=03,11"    ], addons: *gcc-5     }
-    - { env: [ "B2_TOOLSET=gcc-6",       "B2_CXXSTD=11,14"    ], addons: *gcc-6     }
-    - { env: [ "B2_TOOLSET=gcc-7",       "B2_CXXSTD=14,17"    ], addons: *gcc-7     }
-    - { env: [ "B2_TOOLSET=gcc-8",       "B2_CXXSTD=17,2a"    ], addons: *gcc-8     }
-    - { env: [ "B2_TOOLSET=gcc-9",       "B2_CXXSTD=17,2a"    ], addons: *gcc-9     }
+        compiler: g++-4.9  , env: [ "B2_CXXSTD=03,11"    ], addons: *gcc-49    }
+    - { compiler: g++-5    , env: [ "B2_CXXSTD=03,11"    ], addons: *gcc-5     }
+    - { compiler: g++-6    , env: [ "B2_CXXSTD=11,14"    ], addons: *gcc-6     }
+    - { compiler: g++-7    , env: [ "B2_CXXSTD=14,17"    ], addons: *gcc-7     }
+    - { compiler: g++-8    , env: [ "B2_CXXSTD=17,2a"    ], addons: *gcc-8     }
+    - { compiler: g++-9    , env: [ "B2_CXXSTD=17,2a"    ], addons: *gcc-9     }
     - { dist: "trusty",  # xenial has libstdc++ from gcc 5.4.0 with newer ABI
-        env: [ "B2_TOOLSET=clang-3.8",   "B2_CXXSTD=03,11"    ], addons: *clang-38  }
-    - { env: [ "B2_TOOLSET=clang-4.0",   "B2_CXXSTD=11,14"    ], addons: *clang-4   }
-    - { env: [ "B2_TOOLSET=clang-5.0",   "B2_CXXSTD=11,14"    ], addons: *clang-5   }
-    - { env: [ "B2_TOOLSET=clang-6.0",   "B2_CXXSTD=14,17"    ], addons: *clang-6   }
-    - { env: [ "B2_TOOLSET=clang-7",     "B2_CXXSTD=17,2a"    ], addons: *clang-7   }
-    - { env: [ "B2_TOOLSET=clang-8",     "B2_CXXSTD=17,2a"    ], addons: *clang-8   }
-    - { env: [ "B2_TOOLSET=clang-9",     "B2_CXXSTD=03,11,14,17,2a" ], addons: *clang-9   }
+        compiler: clang-3.8, env: [ "B2_CXXSTD=03,11"    ], addons: *clang-38  }
+    - { compiler: clang-4.0, env: [ "B2_CXXSTD=11,14"    ], addons: *clang-4   }
+    - { compiler: clang-5.0, env: [ "B2_CXXSTD=11,14"    ], addons: *clang-5   }
+    - { compiler: clang-6.0, env: [ "B2_CXXSTD=14,17"    ], addons: *clang-6   }
+    - { compiler: clang-7  , env: [ "B2_CXXSTD=17,2a"    ], addons: *clang-7   }
+    - { compiler: clang-8  , env: [ "B2_CXXSTD=17,2a"    ], addons: *clang-8   }
+    - { compiler: clang-9  , env: [ "B2_CXXSTD=03,11,14,17,2a" ], addons: *clang-9   }
+    - { compiler: clang-10 , env: [ "B2_CXXSTD=03,11,14,17,2a" ], addons: *clang-10  }
 
     # libc++
-    - { env: [ "B2_TOOLSET=clang-6.0",   "B2_CXXSTD=03,11,14",
-               "B2_STDLIB=libc++"                             ], addons: *clang-6   }
-    - { os: "osx"  ,
-        env: [ "B2_TOOLSET=clang",       "B2_CXXSTD=03,11,17" ]                     }
+    - { compiler: clang-6.0, env: [ "B2_CXXSTD=03,11,14", "B2_STDLIB=libc++" ], addons: *clang-6   }
+    - { os: "osx",
+        compiler: clang    , env: [ "B2_CXXSTD=03,11,17" ]                                         }
 
     # to enable Intel ICC define INTEL_ICC_SERIAL_NUMBER and the following (under development):
     # - { env: [ "B2_TOOLSET=intel-linux", "B2_CXXSTD=11,14,17" ], addons: *gcc-7,
@@ -203,10 +208,10 @@ jobs:
     # uncomment to enable a big-endian build job, just note that it is 5-10 times slower
     # than a regular build and travis has a 50 minute time limit per job
     # - os: linux
+    #   compiler: gcc
     #   env:
     #     - COMMENT=big-endian
     #     - B2_CXXSTD=03
-    #     - B2_TOOLSET=gcc
     #     - B2_DEFINES="BOOST_NO_STRESS_TEST=1"
     #     - BDDE_OS=red
     #     - BDDE_ARCH=ppc64
@@ -225,9 +230,8 @@ jobs:
 
     # Coverity Scan
     - if: (env(COVERITY_SCAN_NOTIFICATION_EMAIL) IS present) AND (branch IN (develop, master)) AND (type IN (cron, push))
-      env:
-        - COMMENT="Coverity Scan"
-        - B2_TOOLSET=clang
+      compiler: clang
+      env: [ COMMENT="Coverity Scan" ]
       script:
         - cd $BOOST_ROOT/libs/$SELF
         - ci/travis/coverity.sh
