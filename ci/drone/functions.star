@@ -11,7 +11,7 @@
 def linux_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ver="", arch="amd64", image="cppalliance/ubuntu16.04:1", buildtype="boost", environment={}, globalenv={}, jobuuid="", privileged=False):
   environment_global = {
       "TRAVIS_BUILD_DIR": "/drone/src",
-
+      "TRAVIS_OS_NAME": "linux",
       "CXX": cxx,
       "CXXFLAGS": cxxflags,
       "PACKAGES": packages,
@@ -60,6 +60,7 @@ def linux_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_
 
 def windows_cxx(name, cxx="g++", cxxflags="", packages="", sources="", llvm_os="", llvm_ver="", arch="amd64", image="cppalliance/dronevs2019", buildtype="boost", environment={}, globalenv={}, privileged=False):
   environment_global = {
+      "TRAVIS_OS_NAME": "windows",
       "CXX": cxx,
       "CXXFLAGS": cxxflags,
       "PACKAGES": packages,
@@ -100,6 +101,7 @@ def windows_cxx(name, cxx="g++", cxxflags="", packages="", sources="", llvm_os="
 def osx_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ver="", arch="amd64", image="", osx_version="", xcode_version="", buildtype="boost", environment={},  globalenv={}, jobuuid="", privileged=False):
   environment_global = {
       # "TRAVIS_BUILD_DIR": "/drone/src",
+      "TRAVIS_OS_NAME": "osx",
       "CXX": cxx,
       "CXXFLAGS": cxxflags,
       "PACKAGES": packages,
