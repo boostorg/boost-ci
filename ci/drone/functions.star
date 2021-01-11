@@ -8,7 +8,7 @@
 # As the yaml syntax for Drone CI is rather limited.
 
 # Generate pipeline for Linux platform compilers.
-def linux_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ver="", arch="amd64", image="cppalliance/ubuntu16.04:1", buildtype="boost", environment={}, globalenv={}, jobuuid="", privileged=False):
+def linux_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ver="", arch="amd64", image="cppalliance/ubuntu16.04:1", buildtype="boost", environment={}, globalenv={}, privileged=False):
   environment_global = {
       "TRAVIS_BUILD_DIR": "/drone/src",
       "TRAVIS_OS_NAME": "linux",
@@ -98,7 +98,7 @@ def windows_cxx(name, cxx="g++", cxxflags="", packages="", sources="", llvm_os="
       }
     ]
   }
-def osx_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ver="", arch="amd64", image="", osx_version="", xcode_version="", buildtype="boost", environment={},  globalenv={}, jobuuid="", privileged=False):
+def osx_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ver="", arch="amd64", image="", osx_version="", xcode_version="", buildtype="boost", environment={},  globalenv={}, privileged=False):
   environment_global = {
       # "TRAVIS_BUILD_DIR": "/drone/src",
       "TRAVIS_OS_NAME": "osx",
@@ -156,5 +156,5 @@ def osx_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ve
     ]
   }
 
-def freebsd_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ver="", arch="amd64", image="", buildtype="boost", environment={}, globalenv={}, jobuuid="", privileged=False):
+def freebsd_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ver="", arch="amd64", image="", buildtype="boost", environment={}, globalenv={}, privileged=False):
     pass
