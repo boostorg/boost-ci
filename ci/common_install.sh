@@ -75,6 +75,6 @@ function show_bootstrap_log
 }
 
 trap show_bootstrap_log ERR
-./bootstrap.sh --with-toolset=${B2_TOOLSET%%-*}
+CXX= ./bootstrap.sh --with-toolset=${B2_TOOLSET%%-*}
 trap - ERR
 ./b2 headers
