@@ -8,7 +8,7 @@
 # As the yaml syntax for Drone CI is rather limited.
 
 # Generate pipeline for Linux platform compilers.
-def linux_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ver="", arch="amd64", image="cppalliance/ubuntu16.04:1", buildtype="boost", environment={}, globalenv={}, privileged=False):
+def linux_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ver="", arch="amd64", image="cppalliance/ubuntu16.04:1", buildtype="boost", buildscript="", environment={}, globalenv={}, privileged=False):
   environment_global = {
       "TRAVIS_BUILD_DIR": "/drone/src",
       "TRAVIS_OS_NAME": "linux",
@@ -17,11 +17,17 @@ def linux_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_
       "PACKAGES": packages,
       "SOURCES": sources,
       "LLVM_OS": llvm_os,
-      "LLVM_VER": llvm_ver
+      "LLVM_VER": llvm_ver,
+      "DRONE_JOB_BUILDTYPE": buildtype
       }
   environment_global.update(globalenv)
   environment_current=environment_global
   environment_current.update(environment)
+
+  if buildscript:
+    buildscript_to_run = buildscript
+  else:
+    buildscript_to_run = buildtype
 
   return {
     "name": "Linux %s" % name,
@@ -52,24 +58,30 @@ def linux_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_
           "./.drone/boost-ci/ci/drone/linux-cxx-install.sh",
 
           "echo '==================================> INSTALL AND COMPILE'",
-          "./.drone/%s.sh" % buildtype,
+          "./.drone/%s.sh" % buildscript_to_run,
         ]
       }
     ]
   }
 
-def windows_cxx(name, cxx="g++", cxxflags="", packages="", sources="", llvm_os="", llvm_ver="", arch="amd64", image="cppalliance/dronevs2019", buildtype="boost", environment={}, globalenv={}, privileged=False):
+def windows_cxx(name, cxx="g++", cxxflags="", packages="", sources="", llvm_os="", llvm_ver="", arch="amd64", image="cppalliance/dronevs2019", buildtype="boost", buildscript="", environment={}, globalenv={}, privileged=False):
   environment_global = {
       "TRAVIS_OS_NAME": "windows",
       "CXX": cxx,
       "CXXFLAGS": cxxflags,
       "PACKAGES": packages,
       "LLVM_OS": llvm_os,
-      "LLVM_VER": llvm_ver
+      "LLVM_VER": llvm_ver,
+      "DRONE_JOB_BUILDTYPE": buildtype
     }
   environment_global.update(globalenv)
   environment_current=environment_global
   environment_current.update(environment)
+
+  if buildscript:
+    buildscript_to_run = buildscript
+  else:
+    buildscript_to_run = buildtype
 
   return {
     "name": "Windows %s" % name,
@@ -93,12 +105,12 @@ def windows_cxx(name, cxx="g++", cxxflags="", packages="", sources="", llvm_os="
           "bash.exe ./.drone/boost-ci/ci/drone/windows-msvc-install.sh",
 
           "echo '==================================> INSTALL AND COMPILE'",
-          "bash.exe ./.drone/%s.sh" % buildtype,
+          "bash.exe ./.drone/%s.sh" % buildscript_to_run,
         ]
       }
     ]
   }
-def osx_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ver="", arch="amd64", image="", osx_version="", xcode_version="", buildtype="boost", environment={},  globalenv={}, privileged=False):
+def osx_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ver="", arch="amd64", image="", osx_version="", xcode_version="", buildtype="boost", buildscript="", environment={},  globalenv={}, privileged=False):
   environment_global = {
       # "TRAVIS_BUILD_DIR": "/drone/src",
       "TRAVIS_OS_NAME": "osx",
@@ -106,11 +118,17 @@ def osx_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ve
       "CXXFLAGS": cxxflags,
       "PACKAGES": packages,
       "LLVM_OS": llvm_os,
-      "LLVM_VER": llvm_ver
+      "LLVM_VER": llvm_ver,
+      "DRONE_JOB_BUILDTYPE": buildtype
       }
   environment_global.update(globalenv)
   environment_current=environment_global
   environment_current.update(environment)
+
+  if buildscript:
+    buildscript_to_run = buildscript
+  else:
+    buildscript_to_run = buildtype
 
   if xcode_version:
     environment_current.update({"DEVELOPER_DIR": "/Applications/Xcode-" + xcode_version +  ".app/Contents/Developer"})
@@ -150,11 +168,11 @@ def osx_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ve
           "./.drone/boost-ci/ci/drone/osx-cxx-install.sh",
 
           "echo '==================================> INSTALL AND COMPILE'",
-          "./.drone/%s.sh" % buildtype,
+          "./.drone/%s.sh" % buildscript_to_run,
         ]
       }
     ]
   }
 
-def freebsd_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ver="", arch="amd64", image="", buildtype="boost", environment={}, globalenv={}, privileged=False):
+def freebsd_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ver="", arch="amd64", image="", buildtype="boost", buildscript="", environment={}, globalenv={}, privileged=False):
     pass
