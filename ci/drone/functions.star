@@ -100,9 +100,11 @@ def windows_cxx(name, cxx="g++", cxxflags="", packages="", sources="", llvm_os="
         "environment": environment_current,
         "commands": [
           "echo '==================================> SETUP'",
-          "BOOST_CI_ORG=boostorg BOOST_CI_BRANCH=master && wget https://github.com/$BOOST_CI_ORG/boost-ci/archive/$BOOST_CI_BRANCH.tar.gz && tar -xvf $BOOST_CI_BRANCH.tar.gz && mv boost-ci-$BOOST_CI_BRANCH .drone/boost-ci",
+          "Invoke-WebRequest https://github.com/boostorg/boost-ci/archive/master.tar.gz -Outfile master.tar.gz",
+          "tar -xvf master.tar.gz",
+          "mv boost-ci-master .drone/boost-ci",
           "echo '==================================> PACKAGES'",
-          "bash.exe ./.drone/boost-ci/ci/drone/windows-msvc-install.sh",
+          "bash.exe ./.drone/boost-ci/ci/drone/windows-cxx-install.sh",
 
           "echo '==================================> INSTALL AND COMPILE'",
           "bash.exe ./.drone/%s.sh" % buildscript_to_run,
