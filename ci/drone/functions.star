@@ -52,7 +52,7 @@ def linux_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_
           # "apt-get -o Acquire::Retries=3 update && DEBIAN_FRONTEND=noninteractive apt-get -y install tzdata && apt-get -o Acquire::Retries=3 install -y sudo software-properties-common wget curl apt-transport-https git make cmake apt-file sudo unzip libssl-dev build-essential autotools-dev autoconf libc++-helpers automake g++",
           # "for i in {1..3}; do apt-add-repository ppa:git-core/ppa && break || sleep 2; done",
           # "apt-get -o Acquire::Retries=3 update && apt-get -o Acquire::Retries=3 -y install git",
-          "BOOST_CI_ORG=boostorg BOOST_CI_BRANCH=master && wget https://github.com/$BOOST_CI_ORG/boost-ci/archive/$BOOST_CI_BRANCH.tar.gz && tar -xvf $BOOST_CI_BRANCH.tar.gz && mv boost-ci-$BOOST_CI_BRANCH .drone/boost-ci",
+          "BOOST_CI_ORG=boostorg BOOST_CI_BRANCH=master && wget https://github.com/$BOOST_CI_ORG/boost-ci/archive/$BOOST_CI_BRANCH.tar.gz && tar -xvf $BOOST_CI_BRANCH.tar.gz && mv boost-ci-$BOOST_CI_BRANCH .drone/boost-ci && rm $BOOST_CI_BRANCH.tar.gz",
           "echo '==================================> PACKAGES'",
           # "./.drone/linux-cxx-install.sh",
           "./.drone/boost-ci/ci/drone/linux-cxx-install.sh",
@@ -103,6 +103,7 @@ def windows_cxx(name, cxx="g++", cxxflags="", packages="", sources="", llvm_os="
           "Invoke-WebRequest https://github.com/boostorg/boost-ci/archive/master.tar.gz -Outfile master.tar.gz",
           "tar -xvf master.tar.gz",
           "mv boost-ci-master .drone/boost-ci",
+          "Remove-Item master.tar.gz",
           "echo '==================================> PACKAGES'",
           "bash.exe ./.drone/boost-ci/ci/drone/windows-cxx-install.sh",
 
@@ -165,7 +166,7 @@ def osx_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ve
           "echo '==================================> SETUP'",
           "uname -a",
           # "apt-get -o Acquire::Retries=3 update && apt-get -o Acquire::Retries=3 -y install git",
-          "BOOST_CI_ORG=boostorg BOOST_CI_BRANCH=master && /usr/local/bin/wget https://github.com/$BOOST_CI_ORG/boost-ci/archive/$BOOST_CI_BRANCH.tar.gz && tar -xvf $BOOST_CI_BRANCH.tar.gz && mv boost-ci-$BOOST_CI_BRANCH .drone/boost-ci",
+          "BOOST_CI_ORG=boostorg BOOST_CI_BRANCH=master && /usr/local/bin/wget https://github.com/$BOOST_CI_ORG/boost-ci/archive/$BOOST_CI_BRANCH.tar.gz && tar -xvf $BOOST_CI_BRANCH.tar.gz && mv boost-ci-$BOOST_CI_BRANCH .drone/boost-ci && rm $BOOST_CI_BRANCH.tar.gz",
           "echo '==================================> PACKAGES'",
           "./.drone/boost-ci/ci/drone/osx-cxx-install.sh",
 
