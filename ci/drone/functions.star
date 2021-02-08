@@ -8,7 +8,7 @@
 # As the yaml syntax for Drone CI is rather limited.
 
 # Generate pipeline for Linux platform compilers.
-def linux_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ver="", arch="amd64", image="cppalliance/ubuntu16.04:1", buildtype="boost", buildscript="", environment={}, globalenv={}, privileged=False):
+def linux_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ver="", arch="amd64", image="cppalliance/ubuntu16.04:1", buildtype="boost", buildscript="", environment={}, globalenv={}, triggers={ "branch": [ "master", "develop", "drone*", "bugfix/*", "feature/*", "fix/*", "pr/*" ] }, privileged=False):
   environment_global = {
       "TRAVIS_BUILD_DIR": "/drone/src",
       "TRAVIS_OS_NAME": "linux",
@@ -33,7 +33,7 @@ def linux_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_
     "name": "Linux %s" % name,
     "kind": "pipeline",
     "type": "docker",
-    "trigger": { "branch": [ "master","develop", "drone*", "bugfix/*", "feature/*", "fix/*", "pr/*" ] },
+    "trigger": triggers,
     "platform": {
       "os": "linux",
       "arch": arch
@@ -64,7 +64,7 @@ def linux_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_
     ]
   }
 
-def windows_cxx(name, cxx="g++", cxxflags="", packages="", sources="", llvm_os="", llvm_ver="", arch="amd64", image="cppalliance/dronevs2019", buildtype="boost", buildscript="", environment={}, globalenv={}, privileged=False):
+def windows_cxx(name, cxx="g++", cxxflags="", packages="", sources="", llvm_os="", llvm_ver="", arch="amd64", image="cppalliance/dronevs2019", buildtype="boost", buildscript="", environment={}, globalenv={}, triggers={ "branch": [ "master", "develop", "drone*", "bugfix/*", "feature/*", "fix/*", "pr/*" ] }, privileged=False):
   environment_global = {
       "TRAVIS_OS_NAME": "windows",
       "CXX": cxx,
@@ -87,7 +87,7 @@ def windows_cxx(name, cxx="g++", cxxflags="", packages="", sources="", llvm_os="
     "name": "Windows %s" % name,
     "kind": "pipeline",
     "type": "docker",
-    "trigger": { "branch": [ "master","develop", "drone*", "bugfix/*", "feature/*", "fix/*", "pr/*" ] },
+    "trigger": triggers,
     "platform": {
       "os": "windows",
       "arch": arch
@@ -113,7 +113,7 @@ def windows_cxx(name, cxx="g++", cxxflags="", packages="", sources="", llvm_os="
       }
     ]
   }
-def osx_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ver="", arch="amd64", image="", osx_version="", xcode_version="", buildtype="boost", buildscript="", environment={},  globalenv={}, privileged=False):
+def osx_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ver="", arch="amd64", image="", osx_version="", xcode_version="", buildtype="boost", buildscript="", environment={},  globalenv={}, triggers={ "branch": [ "master", "develop", "drone*", "bugfix/*", "feature/*", "fix/*", "pr/*" ] }, privileged=False):
   environment_global = {
       # "TRAVIS_BUILD_DIR": "/drone/src",
       "TRAVIS_OS_NAME": "osx",
@@ -147,7 +147,7 @@ def osx_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ve
     "name": "OSX %s" % name,
     "kind": "pipeline",
     "type": "exec",
-    "trigger": { "branch": [ "master","develop", "drone*", "bugfix/*", "feature/*", "fix/*", "pr/*" ] },
+    "trigger": triggers,
     "platform": {
       "os": "darwin",
       "arch": arch
@@ -177,5 +177,5 @@ def osx_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ve
     ]
   }
 
-def freebsd_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ver="", arch="amd64", image="", buildtype="boost", buildscript="", environment={}, globalenv={}, privileged=False):
+def freebsd_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ver="", arch="amd64", image="", buildtype="boost", buildscript="", environment={}, globalenv={}, triggers={ "branch": [ "master", "develop", "drone*", "bugfix/*", "feature/*", "fix/*", "pr/*" ] }, privileged=False):
     pass
