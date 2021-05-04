@@ -105,10 +105,10 @@ def windows_cxx(name, cxx="g++", cxxflags="", packages="", sources="", llvm_os="
           "mv boost-ci-master .drone/boost-ci",
           "Remove-Item master.tar.gz",
           "echo '==================================> PACKAGES'",
-          "bash.exe ./.drone/boost-ci/ci/drone/windows-cxx-install.sh",
+          ".drone/boost-ci/ci/drone/windows-cxx-install.bat",
 
           "echo '==================================> INSTALL AND COMPILE'",
-          "bash.exe ./.drone/%s.sh" % buildscript_to_run,
+          ".drone/%s.bat" % buildscript_to_run,
         ]
       }
     ]
