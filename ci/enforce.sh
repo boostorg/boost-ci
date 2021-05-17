@@ -53,7 +53,6 @@ fi
 # For old versions strip prefix from variables
 if [ -z "$B2_CI_VERSION" ]; then
     # Skipped:
-    # B2_CXXFLAGS: (Ab)used for sanitizers
     # B2_THREADING: can be threading= or threadapi=
     B2_DEFINES="${B2_DEFINES#define=}"
     B2_INCLUDE="${B2_INCLUDE#include=}"
@@ -61,15 +60,18 @@ if [ -z "$B2_CI_VERSION" ]; then
     B2_ADDRESS_MODEL="${B2_ADDRESS_MODEL#address-model=}"
     B2_LINK="${B2_LINK#link=}"
     B2_VARIANT="${B2_VARIANT#variant=}"
-else
-    B2_CXXFLAGS=${B2_CXXFLAGS:+cxxflags=$B2_CXXFLAGS}
+    if [ -n "$B2_CXXFLAGS" ]; then
+        # Sometimes (ab)used for sanitizers, so play safe and add it to B2_FLAGS
+        B2_FLAGS="$B2_FLAGS $B2_CXXFLAGS"
+        unset B2_CXXFLAGS
+    fi
 fi
 
 # Build cmdline arguments for B2 as an array to preserve quotes
 B2_ARGS=(
     "toolset=$B2_TOOLSET"
     "cxxstd=$B2_CXXSTD"
-    $B2_CXXFLAGS
+    ${B2_CXXFLAGS:+cxxflags=$B2_CXXFLAGS}
     ${B2_DEFINES:+define=$B2_DEFINES}
     ${B2_INCLUDE:+include=$B2_INCLUDE}
     ${B2_LINKFLAGS:+linkflags=$B2_LINKFLAGS}
