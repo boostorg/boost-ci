@@ -37,7 +37,12 @@ Here are all the steps you need to take as a Boost repository maintainer to enab
     * `COVERITY_SCAN_TOKEN` should be kept private and set to the scan token you can find in the project settings in Coverity Scan.
 1. Update the README.md to put the correct Coverity Scan badge project number into the badge URLs.
 1. This will kick off a build on the develop branch that will include Coverity Scan results.
-1. To activate Drone, visit https://drone.cpp.al. Authorize Drone: Click the "Authorize cppalliance-drone" button. Sync repositories: Click the "sync" button. A list of repositories will appear. For the relevant repo, click and then choose "Activate Repository". In the settings page, change Configuration from .drone.yml to .drone.star. "Save". More information available at https://github.com/CPPAlliance/drone-ci
+1. To activate Drone, visit https://drone.cpp.al. Authorize Drone: Click the "Authorize cppalliance-drone" button. Sync repositories: Click the "sync" button. A list of repositories will appear. For the relevant repo, click and then choose "Activate Repository". In the settings page, change Configuration from .drone.yml to .drone.star. "Save".
+1. More pointers about Drone:
+    * Ensure that shell scripts are executable: `chmod 755 .drone/drone.sh`
+    * "asan" jobs require elevated privileges. Contact an administrator or open an issue at [drone-ci](https://github.com/CPPAlliance/drone-ci) to set your drone repository to "Trusted".
+    * If not using asan, simply remove the jobs.
+    * Further info available at https://github.com/CPPAlliance/drone-ci
 
 ## Repositories using Boost.CI ###
 
