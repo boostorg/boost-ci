@@ -79,7 +79,7 @@ B2_ARGS=(
     ${B2_ADDRESS_MODEL:+address-model=$B2_ADDRESS_MODEL}
     ${B2_LINK:+link=$B2_LINK}
     ${B2_VISIBILITY:+visibility=$B2_VISIBILITY}
-    ${B2_STDLIB:+"-stdlib=$B2_STDLIB"}
+    ${B2_STDLIB:+"stdlib=$B2_STDLIB"}
     ${B2_THREADING}
     ${B2_VARIANT:+variant=$B2_VARIANT}
     ${B2_ASAN:+address-sanitizer=norecover}
