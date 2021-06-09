@@ -108,7 +108,7 @@ def windows_cxx(name, cxx="g++", cxxflags="", packages="", sources="", llvm_os="
           ".drone/boost-ci/ci/drone/windows-cxx-install.bat",
 
           "echo '==================================> INSTALL AND COMPILE'",
-          ".drone/%s.bat" % buildscript_to_run,
+          "cmd /c .drone\\\%s.bat `& exit" % buildscript_to_run,
         ]
       }
     ]
