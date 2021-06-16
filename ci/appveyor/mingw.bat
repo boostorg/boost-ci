@@ -13,13 +13,53 @@ echo using gcc : %FLAVOR% : %ARCH%-w64-mingw32-g++.exe ; > %USERPROFILE%\user-co
 SET UPPERFLAVOR=%FLAVOR%
 CALL :TOUPPER UPPERFLAVOR
 
+:: Update pacman. Notes about new keys and zstd archive format at https://www.msys2.org/news
+
+if not exist "C:\TEMP" mkdir C:\TEMP
+
+(
+echo echo "Parsing pacman version"
+echo upgradepacman="no"
+echo pacversion=$(pacman -V ^| grep -o -E '[0-9]+\.[0-9]+\.[0-9]' ^| head -n 1 ^)
+echo echo "pacman version is $pacversion"
+echo arrversion=(${pacversion//./ }^)
+echo majorversion=${arrversion[0]}
+echo minorversion=${arrversion[1]}
+echo if [ "$majorversion" -lt "5" ]; then
+echo     upgradepacman="yes"
+echo elif [ "$majorversion" -eq "5" ] ^&^& [ "$minorversion" -lt "2" ]; then
+echo     upgradepacman="yes"
+echo fi
+echo if [ "$upgradepacman" = "yes" ] ; then
+echo     echo "Now upgrading pacman"
+echo     echo "Keys:"
+echo     curl -O http://repo.msys2.org/msys/x86_64/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz
+echo     curl -O http://repo.msys2.org/msys/x86_64/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz.sig
+echo     pacman-key --verify msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz.sig
+echo     pacman --noconfirm -U msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz
+echo     echo "Packages:"
+echo     pacman --noconfirm -U "http://repo.msys2.org/msys/x86_64/libzstd-1.4.4-2-x86_64.pkg.tar.xz"
+echo     pacman --noconfirm -U "http://repo.msys2.org/msys/x86_64/zstd-1.4.4-2-x86_64.pkg.tar.xz"
+echo     pacman --noconfirm -U "http://repo.msys2.org/msys/x86_64/pacman-5.2.1-6-x86_64.pkg.tar.xz"
+echo else
+echo     echo "Not upgrading pacman"
+echo fi
+)>C:\TEMP\updatepacman.sh
+
+c:\msys64\usr\bin\bash -l -c "/c/TEMP/updatepacman.sh" || EXIT /B 1
+
 :: Install packages needed to build boost
 :: Optional: comment out ones this library does not need, 
 :: so people can copy this script to another library.
 
 FOR %%a IN ("gcc" "icu" "libiconv" "openssl" "xz" "zlib") DO (
-    c:\msys64\usr\bin\env MSYSTEM=%UPPERFLAVOR% c:\msys64\usr\bin\bash -l -c ^
-      "pacman --sync --needed --noconfirm %FLAVOR%/mingw-w64-%ARCH%-%%a" || EXIT /B 1
+    :: check if the package has already been installed.
+    c:\msys64\usr\bin\bash -l -c "pacman -Qi mingw-w64-%ARCH%-%%a" >nul 2>&1
+
+    if %errorlevel 1 (
+        c:\msys64\usr\bin\env MSYSTEM=%UPPERFLAVOR% c:\msys64\usr\bin\bash -l -c ^
+        "pacman -Sy --needed --noconfirm %FLAVOR%/mingw-w64-%ARCH%-%%a" || EXIT /B 1
+        )
 )
 c:\msys64\usr\bin\env MSYSTEM=%UPPERFLAVOR% c:\msys64\usr\bin\bash -l -c ^
   "pacman --sync --needed --noconfirm python3" || EXIT /B 1
