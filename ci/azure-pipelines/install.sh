@@ -22,11 +22,13 @@ if [ "$AGENT_OS" == "Darwin" ]; then
     unset -f cd
 fi
 
+LLVM_OS=${LLVM_OS:-xenial}
+
 if [ -n "$PACKAGES" ]; then
 	sudo -E apt-add-repository -y "ppa:ubuntu-toolchain-r/test"
 	if [ -n "${LLVM_REPO}" ]; then
 	  wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-	  sudo -E apt-add-repository "deb http://apt.llvm.org/xenial/ ${LLVM_REPO} main"
+	  sudo -E apt-add-repository "deb http://apt.llvm.org/${LLVM_OS}/ ${LLVM_REPO} main"
 	fi
 	sudo -E apt-get update
 	sudo -E apt-get -yq --no-install-suggests --no-install-recommends install ${PACKAGES}
