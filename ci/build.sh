@@ -11,10 +11,12 @@
 
 set -ex
 
+: ${B2_TARGETS:="libs/$SELF/test"}
+
 . "$(dirname "${BASH_SOURCE[0]}")"/enforce.sh
 
 export UBSAN_OPTIONS=print_stacktrace=1
 
 cd "$BOOST_ROOT"
 
-./b2 "libs/$SELF/test" "${B2_ARGS[@]}" "$@"
+./b2 ${B2_TARGETS} "${B2_ARGS[@]}" "$@"
