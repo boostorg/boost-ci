@@ -17,6 +17,7 @@ IF DEFINED B2_ADDRESS_MODEL (SET B2_ADDRESS_MODEL=address-model=%B2_ADDRESS_MODE
 IF DEFINED B2_LINK (SET B2_LINK=link=%B2_LINK%)
 IF DEFINED B2_VARIANT (SET B2_VARIANT=variant=%B2_VARIANT%)
 
+set SELF_S=%SELF:\=/%
 IF NOT DEFINED B2_TARGETS (SET B2_TARGETS=libs/!SELF_S!/test)
 
 cd %BOOST_ROOT%
@@ -24,7 +25,6 @@ cd %BOOST_ROOT%
 IF DEFINED SCRIPT (
     call libs\%SELF%\%SCRIPT%
 ) ELSE (
-    set SELF_S=%SELF:\=/%
     REM Echo the complete build command to the build log
     ECHO b2 --abbreviate-paths %B2_TARGETS% %B2_TOOLCXX% %B2_CXXSTD% %B2_CXXFLAGS% %B2_DEFINES% %B2_THREADING% %B2_ADDRESS_MODEL% %B2_LINK% %B2_VARIANT% -j3
     REM Now go build...
