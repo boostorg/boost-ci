@@ -71,10 +71,10 @@ fi
 B2_ARGS=(
     "toolset=$B2_TOOLSET"
     "cxxstd=$B2_CXXSTD"
-    ${B2_CXXFLAGS:+cxxflags=$B2_CXXFLAGS}
-    ${B2_DEFINES:+define=$B2_DEFINES}
-    ${B2_INCLUDE:+include=$B2_INCLUDE}
-    ${B2_LINKFLAGS:+linkflags=$B2_LINKFLAGS}
+    ${B2_CXXFLAGS:+"cxxflags=$B2_CXXFLAGS"}
+    ${B2_DEFINES:+"define=$B2_DEFINES"}
+    ${B2_INCLUDE:+"include=$B2_INCLUDE"}
+    ${B2_LINKFLAGS:+"linkflags=$B2_LINKFLAGS"}
     ${B2_TESTFLAGS}
     ${B2_ADDRESS_MODEL:+address-model=$B2_ADDRESS_MODEL}
     ${B2_LINK:+link=$B2_LINK}
