@@ -18,6 +18,7 @@
 # - SELF
 # - BOOST_CI_TARGET_BRANCH
 # - BOOST_CI_SRC_FOLDER
+# - GIT_FETCH_JOBS to fetch in parallel
 # Will set:
 # - BOOST_ROOT
 
@@ -47,15 +48,29 @@ cp -r $BOOST_CI_SRC_FOLDER/* libs/$SELF
 export BOOST_ROOT="$(pwd)"
 export PATH="$(pwd):$PATH"
 
-python tools/boostdep/depinst/depinst.py --include benchmark --include example --include examples --include tools $DEPINST $SELF
+DEPINST_ARGS=()
+if [[ -n "$GIT_FETCH_JOBS" ]]; then
+    DEPINST_ARGS+=("--git_args" "--jobs $GIT_FETCH_JOBS")
+fi
 
-# If clang was installed from LLVM APT it will not have a /usr/bin/clang++
-# so we need to add the correctly versioned llvm bin path to the PATH
-if [[ "$B2_TOOLSET" == clang-* ]]; then
-    ver="${B2_TOOLSET#*-}"
-    export PATH="/usr/lib/llvm-${ver}/bin:$PATH"
-    ls -ls /usr/lib/llvm-${ver}/bin || true
-    hash -r || true
+python tools/boostdep/depinst/depinst.py --include benchmark --include example --include examples --include tools "${DEPINST_ARGS[@]}" $DEPINST $SELF
+
+if [[ "$B2_TOOLSET" == clang* ]]; then
+    # If clang was installed from LLVM APT it will not have a /usr/bin/clang++
+    # so we need to add the correctly versioned llvm bin path to the PATH
+    if [ -f "/etc/debian_version" ]; then
+        if [[ "$B2_TOOLSET" == clang-* ]]; then
+            ver="${B2_TOOLSET#*-}"
+        elif [[ "$B2_COMPILER" == clang-* ]]; then
+            ver="${B2_COMPILER#*-}"
+        else
+            echo "Can't get clang version from B2_TOOLSET or B2_COMPILER" >&2
+            false
+        fi
+        export PATH="/usr/lib/llvm-${ver}/bin:$PATH"
+        ls -ls /usr/lib/llvm-${ver}/bin || true
+        hash -r || true
+    fi
     command -v clang || true
     command -v clang++ || true
 
@@ -74,7 +89,9 @@ function show_bootstrap_log
     cat bootstrap.log
 }
 
-trap show_bootstrap_log ERR
-./bootstrap.sh --with-toolset=${B2_TOOLSET%%-*}
-trap - ERR
-./b2 headers
+if [[ "$B2_DONT_BOOTSTRAP" != "1" ]]; then
+    trap show_bootstrap_log ERR
+    ./bootstrap.sh --with-toolset=${B2_TOOLSET%%-*}
+    trap - ERR
+    ./b2 headers
+fi

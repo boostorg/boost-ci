@@ -5,8 +5,7 @@
 # (See accompanying file LICENSE_1_0.txt or copy at
 #      http://www.boost.org/LICENSE_1_0.txt)
 #
-# Bash script to run in travis to perform a bjam build
-# cwd should be $BOOST_ROOT/libs/$SELF before running
+# Bash script to perform a bjam build
 #
 
 set -ex
