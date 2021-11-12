@@ -172,9 +172,11 @@ jobs:
       - name: Run CMake subdir tests
         if: matrix.cmake_tests
         run: |
-            cd "$BOOST_ROOT/libs/$SELF/test/cmake_subdir_test"
+            cmake_test_folder="$BOOST_ROOT/libs/$SELF/test/cmake_test" # New unified folder
+            [ -d "$cmake_test_folder" ] || cmake_test_folder="$BOOST_ROOT/libs/$SELF/test/cmake_subdir_test"
+            cd "$cmake_test_folder"
             mkdir __build_cmake_subdir_test__ && cd __build_cmake_subdir_test__
-            cmake ..
+            cmake -DBOOST_CI_INSTALL_TEST=OFF ..
             cmake --build .
             cmake --build . --target check
 
@@ -185,9 +187,11 @@ jobs:
             mkdir __build_cmake_install_test__ && cd __build_cmake_install_test__
             cmake -DBOOST_INCLUDE_LIBRARIES=$SELF -DCMAKE_INSTALL_PREFIX=~/.local -DBoost_VERBOSE=ON -DBoost_DEBUG=ON ..
             cmake --build . --target install
-            cd ../libs/$SELF/test/cmake_install_test
+            cmake_test_folder="$BOOST_ROOT/libs/$SELF/test/cmake_test" # New unified folder
+            [ -d "$cmake_test_folder" ] || cmake_test_folder="$BOOST_ROOT/libs/$SELF/test/cmake_install_test"
+            cd "$cmake_test_folder"
             mkdir __build_cmake_install_test__ && cd __build_cmake_install_test__
-            cmake -DCMAKE_INSTALL_PREFIX=~/.local ..
+            cmake -DBOOST_CI_INSTALL_TEST=ON -DCMAKE_INSTALL_PREFIX=~/.local ..
             cmake --build .
             cmake --build . --target check
   windows:
