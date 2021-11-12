@@ -7,6 +7,9 @@
 
 // Just something so we can test dependencies on other Boost libs
 #include <boost/config.hpp>
+#ifndef BOOST_NO_CXX11_SMART_PTR
+#include <memory>
+#endif
 
 namespace boost
 {
@@ -15,7 +18,13 @@ namespace boost
     // Some function to test
     BOOST_NOINLINE int get_answer()
     {
+#ifdef BOOST_NO_CXX11_SMART_PTR
       return 42;
+#else
+      // Just use some stdlib feature combined with a Boost.Config feature as demonstration
+      auto ptr = std::unique_ptr<int>(new int(42));
+      return *ptr;
+#endif
     }
   }
 }
