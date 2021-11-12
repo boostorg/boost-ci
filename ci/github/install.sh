@@ -35,7 +35,11 @@ if [ -n "$B2_COMPILER" ]; then
       echo "Unknown compiler: '$B2_COMPILER'. Need either clang(-version) or gcc(-version)" >&2
       false
     fi
-    echo "using $B2_TOOLSET : : $CXX ;" > ~/user-config.jam
+    echo -n "using $B2_TOOLSET : : $CXX" > ~/user-config.jam
+    if [ -n "$GCC_TOOLCHAIN_ROOT" ]; then
+        echo -n " : <compileflags>\"--gcc-toolchain=$GCC_TOOLCHAIN_ROOT\" <linkflags>\"--gcc-toolchain=$GCC_TOOLCHAIN_ROOT\"" >> ~/user-config.jam
+    fi
+    echo " ;" >> ~/user-config.jam
 
     if [[ "$B2_COMPILER" == clang-* ]]; then
       llvmPath="/usr/lib/llvm-${B2_COMPILER#*-}/bin"
