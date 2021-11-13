@@ -4,11 +4,17 @@
 
 This repository contains scripts that enable continuous integration with [Appveyor](https://www.appveyor.com/),
 [Azure Pipelines](https://github.com/marketplace/azure-pipelines), [codecov.io](https://codecov.io/),
-[Coverity Scan](https://scan.coverity.com/), [GitHub Actions](https://github.com/features/actions),  [Drone](https://drone.io/), and [Travis CI](https://travis-ci.org/).
+[Coverity Scan](https://scan.coverity.com/), [GitHub Actions](https://github.com/features/actions), [Drone](https://drone.io/), and [Travis CI](https://travis-ci.org/).
 These scripts are intended to be downloaded and used during boost repository builds to improve project quality.
 In most cases the scripts are self-configuring.  Some integrations require additional setup actions to complete.
 
 Boost.CI also allows you to run a big-endian build on Travis CI.
+
+### Build Status
+
+GithubActions | Azure Pipelines | codecov.io |
+------------- | --------------- | ---------- |
+[![Build status](https://github.com/boostorg/boost-ci/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/boostorg/boost-ci/actions/workflows/ci.yml) | [![Build Status](https://dev.azure.com/boostorg/boost-ci/_apis/build/status/boostorg.boost-ci?branchName=master)](https://dev.azure.com/boostorg/boost-ci/_build/latest?definitionId=8&branchName=master) |  [![codecov](https://codecov.io/gh/boostorg/boost-ci/branch/master/graph/badge.svg)](https://codecov.io/gh/boostorg/boost-ci/branch/master) | 
 
 ## Summary (TL;DR) ##
 
