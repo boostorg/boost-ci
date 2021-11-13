@@ -20,7 +20,7 @@
 
 set -ex
 
-git clone https://github.com/jeking3/bdde.git ~/bdde
+git clone --depth 1 https://github.com/jeking3/bdde.git ~/bdde
 export PATH=~/bdde/bin/linux:$PATH
 
 . $(dirname "${BASH_SOURCE[0]}")/../enforce.sh
