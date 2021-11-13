@@ -13,7 +13,9 @@
 
 set -ex
 
-export SELF="${GITHUB_REPOSITORY#*/}"
+if [ -z "$SELF" ]; then
+    export SELF="${GITHUB_REPOSITORY#*/}"
+fi
 BOOST_CI_TARGET_BRANCH="${GITHUB_BASE_REF:-$GITHUB_REF}"
 export BOOST_CI_TARGET_BRANCH="${BOOST_CI_TARGET_BRANCH##*/}" # Extract branch name
 export BOOST_CI_SRC_FOLDER="$GITHUB_WORKSPACE"

@@ -43,7 +43,9 @@ fi
 # but into one named something like /home/vsts/work/1/s
 # SELF needs to be derived from the name of the repository
 # that this build is configured for.
-export SELF=`basename $BUILD_REPOSITORY_NAME`
+if [ -z "$SELF" ]; then
+    export SELF=`basename $BUILD_REPOSITORY_NAME`
+fi
 
 # CI builds set BUILD_SOURCEBRANCHNAME
 # Pull request builds set SYSTEM_PULLREQUEST_TARGETBRANCH.

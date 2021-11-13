@@ -26,7 +26,9 @@ common_install () {
       unset -f cd
   fi
 
-  export SELF=`basename $REPO_NAME`
+  if [ -z "$SELF" ]; then
+    export SELF=`basename $REPO_NAME`
+  fi
   export BOOST_CI_TARGET_BRANCH="$TRAVIS_BRANCH"
   export BOOST_CI_SRC_FOLDER=$(pwd)
 
