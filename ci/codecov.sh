@@ -42,7 +42,7 @@ elif [[ "$1" == "upload" ]]; then
     # install the latest lcov we know works
     rm -rf /tmp/lcov
     cd /tmp
-    git clone -b v1.14 https://github.com/linux-test-project/lcov.git
+    git clone --depth 1 -b v1.14 https://github.com/linux-test-project/lcov.git
     export PATH=/tmp/lcov/bin:$PATH
     command -v lcov
     lcov --version

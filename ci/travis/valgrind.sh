@@ -15,7 +15,7 @@ set -ex
 # using valgrind 3.14 but we have to build it
 
 pushd /tmp
-git clone -b VALGRIND_3_14_0 git://sourceware.org/git/valgrind.git
+git clone --depth 1 -b VALGRIND_3_14_0 git://sourceware.org/git/valgrind.git
 cd valgrind
 
 ./autogen.sh
