@@ -1,7 +1,9 @@
 @ECHO ON
 
-echo GITHUB_REPOSITORY: %GITHUB_REPOSITORY%
-for /f %%i in ("%GITHUB_REPOSITORY%") do set SELF=%%~nxi
+if not defined SELF(
+    echo GITHUB_REPOSITORY: %GITHUB_REPOSITORY%
+    for /f %%i in ("%GITHUB_REPOSITORY%") do set SELF=%%~nxi
+)
 echo SELF: %SELF%
 
 echo GITHUB_BASE_REF: %GITHUB_BASE_REF%
