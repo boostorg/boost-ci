@@ -109,8 +109,8 @@ jobs:
       - name: Fetch Boost.CI
         uses: actions/checkout@v2
         with:
-          repository: Flamefire/boost-ci
-          ref: feature/simplify_gha
+          repository: boostorg/boost-ci
+          ref: master
           path: boost-ci-cloned
       - name: Get CI scripts folder
         run: cp -r boost-ci-cloned/ci . && rm -rf boost-ci-cloned
@@ -227,8 +227,8 @@ jobs:
       - name: Fetch Boost.CI
         uses: actions/checkout@v2
         with:
-          repository: Flamefire/boost-ci
-          ref: feature/simplify_gha
+          repository: boostorg/boost-ci
+          ref: master
           path: boost-ci-cloned
       - name: Get CI scripts folder
         run: |
