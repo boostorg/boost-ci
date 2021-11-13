@@ -59,17 +59,19 @@ if [[ "$B2_TOOLSET" == clang* ]]; then
     # If clang was installed from LLVM APT it will not have a /usr/bin/clang++
     # so we need to add the correctly versioned llvm bin path to the PATH
     if [ -f "/etc/debian_version" ]; then
+        ver=""
         if [[ "$B2_TOOLSET" == clang-* ]]; then
             ver="${B2_TOOLSET#*-}"
         elif [[ "$B2_COMPILER" == clang-* ]]; then
             ver="${B2_COMPILER#*-}"
         else
-            echo "Can't get clang version from B2_TOOLSET or B2_COMPILER" >&2
-            false
+            echo "Can't get clang version from B2_TOOLSET or B2_COMPILER. Skipping PATH setting." >&2
         fi
-        export PATH="/usr/lib/llvm-${ver}/bin:$PATH"
-        ls -ls /usr/lib/llvm-${ver}/bin || true
-        hash -r || true
+        if [[ -n "$ver" ]]; then
+            export PATH="/usr/lib/llvm-${ver}/bin:$PATH"
+            ls -ls /usr/lib/llvm-${ver}/bin || true
+            hash -r || true
+        fi
     fi
     command -v clang || true
     command -v clang++ || true
