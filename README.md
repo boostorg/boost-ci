@@ -12,8 +12,8 @@ Boost.CI also allows you to run a big-endian build on Travis CI.
 
 ### Build Status
 
-GithubActions | Azure Pipelines | codecov.io |
-------------- | --------------- | ---------- |
+GH Actions | Azure Pipelines | codecov.io |
+---------- | --------------- | ---------- |
 [![Build status](https://github.com/boostorg/boost-ci/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/boostorg/boost-ci/actions/workflows/ci.yml) | [![Build Status](https://dev.azure.com/boostorg/boost-ci/_apis/build/status/boostorg.boost-ci?branchName=master)](https://dev.azure.com/boostorg/boost-ci/_build/latest?definitionId=8&branchName=master) |  [![codecov](https://codecov.io/gh/boostorg/boost-ci/branch/master/graph/badge.svg)](https://codecov.io/gh/boostorg/boost-ci/branch/master) | 
 
 ## Summary (TL;DR) ##
