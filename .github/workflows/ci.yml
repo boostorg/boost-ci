@@ -162,13 +162,13 @@ jobs:
           B2_DONT_BOOTSTRAP: ${{matrix.cmake_tests}}
         run: source ci/github/install.sh
 
-      - name: Run tests
-        if: '!matrix.cmake_tests && !matrix.coverage'
-        run: ci/build.sh
-
-      - name: Run tests with coverage collection
+      - name: Setup coverage collection
         if: matrix.coverage
-        run: ci/codecov.sh "collect"
+        run: ci/github/codecov.sh "setup"
+
+      - name: Run tests
+        if: '!matrix.cmake_tests'
+        run: ci/build.sh
 
       - name: Upload coverage
         if: matrix.coverage

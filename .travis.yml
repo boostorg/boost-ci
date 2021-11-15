@@ -131,9 +131,7 @@ jobs:
         - B2_CXXSTD=03,11
         - B2_DEFINES="BOOST_NO_STRESS_TEST=1"
       addons: *gcc-8
-      script:
-        - cd $BOOST_ROOT/libs/$SELF
-        - ci/travis/codecov.sh
+      script: $BOOST_ROOT/libs/$SELF/ci/travis/codecov.sh
 
     - compiler: g++-8
       env:
