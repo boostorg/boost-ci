@@ -14,17 +14,16 @@
 # - BOOST_CI_SRC_FOLDER
 # - BOOST_ROOT
 # - SELF
-# Call with either "collect" or "upload" as parameter
+# Call with either "setup" or "upload" as parameter
 
 set -ex
 
 . $(dirname "${BASH_SOURCE[0]}")/enforce.sh
 
-if [[ "$1" == "collect" ]]; then
+if [[ "$1" == "setup" ]]; then
     export B2_VARIANT=debug
     export B2_CXXFLAGS="${B2_CXXFLAGS:+$B2_CXXFLAGS }-fkeep-static-functions --coverage"
     export B2_LINKFLAGS="${B2_LINKFLAGS:+$B2_LINKFLAGS }--coverage"
-    $(dirname "${BASH_SOURCE[0]}")/build.sh
 
 elif [[ "$1" == "upload" ]]; then
     if [ -z "$GCOV" ]; then
@@ -72,4 +71,7 @@ elif [[ "$1" == "upload" ]]; then
     curl -Os https://uploader.codecov.io/latest/linux/codecov
     chmod +x codecov
     ./codecov -f coverage.info
+else
+    echo "Invalid parameter for codecov.sh: '$1'." >&2
+    false
 fi
