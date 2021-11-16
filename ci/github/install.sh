@@ -13,14 +13,10 @@
 
 set -ex
 
-if [ -z "$SELF" ]; then
-    export SELF="${GITHUB_REPOSITORY#*/}"
-fi
 BOOST_CI_TARGET_BRANCH="${GITHUB_BASE_REF:-$GITHUB_REF}"
 export BOOST_CI_TARGET_BRANCH="${BOOST_CI_TARGET_BRANCH##*/}" # Extract branch name
 export BOOST_CI_SRC_FOLDER="$GITHUB_WORKSPACE"
 
-echo "SELF=$SELF" >> $GITHUB_ENV
 echo "BOOST_CI_TARGET_BRANCH=$BOOST_CI_TARGET_BRANCH" >> $GITHUB_ENV
 echo "BOOST_CI_SRC_FOLDER=$BOOST_CI_SRC_FOLDER" >> $GITHUB_ENV
 
@@ -64,4 +60,5 @@ if [[ "$B2_SANITIZE" == "yes" ]]; then
 fi
 
 . $(dirname "${BASH_SOURCE[0]}")/../common_install.sh
+echo "SELF=$SELF" >> $GITHUB_ENV
 echo "BOOST_ROOT=$BOOST_ROOT" >> $GITHUB_ENV

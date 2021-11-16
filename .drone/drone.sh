@@ -18,12 +18,8 @@ export TRAVIS_BRANCH=$DRONE_BRANCH
 export TRAVIS_EVENT_TYPE=$DRONE_BUILD_EVENT
 
 common_install () {
-  if [ -z "$SELF" ]; then
-    export SELF=`basename $REPO_NAME`
-  fi
-
   git clone https://github.com/boostorg/boost-ci.git boost-ci-cloned --depth 1
-  [ "$SELF" == "boost-ci" ] || cp -prf boost-ci-cloned/ci .
+  [ "$(basename $REPO_NAME)" == "boost-ci" ] || cp -prf boost-ci-cloned/ci .
   rm -rf boost-ci-cloned
 
   if [ "$TRAVIS_OS_NAME" == "osx" ]; then

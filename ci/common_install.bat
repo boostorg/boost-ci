@@ -1,10 +1,15 @@
 REM Generic install script for Windows
 REM The following CI specific environment variables need to be set:
-REM - SELF
 REM - BOOST_CI_TARGET_BRANCH
 REM - BOOST_CI_SRC_FOLDER
 
 @ECHO ON
+
+if not DEFINED SELF (
+    for /F "delims=" %%i in ('python %~dp0\get_libname.py') do set SELF=%%i
+)
+echo SELF=%SELF%
+if "%SELF%" == "" EXIT /B 1
 
 cd .. || EXIT /B 1
 REM BOOST_BRANCH is the superproject branch we check out and build against

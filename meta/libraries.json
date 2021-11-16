@@ -1,0 +1,16 @@
+{
+    "key": "boost-ci",
+    "name": "CI",
+    "authors": [
+        "James E. King III",
+        "Rene Rivera",
+        "Sam Darwin",
+        "Mateusz Loskot",
+        "Alexander Grund"
+    ],
+    "description": "CI templates for Boost libs",
+    "category": [
+        "CI"
+    ],
+    "cxxstd": "03"
+}

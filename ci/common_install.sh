@@ -15,7 +15,6 @@
 # i.e. - DEPINST="--include dirname1 --include dirname2"
 #
 # CI specific environment variables need to be set:
-# - SELF
 # - BOOST_CI_TARGET_BRANCH
 # - BOOST_CI_SRC_FOLDER
 # - GIT_FETCH_JOBS to fetch in parallel
@@ -26,8 +25,8 @@ set -ex
 
 . $(dirname "${BASH_SOURCE[0]}")/enforce.sh
 
-if [ "$SELF" == "interval" ]; then
-    export SELF=numeric/interval
+if [ -z "$SELF" ]; then
+    export SELF=$(python $(dirname "${BASH_SOURCE[0]}")/get_libname.py)
 fi
 
 # Handle also /refs/head/master
