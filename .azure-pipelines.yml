@@ -210,7 +210,8 @@ stages:
               set -e
 
               git clone --depth 1 --branch master https://github.com/boostorg/boost-ci.git boost-ci-cloned
-              cp -prf boost-ci-cloned/ci .
+              # Copy ci folder if not testing Boost.CI
+              [[ $(basename "$BUILD_REPOSITORY_NAME") = "boost-ci" ]] || cp -prf boost-ci-cloned/ci .
               rm -rf boost-ci-cloned
               source ci/azure-pipelines/install.sh
             displayName: 'Install'
@@ -263,7 +264,8 @@ stages:
         steps:
           - script: |
               git clone --depth 1 --branch master https://github.com/boostorg/boost-ci.git boost-ci-cloned
-              xcopy /s /e /q /i /y boost-ci-cloned\ci .\ci
+              REM Copy ci folder if not testing Boost.CI
+              if "%BUILD_REPOSITORY_NAME%" == "%BUILD_REPOSITORY_NAME:boost-ci=%" xcopy /s /e /q /i /y boost-ci-cloned\ci .\ci
               rmdir /s /q boost-ci-cloned
               ci\azure-pipelines\install.bat
             displayName: 'Install'
@@ -317,7 +319,8 @@ stages:
               set -e
 
               git clone --depth 1 --branch master https://github.com/boostorg/boost-ci.git boost-ci-cloned
-              cp -prf boost-ci-cloned/ci .
+              # Copy ci folder if not testing Boost.CI
+              [[ $(basename "$BUILD_REPOSITORY_NAME") = "boost-ci" ]] || cp -prf boost-ci-cloned/ci .
               rm -rf boost-ci-cloned
               source ci/azure-pipelines/install.sh
             displayName: Install
