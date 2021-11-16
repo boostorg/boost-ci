@@ -114,7 +114,10 @@ jobs:
           ref: master
           path: boost-ci-cloned
       - name: Get CI scripts folder
-        run: cp -r boost-ci-cloned/ci . && rm -rf boost-ci-cloned
+        run: |
+            # Copy ci folder if not testing Boost.CI
+            [[ "$GITHUB_REPOSITORY" =~ "boost-ci" ]] || cp -r boost-ci-cloned/ci .
+            rm -rf boost-ci-cloned
 
       - name: Install packages
         if: startsWith(matrix.os, 'ubuntu')
@@ -233,7 +236,8 @@ jobs:
           path: boost-ci-cloned
       - name: Get CI scripts folder
         run: |
-            xcopy /s /e /q /i /y boost-ci-cloned\ci .\ci
+            REM Copy ci folder if not testing Boost.CI
+            if "%GITHUB_REPOSITORY%" == "%GITHUB_REPOSITORY:boost-ci=%" xcopy /s /e /q /i /y boost-ci-cloned\ci .\ci
             rmdir /s /q boost-ci-cloned
 
       - name: Setup Boost
