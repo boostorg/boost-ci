@@ -7,6 +7,5 @@
 #
 # Bash script to run in Linux images of Azure Pipelines to
 # perform a bjam build.
-# The cwd should be $BOOST_ROOT/libs/$SELF before running.
 #
 . $(dirname "${BASH_SOURCE[0]}")/../build.sh

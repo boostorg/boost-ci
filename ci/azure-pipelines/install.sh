@@ -39,14 +39,6 @@ if [ -n "${XCODE_APP}" ]; then
 	which clang++
 fi
 
-# AzP does not clone into folder named after repository,
-# but into one named something like /home/vsts/work/1/s
-# SELF needs to be derived from the name of the repository
-# that this build is configured for.
-if [ -z "$SELF" ]; then
-    export SELF=`basename $BUILD_REPOSITORY_NAME`
-fi
-
 # CI builds set BUILD_SOURCEBRANCHNAME
 # Pull request builds set SYSTEM_PULLREQUEST_TARGETBRANCH.
 export BOOST_CI_TARGET_BRANCH="${SYSTEM_PULLREQUEST_TARGETBRANCH:-$BUILD_SOURCEBRANCHNAME}"

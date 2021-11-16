@@ -19,9 +19,6 @@ if [ "$TRAVIS_OS_NAME" == "osx" ]; then
     unset -f cd
 fi
 
-if [ -z "$SELF" ]; then
-    export SELF=`basename $TRAVIS_BUILD_DIR`
-fi
 export BOOST_CI_TARGET_BRANCH="$TRAVIS_BRANCH"
 export BOOST_CI_SRC_FOLDER="$TRAVIS_BUILD_DIR"
 
