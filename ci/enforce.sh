@@ -69,7 +69,7 @@ fi
 
 # Build cmdline arguments for B2 as an array to preserve quotes
 B2_ARGS=(
-    "toolset=$B2_TOOLSET"
+    ${B2_TOOLSET:+"toolset=$B2_TOOLSET"}
     "cxxstd=$B2_CXXSTD"
     ${B2_CXXFLAGS:+"cxxflags=$B2_CXXFLAGS"}
     ${B2_DEFINES:+"define=$B2_DEFINES"}
