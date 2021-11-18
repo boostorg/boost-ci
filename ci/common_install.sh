@@ -104,6 +104,11 @@ if [[ "$B2_TOOLSET" == clang* ]]; then
     fi
 fi
 
+# Setup ccache
+if [ "$B2_USE_CCACHE" == "1" ]; then
+    "$CI_DIR"/setup_ccache.sh
+fi
+
 # Set up user-config to actually use B2_COMPILER if set
 if [ -n "$B2_COMPILER" ]; then
     # Get C++ compiler
@@ -120,6 +125,9 @@ if [ -n "$B2_COMPILER" ]; then
     fi
     echo "Compiler location: $(command -v $CXX)"
     echo "Compiler version: $($CXX --version)"
+    if [ "$B2_USE_CCACHE" == "1" ]; then
+        CXX="ccache $CXX"
+    fi
     export CXX
 
     echo -n "using $B2_TOOLSET : : $CXX" > ~/user-config.jam
