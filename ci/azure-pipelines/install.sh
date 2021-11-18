@@ -2,6 +2,7 @@
 #
 # Copyright 2017 - 2019 James E. King III
 # Copyright 2019 Mateusz Loskot <mateusz at loskot dot net>
+# Copyright 2021 Alexander Grund
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at
 #      http://www.boost.org/LICENSE_1_0.txt)
@@ -18,27 +19,15 @@
 
 set -ex
 
-CI_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." &> /dev/null && pwd)"
+function get_compiler_package {
+    local result="$1"
+    result="${result/gcc-/g++-}"
+    result="${result/clang++-/clang-}"
+    echo "$result"
+}
 
 if [ "$AGENT_OS" == "Darwin" ]; then
     unset -f cd
-fi
-
-LLVM_OS=${LLVM_OS:-xenial}
-
-if [ -n "$PACKAGES" ]; then
-	sudo -E apt-add-repository -y "ppa:ubuntu-toolchain-r/test"
-	if [ -n "${LLVM_REPO}" ]; then
-	  wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-	  sudo -E apt-add-repository "deb http://apt.llvm.org/${LLVM_OS}/ ${LLVM_REPO} main"
-	fi
-	sudo -E apt-get update
-	sudo -E apt-get -yq --no-install-suggests --no-install-recommends install ${PACKAGES}
-fi
-
-if [ -n "${XCODE_APP}" ]; then
-    sudo xcode-select -switch ${XCODE_APP}
-	which clang++
 fi
 
 # CI builds set BUILD_SOURCEBRANCHNAME
@@ -50,27 +39,28 @@ if [ -z "$B2_COMPILER" ]; then
     export B2_COMPILER="$CXX"
 fi
 
-if [ -z "${B2_TOOLSET}" ]; then
-    if [[ "$B2_COMPILER" =~ clang ]]; then
-      B2_TOOLSET=clang
-    elif [[ "$B2_COMPILER" =~ gcc|g\+\+ ]]; then
-      B2_TOOLSET=gcc
-    else
-      echo "Unknown compiler: '$B2_COMPILER'. Need either clang or gcc/g++" >&2
-      false
+if [ "$AGENT_OS" != "Darwin" ]; then
+    # If no package set install at least the compiler
+    if [[ -z "$PACKAGES" ]]; then
+        PACKAGES="$(get_compiler_package "$B2_COMPILER")"
     fi
-    set +x
-    echo "##vso[task.setvariable variable=B2_TOOLSET]$B2_TOOLSET"
-    set -x
+
+    LLVM_OS=${LLVM_OS:-xenial}
+    if [ -n "$PACKAGES" ]; then
+        sudo -E apt-add-repository -y "ppa:ubuntu-toolchain-r/test"
+        if [ -n "${LLVM_REPO}" ]; then
+            wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+            sudo -E apt-add-repository "deb http://apt.llvm.org/${LLVM_OS}/ ${LLVM_REPO} main"
+        fi
+        sudo apt-get ${NET_RETRY_COUNT:+ -o Acquire::Retries=$NET_RETRY_COUNT} update
+        sudo apt-get ${NET_RETRY_COUNT:+ -o Acquire::Retries=$NET_RETRY_COUNT} install -y ${PACKAGES}
+    fi
+elif [ -n "${XCODE_APP}" ]; then
+    sudo xcode-select -switch ${XCODE_APP}
+    which clang++
 fi
 
-. $CI_DIR/common_install.sh
-
-if ! command -v ${CXX}; then
-    echo "Error: Compiler $CXX was not installed properly"
-    exit 1
-fi
-echo "using ${B2_TOOLSET} : : $CXX : ${B2_CXXFLAGS} ;" > ${HOME}/user-config.jam
+. $(dirname "${BASH_SOURCE[0]}")/../common_install.sh
 
 # AzP requires to run special task in order to export job-scoped variable from a script.
 #
@@ -80,4 +70,6 @@ echo "using ${B2_TOOLSET} : : $CXX : ${B2_CXXFLAGS} ;" > ${HOME}/user-config.jam
 set +x
 echo "##vso[task.setvariable variable=SELF]$SELF"
 echo "##vso[task.setvariable variable=BOOST_ROOT]$BOOST_ROOT"
+echo "##vso[task.setvariable variable=B2_TOOLSET]$B2_TOOLSET"
+echo "##vso[task.setvariable variable=B2_COMPILER]$B2_COMPILER"
 set -x

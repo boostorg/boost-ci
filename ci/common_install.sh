@@ -23,10 +23,12 @@
 
 set -ex
 
-. $(dirname "${BASH_SOURCE[0]}")/enforce.sh
+CI_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
+
+. "$CI_DIR"/enforce.sh
 
 if [ -z "$SELF" ]; then
-    export SELF=$(python $(dirname "${BASH_SOURCE[0]}")/get_libname.py)
+    export SELF=$(python "$CI_DIR/get_libname.py")
 fi
 
 # Handle also /refs/head/master
@@ -53,6 +55,18 @@ if [[ -n "$GIT_FETCH_JOBS" ]]; then
 fi
 
 python tools/boostdep/depinst/depinst.py --include benchmark --include example --include examples --include tools "${DEPINST_ARGS[@]}" $DEPINST $SELF
+
+# Deduce B2_TOOLSET if unset from B2_COMPILER
+if [ -z "$B2_TOOLSET" ] && [ -n "$B2_COMPILER" ]; then
+    if [[ "$B2_COMPILER" =~ clang ]]; then
+        B2_TOOLSET=clang
+    elif [[ "$B2_COMPILER" =~ gcc|g\+\+ ]]; then
+        B2_TOOLSET=gcc
+    else
+        echo "Unknown compiler: '$B2_COMPILER'. Need either clang or gcc/g++" >&2
+        false
+    fi
+fi
 
 if [[ "$B2_TOOLSET" == clang* ]]; then
     # If clang was installed from LLVM APT it will not have a /usr/bin/clang++
@@ -85,6 +99,31 @@ if [[ "$B2_TOOLSET" == clang* ]]; then
     fi
 fi
 
+# Set up user-config to actually use B2_COMPILER if set
+if [ -n "$B2_COMPILER" ]; then
+    # Get C++ compiler
+    if [[ "$B2_COMPILER" == clang* ]] && [[ "$B2_COMPILER" != clang++* ]]; then
+        CXX="${B2_COMPILER/clang/clang++}"
+    else
+        CXX="${B2_COMPILER/gcc/g++}"
+    fi
+    
+
+    if ! command -v $CXX; then
+        echo "Error: Compiler $CXX was not installed properly"
+        exit 1
+    fi
+    echo "Compiler location: $(command -v $CXX)"
+    echo "Compiler version: $($CXX --version)"
+    export CXX
+
+    echo -n "using $B2_TOOLSET : : $CXX" > ~/user-config.jam
+    if [ -n "$GCC_TOOLCHAIN_ROOT" ]; then
+        echo -n " : <compileflags>\"--gcc-toolchain=$GCC_TOOLCHAIN_ROOT\" <linkflags>\"--gcc-toolchain=$GCC_TOOLCHAIN_ROOT\"" >> ~/user-config.jam
+    fi
+    echo " ;" >> ~/user-config.jam
+fi
+
 function show_bootstrap_log
 {
     cat bootstrap.log
@@ -92,7 +131,7 @@ function show_bootstrap_log
 
 if [[ "$B2_DONT_BOOTSTRAP" != "1" ]]; then
     trap show_bootstrap_log ERR
-    ./bootstrap.sh --with-toolset=${B2_TOOLSET%%-*}
+    ./bootstrap.sh
     trap - ERR
     ./b2 headers
 fi

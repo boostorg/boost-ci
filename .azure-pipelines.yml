@@ -33,6 +33,8 @@ trigger:
 pr: [develop, master, main]
 
 variables:
+  GIT_FETCH_JOBS: 4
+  NET_RETRY_COUNT: 5
   B2_CI_VERSION: 1
   B2_VARIANT: release,debug
   B2_LINK: shared,static
@@ -46,65 +48,53 @@ stages:
             GCC_10:
               B2_CXXSTD: 14,17,20
               CXX: g++-10
-              PACKAGES: g++-10
               VM_IMAGE: ubuntu-20.04
             GCC_9:
               B2_CXXSTD: 14,17,2a
               CXX: g++-9
-              PACKAGES: g++-9
               VM_IMAGE: ubuntu-20.04
             GCC_8:
               B2_CXXSTD: 14,17,2a
               CXX: g++-8
-              PACKAGES: g++-8
               VM_IMAGE: ubuntu-20.04
             GCC_7:
               B2_CXXSTD: 11,14,17
               CXX: g++-7
-              PACKAGES: g++-7
               VM_IMAGE: ubuntu-18.04
             GCC_6:
               B2_CXXSTD: 11,14
               CXX: g++-6
-              PACKAGES: g++-6
               VM_IMAGE: ubuntu-18.04
             GCC_5:
               B2_CXXSTD: 11
               CXX: g++-5
-              PACKAGES: g++-5
               VM_IMAGE: ubuntu-18.04
             # Should move to containers. See note in containers section below.
             #  GCC_4_9:
             #  B2_TOOLSET: gcc
             #  B2_CXXSTD: 11
             #  CXX: g++-4.9
-            #  PACKAGES: g++-4.9
             #  VM_IMAGE: ubuntu-18.04
             #  containerImage: ubuntu:16.04
             GCC_4_8:
               B2_CXXSTD: 11
               CXX: g++-4.8
-              PACKAGES: g++-4.8
               VM_IMAGE: ubuntu-18.04
             Clang_12:
               B2_CXXSTD: 14,17,20
               CXX: clang++-12
-              PACKAGES: clang-12
               VM_IMAGE: ubuntu-20.04
             Clang_11:
               B2_CXXSTD: 14,17,20
               CXX: clang++-11
-              PACKAGES: clang-11
               VM_IMAGE: ubuntu-20.04
             Clang_10:
               B2_CXXSTD: 14,17,20
               CXX: clang++-10
-              PACKAGES: clang-10
               VM_IMAGE: ubuntu-20.04
             Clang_9:
               B2_CXXSTD: 14,17,2a
               CXX: clang++-9
-              PACKAGES: clang-9
               VM_IMAGE: ubuntu-20.04
             Clang_8:
               B2_CXXSTD: 14,17
@@ -137,43 +127,36 @@ stages:
               VM_IMAGE: ubuntu-18.04
             Clang_5:
               B2_CXXSTD: 11,14,17
-              PACKAGES: clang-5.0
               CXX: clang++-5.0
               LLVM_REPO: llvm-toolchain-xenial-5.0
               VM_IMAGE: ubuntu-18.04
             Clang_4:
               B2_CXXSTD: 11,14
               CXX: clang++-4.0
-              PACKAGES: clang-4.0
               LLVM_REPO: llvm-toolchain-xenial-4.0
               VM_IMAGE: ubuntu-18.04
             Clang_3_9:
               B2_CXXSTD: 11,14
               CXX: clang++-3.9
-              PACKAGES: clang-3.9
               VM_IMAGE: ubuntu-18.04
             # Should move to containers. See note in containers section below.
             # Clang_3_8:
             #   CXX: clang++-3.8
             #   B2_CXXSTD: 11,14
-            #   PACKAGES: clang-3.8
             #   VM_IMAGE: ubuntu-18.04
             #   containerImage: ubuntu:16.04
             # Clang_3_7:
             #   B2_CXXSTD: 11
             #   CXX: clang++-3.7
-            #   PACKAGES: clang-3.7
             #   VM_IMAGE: ubuntu-18.04
             # Clang_3_6:
             #   B2_CXXSTD: 11
             #   CXX: clang++-3.6
-            #   PACKAGES: clang-3.6
             #   VM_IMAGE: ubuntu-18.04
               # Should move to containers. See note in containers section below.
               # Clang_3_5:
               #   B2_CXXSTD: 11
               #   CXX: clang++-3.5
-              #   PACKAGES: clang-3.5
               #   VM_IMAGE: ubuntu-18.04
               #   containerImage: ubuntu:16.04
 
