@@ -30,10 +30,7 @@ trigger:
       - fix/*
       - pr/*
 
-pr:
-  branches:
-    include:
-      - develop
+pr: [develop, master, main]
 
 variables:
   B2_CI_VERSION: 1
