@@ -19,3 +19,8 @@ export UBSAN_OPTIONS=print_stacktrace=1
 cd "$BOOST_ROOT"
 
 ./b2 ${B2_TARGETS} "${B2_ARGS[@]}" "$@"
+
+if [ "$B2_USE_CCACHE" == "1" ] && command -v ccache &> /dev/null; then
+  echo "CCache summary"
+  ccache -s
+fi

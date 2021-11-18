@@ -81,6 +81,7 @@ jobs:
     timeout-minutes: 120
     runs-on: ${{matrix.os}}
     container: ${{matrix.container}}
+    env: {B2_USE_CCACHE: 1}
 
     steps:
       - name: Setup environment
@@ -105,6 +106,12 @@ jobs:
         if: 'matrix.coverage'
         with:
           fetch-depth: 0
+
+      - name: Cache ccache
+        uses: actions/cache@v2
+        with:
+          path: ~/.ccache
+          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.compiler}}
 
       - name: Fetch Boost.CI
         uses: actions/checkout@v2

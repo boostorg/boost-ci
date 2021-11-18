@@ -100,6 +100,9 @@ stages:
           variables:
             B2_COMPILER: ${{ item.compiler }}
             B2_CXXSTD: ${{ item.cxxstd }}
+            ${{ if not(contains(item.os, 'macOS')) }}:
+              B2_USE_CCACHE: 1
+              B2_CCACHE_DIR: $(Pipeline.Workspace)/.ccache
             ${{ if item.xcode }}:
               XCODE_APP: /Applications/Xcode_${{ item.xcode }}.app
             ${{ if item.install }}:
@@ -117,6 +120,12 @@ stages:
                   sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT update
                   sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT install -y g++ python libpython-dev git
                 displayName: 'Install required sw for containers'
+            - task: Cache@2
+              condition: eq(variables.B2_USE_CCACHE, '1')
+              inputs:
+                key: 'ccache|"${{ item.os }}-${{ item.container }}"|"${{ item.compiler }}"'
+                path: $(B2_CCACHE_DIR)
+              displayName: Get CCache
             - bash: |
                 set -ex
 
