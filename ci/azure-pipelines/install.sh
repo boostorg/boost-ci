@@ -44,6 +44,20 @@ fi
 export BOOST_CI_TARGET_BRANCH="${SYSTEM_PULLREQUEST_TARGETBRANCH:-$BUILD_SOURCEBRANCHNAME}"
 export BOOST_CI_SRC_FOLDER="$BUILD_SOURCESDIRECTORY"
 
+if [ -z "${B2_TOOLSET}" ]; then
+    if [[ "$CXX" =~ clang ]]; then
+      B2_TOOLSET=clang
+    elif [[ "$CXX" =~ gcc|g\+\+ ]]; then
+      B2_TOOLSET=gcc
+    else
+      echo "Unknown compiler: '$CXX'. Need either clang or gcc/g++" >&2
+      false
+    fi
+    set +x
+    echo "##vso[task.setvariable variable=B2_TOOLSET]$B2_TOOLSET"
+    set -x
+fi
+
 . $(dirname "${BASH_SOURCE[0]}")/../common_install.sh
 
 # AzP official images of Ubuntu 16.04 behave differently to Travis CI.
