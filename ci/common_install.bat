@@ -21,11 +21,7 @@ git clone -b %BOOST_BRANCH% --depth 1 https://github.com/boostorg/boost.git boos
 cd boost-root || EXIT /B 1
 git submodule update -q --init tools/boostdep || EXIT /B 1
 xcopy /s /e /q /I %BOOST_CI_SRC_FOLDER% libs\%SELF% || EXIT /B 1
-REM Old configs expect boost in source folder
-cd ..
-move boost-root  %BOOST_CI_SRC_FOLDER%\
-set BOOST_ROOT=%BOOST_CI_SRC_FOLDER%\boost-root
-cd %BOOST_ROOT%
+set BOOST_ROOT=%cd%
 
 python tools/boostdep/depinst/depinst.py --include benchmark --include example --include examples --include tools %DEPINST% %SELF:\=/% || EXIT /B 1
 
