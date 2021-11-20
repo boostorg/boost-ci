@@ -118,7 +118,7 @@ environment:
 install:
   - git clone --depth 1 https://github.com/boostorg/boost-ci.git C:\boost-ci-cloned
   # Copy ci folder if not testing Boost.CI
-  - if "%APPVEYOR_PROJECT_NAME%" != "boost-ci" xcopy /s /e /q /i /y C:\boost-ci-cloned\ci .\ci
+  - if NOT "%APPVEYOR_PROJECT_NAME%" == "boost-ci" xcopy /s /e /q /i /y C:\boost-ci-cloned\ci .\ci
   - rmdir /s /q C:\boost-ci-cloned
   - ci\appveyor\install.bat
 
