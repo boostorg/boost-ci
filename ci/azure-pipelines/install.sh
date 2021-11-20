@@ -18,6 +18,8 @@
 
 set -ex
 
+CI_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." &> /dev/null && pwd)"
+
 if [ "$AGENT_OS" == "Darwin" ]; then
     unset -f cd
 fi
@@ -44,13 +46,17 @@ fi
 export BOOST_CI_TARGET_BRANCH="${SYSTEM_PULLREQUEST_TARGETBRANCH:-$BUILD_SOURCEBRANCHNAME}"
 export BOOST_CI_SRC_FOLDER="$BUILD_SOURCESDIRECTORY"
 
+if [ -z "$B2_COMPILER" ]; then
+    export B2_COMPILER="$CXX"
+fi
+
 if [ -z "${B2_TOOLSET}" ]; then
-    if [[ "$CXX" =~ clang ]]; then
+    if [[ "$B2_COMPILER" =~ clang ]]; then
       B2_TOOLSET=clang
-    elif [[ "$CXX" =~ gcc|g\+\+ ]]; then
+    elif [[ "$B2_COMPILER" =~ gcc|g\+\+ ]]; then
       B2_TOOLSET=gcc
     else
-      echo "Unknown compiler: '$CXX'. Need either clang or gcc/g++" >&2
+      echo "Unknown compiler: '$B2_COMPILER'. Need either clang or gcc/g++" >&2
       false
     fi
     set +x
@@ -58,23 +64,13 @@ if [ -z "${B2_TOOLSET}" ]; then
     set -x
 fi
 
-. $(dirname "${BASH_SOURCE[0]}")/../common_install.sh
+. $CI_DIR/common_install.sh
 
-# AzP official images of Ubuntu 16.04 behave differently to Travis CI.
-# The gcc and clang variants are being installed somewhat weirdly
-# and, unlike on linux images on Travis CI, b2 fails with:
-#
-# /home/vsts/work/1/s/boost-root/tools/build/src/tools/gcc.jam:230: in gcc.init from module gcc
-# error: toolset gcc initialization:
-# error: no command provided, default command 'g++' not found
-# error: initialized from ../../project-config.jam:12
-#
-# Hence, we work around this issue with user-config.jam
 if ! command -v ${CXX}; then
-    echo "WARNING: Compiler ${CXX} was not installed properly"
-    #exit 1
+    echo "Error: Compiler $CXX was not installed properly"
+    exit 1
 fi
-echo "using ${B2_TOOLSET} : : $(command -v ${CXX}) : ${B2_CXXFLAGS} ;" > ${HOME}/user-config.jam
+echo "using ${B2_TOOLSET} : : $CXX : ${B2_CXXFLAGS} ;" > ${HOME}/user-config.jam
 
 # AzP requires to run special task in order to export job-scoped variable from a script.
 #
