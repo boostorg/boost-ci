@@ -85,6 +85,8 @@ if [[ "$B2_TOOLSET" == clang* ]]; then
             ls -ls /usr/lib/llvm-${ver}/bin || true
             hash -r || true
         fi
+    elif [ -n "${XCODE_APP}" ]; then
+        sudo xcode-select -switch ${XCODE_APP}
     fi
     command -v clang || true
     command -v clang++ || true

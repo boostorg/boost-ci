@@ -41,7 +41,7 @@ variables:
 
 # Dummy runtime parameter to allow creating conditional jobs
 parameters:
-  - name: linux_jobs
+  - name: jobs
     type: object
     default:
       - { compiler: gcc-10,    cxxstd: '14,17,20', os: ubuntu-20.04 }
@@ -59,7 +59,7 @@ parameters:
       - { compiler: clang-8,   cxxstd: '14,17',    os: ubuntu-18.04, install: 'clang-8 libc6-dbg libc++-dev libstdc++-8-dev' }
       - { compiler: clang-7,   cxxstd: '14,17',    os: ubuntu-18.04, install: 'clang-7 libc6-dbg libc++-dev libstdc++-8-dev' }
       - { compiler: clang-6.0, cxxstd: '11,14,17', os: ubuntu-18.04, install: 'clang-6.0 libc6-dbg libc++-dev libc++abi-dev libstdc++-8-dev', env: {B2_STDLIB: libc++ } }
-      - { name: clang_6_libcxx,
+      - { name: Linux_clang_6_libcxx,
           compiler: clang-6.0, cxxstd: '11,14,17', os: ubuntu-18.04, install: 'clang-6.0 libc6-dbg libc++-dev libc++abi-dev libstdc++-8-dev' }
       - { compiler: clang-5.0, cxxstd: '11,14,17', os: ubuntu-18.04 }
       - { compiler: clang-4.0, cxxstd: '11,14',    os: ubuntu-18.04 }
@@ -68,14 +68,26 @@ parameters:
       - { compiler: clang-3.7, cxxstd: '11',       os: ubuntu-18.04, container: 'ubuntu:16.04' }
       - { compiler: clang-3.6, cxxstd: '11',       os: ubuntu-18.04, container: 'ubuntu:16.04' }
       - { compiler: clang-3.5, cxxstd: '11',       os: ubuntu-18.04, container: 'ubuntu:16.04' }
+      # OSX
+      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-10.14, xcode: 11.3.1 }
+      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-10.14, xcode: 11.2.1 }
+      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-10.14, xcode: 11.3 }
+      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-10.14, xcode: 11.1 }
+      - { compiler: clang, cxxstd: '11,14,17,2a', os: macOS-10.14, xcode: 10.3 }
+      - { compiler: clang, cxxstd: '11,14,17,2a', os: macOS-10.14, xcode: 10.2.1 }
+      - { compiler: clang, cxxstd: '11,14,17,2a', os: macOS-10.14, xcode: 10.2 }
+      - { compiler: clang, cxxstd: '11,14,17,2a', os: macOS-10.14, xcode: 10.1 }
+      - { compiler: clang, cxxstd: '11,14,17,2a', os: macOS-10.14, xcode: 10.0 }
 
 stages:
   - stage: Test
     jobs:
       # Dynamically generate jobs to be able to insert containers, see https://stackoverflow.com/questions/70046143
-      - ${{ each item in parameters.linux_jobs }}:
+      - ${{ each item in parameters.jobs }}:
         - ${{ if item.name }}:
-            job: Linux_${{ item.name }}
+            job: ${{ item.name }}
+          ${{ elseif contains(item.os, 'macOS') }}:
+            job: macOS_${{ replace(item.xcode, '.', '_') }}
           ${{ else }}:
             job: Linux_${{ replace(replace(item.compiler, '-', '_'), '.', '_') }}
           pool:
@@ -88,6 +100,8 @@ stages:
           variables:
             B2_COMPILER: ${{ item.compiler }}
             B2_CXXSTD: ${{ item.cxxstd }}
+            ${{ if item.xcode }}:
+              XCODE_APP: /Applications/Xcode_${{ item.xcode }}.app
             ${{ if item.install }}:
               PACKAGES: ${{ item.install }}
             ${{ each var in item.env }}:
@@ -157,65 +171,4 @@ stages:
               ci\azure-pipelines\install.bat
             displayName: 'Install'
           - script: ci\build.bat
-            displayName: 'Build'
-
-      - job: 'macOS'
-        pool:
-          vmImage: 'macOS-10.14'
-        strategy:
-          matrix:
-            Xcode_11_3_1:
-              CXX: clang++
-              B2_CXXSTD: 14,17,2a
-              XCODE_APP: /Applications/Xcode_11.3.1.app
-            Xcode_11_2_1:
-              CXX: clang++
-              B2_CXXSTD: 14,17,2a
-              XCODE_APP: /Applications/Xcode_11.2.1.app
-            Xcode_11_2:
-              CXX: clang++
-              B2_CXXSTD: 14,17,2a
-              XCODE_APP: /Applications/Xcode_11.2.app
-            Xcode_11_1:
-              CXX: clang++
-              B2_CXXSTD: 14,17,2a
-              XCODE_APP: /Applications/Xcode_11.1.app
-            Xcode_10_3:
-              CXX: clang++
-              B2_CXXSTD: 11,14,17,2a
-              XCODE_APP: /Applications/Xcode_10.3.app
-            Xcode_10_2_1:
-              CXX: clang++
-              B2_CXXSTD: 11,14,17,2a
-              XCODE_APP: /Applications/Xcode_10.2.1.app
-            Xcode_10_2:
-              CXX: clang++
-              B2_CXXSTD: 11,14,17,2a
-              XCODE_APP: /Applications/Xcode_10.2.app
-            Xcode_10_1:
-              CXX: clang++
-              B2_CXXSTD: 11,14,17,2a
-              XCODE_APP: /Applications/Xcode_10.1.app
-            Xcode_10_0:
-              CXX: clang++
-              B2_CXXSTD: 11,14,17,2a
-              XCODE_APP: /Applications/Xcode_10.app
-
-        steps:
-          - bash: |
-              set -ex
-
-              git clone --depth 1 --branch master https://github.com/boostorg/boost-ci.git boost-ci-cloned
-              # Copy ci folder if not testing Boost.CI
-              [[ $(basename "$BUILD_REPOSITORY_NAME") = "boost-ci" ]] || cp -prf boost-ci-cloned/ci .
-              rm -rf boost-ci-cloned
-              source ci/azure-pipelines/install.sh
-            displayName: Install
-          - bash: |
-              set -ex
-              echo "SELF=$SELF"
-              echo "BOOST_ROOT=$BOOST_ROOT"
-
-              cd $BOOST_ROOT/libs/$SELF
-              ci/azure-pipelines/build.sh
             displayName: 'Build'
