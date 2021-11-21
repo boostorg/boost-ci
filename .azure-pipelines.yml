@@ -119,7 +119,9 @@ stages:
             - bash: |
                 set -ex
 
-                git clone --depth 1 --branch master https://github.com/boostorg/boost-ci.git boost-ci-cloned
+                for i in {1..$NET_RETRY_COUNT}; do
+                  git clone --depth 1 --branch master https://github.com/boostorg/boost-ci.git boost-ci-cloned && break || sleep 2
+                done
                 # Copy ci folder if not testing Boost.CI
                 [[ $(basename "$BUILD_REPOSITORY_NAME") = "boost-ci" ]] || cp -prf boost-ci-cloned/ci .
                 rm -rf boost-ci-cloned
