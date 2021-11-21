@@ -111,10 +111,11 @@ stages:
               - bash: |
                   set -ex
                   /tmp/docker exec -t -u 0 ci-container \
-                    sh -c "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confold' -y install sudo software-properties-common g++ python"
+                    sh -c "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confold' -y install sudo software-properties-common"
                   # Need (newer) git
                   sudo add-apt-repository ppa:git-core/ppa
-                  sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT update && sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT install -y git
+                  sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT update
+                  sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT install -y g++ python libpython-dev git
                 displayName: 'Install required sw for containers'
             - bash: |
                 set -ex
