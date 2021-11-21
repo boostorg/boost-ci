@@ -40,17 +40,16 @@ if [ -z "$B2_COMPILER" ]; then
 fi
 
 if [ "$AGENT_OS" != "Darwin" ]; then
-    # If no package set install at least the compiler
-    if [[ -z "$PACKAGES" ]]; then
+    # If no package set install at least the compiler if not already found
+    if [[ -z "$PACKAGES" ]] && ! command -v $B2_COMPILER; then
         PACKAGES="$(get_compiler_package "$B2_COMPILER")"
     fi
 
-    LLVM_OS=${LLVM_OS:-xenial}
     if [ -n "$PACKAGES" ]; then
         sudo -E apt-add-repository -y "ppa:ubuntu-toolchain-r/test"
         if [ -n "${LLVM_REPO}" ]; then
             wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-            sudo -E apt-add-repository "deb http://apt.llvm.org/${LLVM_OS}/ ${LLVM_REPO} main"
+            sudo -E apt-add-repository "deb http://apt.llvm.org/${LLVM_OS:-xenial}/ ${LLVM_REPO} main"
         fi
         sudo apt-get ${NET_RETRY_COUNT:+ -o Acquire::Retries=$NET_RETRY_COUNT} update
         sudo apt-get ${NET_RETRY_COUNT:+ -o Acquire::Retries=$NET_RETRY_COUNT} install -y ${PACKAGES}

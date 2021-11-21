@@ -76,7 +76,10 @@ if [[ "$B2_TOOLSET" == clang* ]]; then
         if [[ "$B2_TOOLSET" == clang-* ]]; then
             ver="${B2_TOOLSET#*-}"
         elif [[ "$B2_COMPILER" == clang-* ]] || [[ "$B2_COMPILER" == clang++-* ]]; then
-            ver="${B2_COMPILER#*-}"
+            # Don't change path if we do find the versioned compiler
+            if ! command -v $B2_COMPILER; then
+                ver="${B2_COMPILER#*-}"
+            fi
         else
             echo "Can't get clang version from B2_TOOLSET or B2_COMPILER. Skipping PATH setting." >&2
         fi
@@ -94,8 +97,8 @@ if [[ "$B2_TOOLSET" == clang* ]]; then
     # Additionally, if B2_TOOLSET is clang variant but CXX is set to g++
     # (it is on Linux images) then boost build silently ignores B2_TOOLSET and
     # uses CXX instead
-    if [[ "${CXX}" != clang* ]]; then
-        echo "CXX is set to ${CXX} in this environment which would override"
+    if [[ -n "$CXX" ]] && [[ "$CXX" != clang* ]]; then
+        echo "CXX is set to $CXX in this environment which would override"
         echo "the setting of B2_TOOLSET=clang, therefore we clear CXX here."
         export CXX=
     fi
