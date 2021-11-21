@@ -55,9 +55,6 @@ if [ "$AGENT_OS" != "Darwin" ]; then
         sudo apt-get ${NET_RETRY_COUNT:+ -o Acquire::Retries=$NET_RETRY_COUNT} update
         sudo apt-get ${NET_RETRY_COUNT:+ -o Acquire::Retries=$NET_RETRY_COUNT} install -y ${PACKAGES}
     fi
-elif [ -n "${XCODE_APP}" ]; then
-    sudo xcode-select -switch ${XCODE_APP}
-    which clang++
 fi
 
 . $(dirname "${BASH_SOURCE[0]}")/../common_install.sh
