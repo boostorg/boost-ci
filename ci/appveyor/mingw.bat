@@ -38,9 +38,9 @@ echo     curl -O http://repo.msys2.org/msys/x86_64/msys2-keyring-r21.b39fb11-1-a
 echo     pacman-key --verify msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz.sig
 echo     pacman --noconfirm -U msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz
 echo     echo "Packages:"
-echo     pacman --noconfirm -U "http://repo.msys2.org/msys/x86_64/libzstd-1.4.4-2-x86_64.pkg.tar.xz"
-echo     pacman --noconfirm -U "http://repo.msys2.org/msys/x86_64/zstd-1.4.4-2-x86_64.pkg.tar.xz"
-echo     pacman --noconfirm -U "http://repo.msys2.org/msys/x86_64/pacman-5.2.1-6-x86_64.pkg.tar.xz"
+echo     pacman --noconfirm -U "http://repo.msys2.org/msys/x86_64/libzstd-1.4.5-2-x86_64.pkg.tar.xz"
+echo     pacman --noconfirm -U "http://repo.msys2.org/msys/x86_64/zstd-1.4.5-2-x86_64.pkg.tar.xz"
+echo     pacman --noconfirm -U "http://repo.msys2.org/msys/x86_64/pacman-5.2.1-12-x86_64.pkg.tar.xz"
 echo else
 echo     echo "Not upgrading pacman"
 echo fi
