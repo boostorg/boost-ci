@@ -60,6 +60,8 @@ if [ "$AGENT_OS" != "Darwin" ]; then
     fi
 fi
 
+old_B2_TOOLSET="$B2_TOOLSET"
+
 . $(dirname "${BASH_SOURCE[0]}")/../common_install.sh
 
 # AzP requires to run special task in order to export job-scoped variable from a script.
@@ -70,6 +72,6 @@ fi
 set +x
 echo "##vso[task.setvariable variable=SELF]$SELF"
 echo "##vso[task.setvariable variable=BOOST_ROOT]$BOOST_ROOT"
-echo "##vso[task.setvariable variable=B2_TOOLSET]$B2_TOOLSET"
+[ -n "old_B2_TOOLSET" ] || echo "##vso[task.setvariable variable=B2_TOOLSET]$B2_TOOLSET"
 echo "##vso[task.setvariable variable=B2_COMPILER]$B2_COMPILER"
 set -x
