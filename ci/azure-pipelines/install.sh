@@ -46,10 +46,14 @@ if [ "$AGENT_OS" != "Darwin" ]; then
     fi
 
     if [ -n "$PACKAGES" ]; then
-        sudo -E apt-add-repository -y "ppa:ubuntu-toolchain-r/test"
+        for i in {1..${NET_RETRY_COUNT:-3}}; do
+            sudo -E apt-add-repository -y "ppa:ubuntu-toolchain-r/test" && break || sleep 10
+        done
         if [ -n "${LLVM_REPO}" ]; then
             wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-            sudo -E apt-add-repository "deb http://apt.llvm.org/${LLVM_OS:-xenial}/ ${LLVM_REPO} main"
+            for i in {1..${NET_RETRY_COUNT:-3}}; do 
+                sudo -E apt-add-repository "deb http://apt.llvm.org/${LLVM_OS:-xenial}/ ${LLVM_REPO} main" && break || sleep 10
+            done
         fi
         sudo apt-get ${NET_RETRY_COUNT:+ -o Acquire::Retries=$NET_RETRY_COUNT} update
         sudo apt-get ${NET_RETRY_COUNT:+ -o Acquire::Retries=$NET_RETRY_COUNT} install -y ${PACKAGES}
