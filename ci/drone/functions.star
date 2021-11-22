@@ -50,7 +50,7 @@ def linux_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_
           "uname -a",
           # Moved to Docker
           # "apt-get -o Acquire::Retries=3 update && DEBIAN_FRONTEND=noninteractive apt-get -y install tzdata && apt-get -o Acquire::Retries=3 install -y sudo software-properties-common wget curl apt-transport-https git make cmake apt-file sudo unzip libssl-dev build-essential autotools-dev autoconf libc++-helpers automake g++",
-          # "for i in {1..3}; do apt-add-repository ppa:git-core/ppa && break || sleep 2; done",
+          # "for i in {1..3}; do apt-add-repository ppa:git-core/ppa && break || sleep 10; done",
           # "apt-get -o Acquire::Retries=3 update && apt-get -o Acquire::Retries=3 -y install git",
           "BOOST_CI_ORG=boostorg BOOST_CI_BRANCH=master && wget https://github.com/$BOOST_CI_ORG/boost-ci/archive/$BOOST_CI_BRANCH.tar.gz && tar -xvf $BOOST_CI_BRANCH.tar.gz && mv boost-ci-$BOOST_CI_BRANCH .drone/boost-ci && rm $BOOST_CI_BRANCH.tar.gz",
           "echo '==================================> PACKAGES'",

@@ -93,7 +93,7 @@ jobs:
                 apt-get -o Acquire::Retries=$NET_RETRY_COUNT update
                 apt-get -o Acquire::Retries=$NET_RETRY_COUNT install -y sudo software-properties-common
                 # Need (newer) git
-                add-apt-repository ppa:git-core/ppa
+                for i in {1..${NET_RETRY_COUNT:-3}}; do sudo -E add-apt-repository -y ppa:git-core/ppa && break || sleep 10; done
                 apt-get -o Acquire::Retries=$NET_RETRY_COUNT update
                 apt-get -o Acquire::Retries=$NET_RETRY_COUNT install -y g++ python libpython-dev git
             fi
@@ -127,12 +127,12 @@ jobs:
             SOURCES+=(ppa:ubuntu-toolchain-r/test)
             for key in "${SOURCE_KEYS[@]}"; do
                 for i in {1..$NET_RETRY_COUNT}; do
-                    wget -O - "$key" | sudo apt-key add - && break || sleep 2
+                    wget -O - "$key" | sudo apt-key add - && break || sleep 10
                 done
             done
             for source in "${SOURCES[@]}"; do
                 for i in {1..$NET_RETRY_COUNT}; do
-                    sudo add-apt-repository $source && break || sleep 2
+                    sudo add-apt-repository $source && break || sleep 10
                 done
             done
             sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT update
