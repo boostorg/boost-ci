@@ -12,9 +12,9 @@ Boost.CI also allows you to run a big-endian build on Travis CI.
 
 ### Build Status
 
-GH Actions | Azure Pipelines | codecov.io |
----------- | --------------- | ---------- |
-[![Build status](https://github.com/boostorg/boost-ci/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/boostorg/boost-ci/actions/workflows/ci.yml) | [![Build Status](https://dev.azure.com/boostorg/boost-ci/_apis/build/status/boostorg.boost-ci?branchName=master)](https://dev.azure.com/boostorg/boost-ci/_build/latest?definitionId=8&branchName=master) |  [![codecov](https://codecov.io/gh/boostorg/boost-ci/branch/master/graph/badge.svg)](https://codecov.io/gh/boostorg/boost-ci/branch/master) | 
+GH Actions | Appveyor | Azure Pipelines | codecov.io |
+---------- | -------- | --------------- | ---------- |
+[![Build status](https://github.com/boostorg/boost-ci/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/boostorg/boost-ci/actions/workflows/ci.yml) | [![Build status](https://ci.appveyor.com/api/projects/status/w3mwdujtp7ka5un1/branch/master?svg=true)](https://ci.appveyor.com/project/Flamefire/boost-ci/branch/master) | [![Build Status](https://dev.azure.com/boostorg/boost-ci/_apis/build/status/boostorg.boost-ci?branchName=master)](https://dev.azure.com/boostorg/boost-ci/_build/latest?definitionId=8&branchName=master) |  [![codecov](https://codecov.io/gh/boostorg/boost-ci/branch/master/graph/badge.svg)](https://codecov.io/gh/boostorg/boost-ci/branch/master) | 
 
 ## Summary (TL;DR) ##
 
