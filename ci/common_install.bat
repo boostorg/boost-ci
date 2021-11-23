@@ -23,7 +23,11 @@ git submodule update -q --init tools/boostdep || EXIT /B 1
 xcopy /s /e /q /I %BOOST_CI_SRC_FOLDER% libs\%SELF% || EXIT /B 1
 set BOOST_ROOT=%cd%
 
-python tools/boostdep/depinst/depinst.py --include benchmark --include example --include examples --include tools %DEPINST% %SELF:\=/% || EXIT /B 1
+set DEPINST_ARGS=
+if not "%GIT_FETCH_JOBS%" == "" (
+    set DEPINST_ARGS=--git_args "--jobs %GIT_FETCH_JOBS%"
+)
+python tools/boostdep/depinst/depinst.py --include benchmark --include example --include examples --include tools %DEPINST_ARGS% %DEPINST% %SELF:\=/% || EXIT /B 1
 
 REM Bootstrap is not expecting B2_CXXFLAGS content so we zero it out for the bootstrap only
 SET OLD_B2_CXXFLAGS=%B2_CXXFLAGS%
