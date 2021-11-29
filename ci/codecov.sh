@@ -60,7 +60,7 @@ elif [[ "$1" == "upload" ]]; then
     for f in `for f in include/boost/*; do echo $f; done | cut -f2- -d/`; do echo "*/$f*"; done > /tmp/interesting
     echo headers that matter:
     cat /tmp/interesting
-    xargs -L 999999 -a /tmp/interesting lcov --gcov-tool=$GCOV --rc lcov_branch_coverage=${LCOV_BRANCH_COVERAGE:-1} --extract all.info {} "*/libs/$SELF/*" --output-file coverage.info
+    xargs -L 999999 -a /tmp/interesting lcov --gcov-tool=$GCOV --rc lcov_branch_coverage=${LCOV_BRANCH_COVERAGE:-1} --extract all.info {} "*/libs/$SELF/src/*" --output-file coverage.info
 
     # dump a summary on the console - helps us identify problems in pathing
     lcov --list coverage.info
