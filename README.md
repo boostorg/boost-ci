@@ -26,6 +26,7 @@ Here are all the steps you need to take as a Boost repository maintainer to enab
 1. Copy the `.travis.yml` file from this repository into the top level of your repository.
 1. Copy the `.github` folder from this repository into the top level of your repository.
 1. Copy the `.drone.star` file and `.drone` directory from this repository to the top level of your repository.
+1. Copy the `codecov.yml` (no leading dot!) file from this repository to the top level of your repository and edit if required.
 1. Copy the `LICENSE` file from this repository to the top level of your repository.  This adds the `BSL-1.0` designation to your repository on github.
 1. [optional] Copy the `README.template.md` file from this repository to the top level `README.md` of your repository.  If you already have a README.md then you can take what you need from the template version to improve it, if desired.  Otherwise, you will need to customize README.md for your repository.  One useful step is to fixup the repository name using the command `sed -i 's/template/<myrepositoryname>/g' README.md`, and then update the first line description.
 1. In Appveyor, add a project for your fork of the repository.  No customization is needed.
