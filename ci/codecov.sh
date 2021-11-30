@@ -70,7 +70,7 @@ elif [[ "$1" == "upload" ]]; then
     #
     curl -Os https://uploader.codecov.io/latest/linux/codecov
     chmod +x codecov
-    ./codecov -f coverage.info
+    ./codecov -f coverage.info --verbose --nonZero ${CODECOV_NAME:+--name "$CODECOV_NAME"}
 else
     echo "Invalid parameter for codecov.sh: '$1'." >&2
     false
