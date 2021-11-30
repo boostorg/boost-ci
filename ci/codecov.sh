@@ -69,6 +69,18 @@ elif [[ "$1" == "upload" ]]; then
     # upload to codecov.io
     #
     curl -Os https://uploader.codecov.io/latest/linux/codecov
+    
+    # Verify Download
+    if command -v gpg &> /dev/null && command -v gpgv &> /dev/null; then
+        curl https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --no-default-keyring --keyring trustedkeys.gpg --import
+
+        curl -Os https://uploader.codecov.io/latest/linux/codecov.SHA256SUM
+        curl -Os https://uploader.codecov.io/latest/linux/codecov.SHA256SUM.sig
+
+        gpgv codecov.SHA256SUM.sig codecov.SHA256SUM
+        shasum -a 256 -c codecov.SHA256SUM
+    fi
+
     chmod +x codecov
     ./codecov -f coverage.info --verbose --nonZero ${CODECOV_NAME:+--name "$CODECOV_NAME"}
 else
