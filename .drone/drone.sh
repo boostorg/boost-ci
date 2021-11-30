@@ -51,7 +51,7 @@ common_install
 echo '==================================> SCRIPT'
 
 cd $BOOST_ROOT/libs/$SELF
-ci/travis/codecov.sh
+CODECOV_NAME="Drone CI" ci/travis/codecov.sh
 
 elif [ "$DRONE_JOB_BUILDTYPE" == "valgrind" ]; then
 

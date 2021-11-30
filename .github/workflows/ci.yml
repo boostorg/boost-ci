@@ -26,6 +26,7 @@ env:
   B2_VARIANT: debug,release
   B2_LINK: shared,static
   LCOV_BRANCH_COVERAGE: 0
+  CODECOV_NAME: Github Actions
 
 jobs:
   posix:
