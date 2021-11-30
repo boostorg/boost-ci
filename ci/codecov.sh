@@ -82,7 +82,7 @@ elif [[ "$1" == "upload" ]]; then
     fi
 
     chmod +x codecov
-    ./codecov -f coverage.info --verbose --nonZero ${CODECOV_NAME:+--name "$CODECOV_NAME"}
+    ./codecov --verbose --nonZero ${CODECOV_NAME:+--name "$CODECOV_NAME"}
 else
     echo "Invalid parameter for codecov.sh: '$1'." >&2
     false
