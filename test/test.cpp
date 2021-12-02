@@ -17,9 +17,14 @@
 
 int main()
 {
+    const bool isMSVC = MSVC_VALUE;
     std::map<std::string, std::vector<int> > map;
     map["result"].push_back(boost::boost_ci::get_answer());
-    BOOST_TEST_EQ(boost::boost_ci::get_answer(), 42);
+    // Specifically crafted condition to check for coverage from MSVC and non MSVC builds
+    if(isMSVC)
+      BOOST_TEST_EQ(boost::boost_ci::get_answer(), 21);
+    else
+      BOOST_TEST_EQ(boost::boost_ci::get_answer(), 42);
     BOOST_TEST_EQ(map["result"].size(), 1u);
     return boost::report_errors();
 }

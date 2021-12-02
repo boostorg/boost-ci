@@ -15,14 +15,26 @@ namespace boost
 {
   namespace boost_ci
   {
+#ifdef BOOST_MSVC
+#define MSVC_VALUE true
+#else
+#define MSVC_VALUE false
+#endif
+
     // Some function to test
-    BOOST_NOINLINE int get_answer()
+    BOOST_NOINLINE int get_answer(const bool isMsvc = MSVC_VALUE)
     {
+      int answer;
+      // Specifically crafted condition to check for coverage from MSVC and non MSVC builds
+      if(isMsvc)
+        answer = 21;
+      else
+        answer = 42;
 #ifdef BOOST_NO_CXX11_SMART_PTR
-      return 42;
+      return answer;
 #else
       // Just use some stdlib feature combined with a Boost.Config feature as demonstration
-      auto ptr = std::unique_ptr<int>(new int(42));
+      auto ptr = std::unique_ptr<int>(new int(answer));
       return *ptr;
 #endif
     }
