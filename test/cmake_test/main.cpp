@@ -2,5 +2,6 @@
 
 int main()
 {
-    return (boost::boost_ci::get_answer() == 42) ? 0 : 1;
+    const int expectedValue = (MSVC_VALUE) ? 21 : 42;
+    return (boost::boost_ci::get_answer() == expectedValue) ? 0 : 1;
 }
