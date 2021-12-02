@@ -156,14 +156,24 @@ stages:
             VS_2022:
               B2_TOOLSET: msvc-14.3
               B2_CXXSTD: 14,17,20
+              B2_ADDRESS_MODEL: 32,64
+              VM_IMAGE: 'windows-2022'
+            VS_2022_strict:
+              B2_TOOLSET: msvc-14.3
+              B2_CXXSTD: 14,17,20
               B2_CXXFLAGS: -permissive-
-              B2_ADDRESS_MODEL: 64
+              B2_ADDRESS_MODEL: 32,64
               VM_IMAGE: 'windows-2022'
             VS_2019:
               B2_TOOLSET: msvc-14.2
               B2_CXXSTD: 14,17,20
+              B2_ADDRESS_MODEL: 32,64
+              VM_IMAGE: 'windows-2019'
+            VS_2019_strict:
+              B2_TOOLSET: msvc-14.2
+              B2_CXXSTD: 14,17,20
               B2_CXXFLAGS: -permissive-
-              B2_ADDRESS_MODEL: 64
+              B2_ADDRESS_MODEL: 32,64
               VM_IMAGE: 'windows-2019'
 
         pool:
