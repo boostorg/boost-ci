@@ -85,6 +85,11 @@ elif [[ "$1" == "upload" ]]; then
         shasum -a 256 -c codecov.SHA256SUM
     fi
 
+    # Workaround for https://github.com/codecov/uploader/issues/525
+    if [ -n "$GITHUB_HEAD_REF" ]; then
+      export GITHUB_SHA=$(git show --no-patch --format="%P" | awk '{print $NF}')
+    fi
+
     chmod +x codecov
     ./codecov --verbose --nonZero ${CODECOV_NAME:+--name "$CODECOV_NAME"}
 else
