@@ -14,6 +14,7 @@
 #include <boost/boost-ci/boost_ci.hpp>
 // And the usual test framwork
 #include <boost/core/lightweight_test.hpp>
+#include "test2.hpp"
 
 int main()
 {
