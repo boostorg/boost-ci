@@ -23,25 +23,56 @@ git submodule update -q --init tools/boostdep || EXIT /B 1
 xcopy /s /e /q /I %BOOST_CI_SRC_FOLDER% libs\%SELF% || EXIT /B 1
 set BOOST_ROOT=%cd%
 
+REM All further variables set affect only this batch file
+SETLOCAL enabledelayedexpansion
+
 set DEPINST_ARGS=
 if not "%GIT_FETCH_JOBS%" == "" (
     set DEPINST_ARGS=--git_args "--jobs %GIT_FETCH_JOBS%"
 )
 python tools/boostdep/depinst/depinst.py --include benchmark --include example --include examples --include tools %DEPINST_ARGS% %DEPINST% %SELF:\=/% || EXIT /B 1
 
+if defined ADDPATH (set "PATH=%ADDPATH%%PATH%")
+
+@ECHO OFF
+if "%B2_TOOLSET%" == "gcc" (
+    set cxx_exe="g++.exe"
+)else if "%B2_TOOLSET%" == "clang-win" (
+    set cxx_exe="clang-cl.exe"
+)else (
+    set cxx_exe=""
+)
+if NOT "%cxx_exe%" == "" (
+    call :GetPath %cxx_exe%,cxx_path
+    call :GetVersion %cxx_exe%,cxx_version
+    echo Compiler location: !cxx_path!
+    echo Compiler version: !cxx_version!
+)
+@ECHO ON
+
 REM Bootstrap is not expecting B2_CXXFLAGS content so we zero it out for the bootstrap only
-SET OLD_B2_CXXFLAGS=%B2_CXXFLAGS%
 SET B2_CXXFLAGS=
 cmd /c bootstrap
 IF NOT %ERRORLEVEL% == 0 (
     type bootstrap.log
     EXIT /B 1
 )
-SET B2_CXXFLAGS=%OLD_B2_CXXFLAGS%
 
 b2 headers
+ENDLOCAL
 
 if DEFINED B2_CI_VERSION (
 	REM Go back to lib folder to allow ci\build.bat to work
 	cd libs\%SELF%
 )
+
+EXIT /B %ERRORLEVEL%
+
+:GetPath
+for %%i in (%~1) do set %~2=%%~$PATH:i
+EXIT /B 0
+
+:GetVersion
+for /F "delims=" %%i in ('%~1 --version ^2^>^&^1') do set %~2=%%i & goto :done
+:done
+EXIT /B 0
