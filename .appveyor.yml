@@ -78,7 +78,8 @@ environment:
 
     - FLAVOR: clang-cl
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
-      ADDCOMMANDS: '"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"'
+      # So far, this step seems to be required. Commenting out to observe the failure in CI.
+      # ADDCOMMANDS: '"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"'
       B2_ADDRESS_MODEL: 64
       B2_CXXSTD: 11,14,17
       B2_TOOLSET: clang-win
@@ -95,7 +96,6 @@ environment:
     - FLAVOR: cygwin (32-bit)
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       ADDPATH: C:\cygwin\bin;
-      ADDCOMMANDS: '"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars32.bat"'
       B2_ADDRESS_MODEL: 32
       B2_CXXSTD: 03,11,14,1z
       B2_TOOLSET: gcc
@@ -103,7 +103,6 @@ environment:
     - FLAVOR: cygwin (64-bit)
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       ADDPATH: C:\cygwin64\bin;
-      ADDCOMMANDS: '"C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"'
       B2_ADDRESS_MODEL: 64
       B2_CXXSTD: 03,11,14,1z
       B2_TOOLSET: gcc
@@ -112,14 +111,18 @@ environment:
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       B2_ADDRESS_MODEL: 32
       ADDPATH: C:\mingw\bin;
-      B2_CXXSTD: 11,14,17,2a
+      # It seems 03 isn't supported. Leaving it in for the moment, to show errors in CI.
+      # B2_CXXSTD: 11,14,17,2a
+      B2_CXXSTD: 03,11,14,17,2a
       B2_TOOLSET: gcc
 
     - FLAVOR: mingw64
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       ADDPATH: C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin;
       B2_ADDRESS_MODEL: 64
-      B2_CXXSTD: 11,14,17,2a
+      # It seems 03 isn't supported. Leaving it in for the moment, to show errors in CI.
+      # B2_CXXSTD: 11,14,17,2a
+      B2_CXXSTD: 03,11,14,17,2a
       B2_TOOLSET: gcc
 
 install:
