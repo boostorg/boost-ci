@@ -14,6 +14,8 @@
 #include <boost/boost-ci/boost_ci.hpp>
 // And the usual test framwork
 #include <boost/core/lightweight_test.hpp>
+// Check that including a file from the same directory works
+#include "test2.hpp"
 
 int main()
 {
