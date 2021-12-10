@@ -138,7 +138,7 @@ build: off
 test_script: ci\build.bat
 
 for:
-  # Superproject CMake build
+  # CodeCov coverage build
   - matrix:
       only: [COVERAGE: true]
     test_script: [ps: ci\codecov.ps1]
