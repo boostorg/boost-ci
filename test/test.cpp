@@ -24,9 +24,12 @@ int main()
     map["result"].push_back(boost::boost_ci::get_answer());
     // Specifically crafted condition to check for coverage from MSVC and non MSVC builds
     if(isMSVC)
+    {
       BOOST_TEST_EQ(boost::boost_ci::get_answer(), 21);
-    else
+    } else
+    {
       BOOST_TEST_EQ(boost::boost_ci::get_answer(), 42);
+    }
     BOOST_TEST_EQ(map["result"].size(), 1u);
     return boost::report_errors();
 }
