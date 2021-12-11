@@ -27,9 +27,12 @@ namespace boost
       int answer;
       // Specifically crafted condition to check for coverage from MSVC and non MSVC builds
       if(isMsvc)
+      {
         answer = 21;
-      else
+      } else
+      {
         answer = 42;
+      }
 #ifdef BOOST_NO_CXX11_SMART_PTR
       return answer;
 #else

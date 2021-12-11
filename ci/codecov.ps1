@@ -49,7 +49,7 @@ $exclusions = @(
   '.*// LCOV_EXCL_LINE'
   '.*// coverity\[dead_error_line\]'
   # Lines containing only braces
-  '\s*[{}]*\s*'
+  '\s*[}{]*\s*'
   # Lines containing only else (and opt. braces)
   '\s*(\} )?else( \{)?\s*'
 )
