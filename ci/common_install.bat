@@ -42,7 +42,7 @@ if "%B2_TOOLSET%" == "gcc" (
 )else (
     set cxx_exe=""
 )
-if NOT "%cxx_exe%" == "" (
+if NOT %cxx_exe% == "" (
     call :GetPath %cxx_exe%,cxx_path
     call :GetVersion %cxx_exe%,cxx_version
     echo Compiler location: !cxx_path!
