@@ -31,9 +31,6 @@ if (Get-Command "gpg.exe" -ErrorAction SilentlyContinue){
 &"$scriptPath\opencppcoverage.ps1"
 if ($LASTEXITCODE -ne 0) { Throw "Coverage collection failed." }
 
-# Workaround for https://github.com/codecov/uploader/issues/525
-if("${env:APPVEYOR_PULL_REQUEST_HEAD_COMMIT}" -ne ""){ $env:APPVEYOR_REPO_COMMIT = "${env:APPVEYOR_PULL_REQUEST_HEAD_COMMIT}" }
-
 # Upload
 ./codecov.exe --name Appveyor --env APPVEYOR_BUILD_WORKER_IMAGE --verbose --nonZero --dir __out --rootDir "${env:BOOST_CI_SRC_FOLDER}"
 if ($LASTEXITCODE -ne 0) { Throw "Upload of coverage data failed." }
