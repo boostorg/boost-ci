@@ -8,7 +8,7 @@
 # As the yaml syntax for Drone CI is rather limited.
 
 # Generate pipeline for Linux platform compilers.
-def linux_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ver="", arch="amd64", image="cppalliance/ubuntu16.04:1", buildtype="boost", buildscript="", environment={}, globalenv={}, triggers={ "branch": [ "master", "develop", "drone*", "bugfix/*", "feature/*", "fix/*", "pr/*" ] }, privileged=False):
+def linux_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ver="", arch="amd64", image="cppalliance/ubuntu16.04:1", buildtype="boost", buildscript="", environment={}, globalenv={}, triggers={ "branch": [ "master", "develop", "drone*", "bugfix/*", "feature/*", "fix/*", "pr/*" ] }, node={}, privileged=False):
   environment_global = {
       "TRAVIS_BUILD_DIR": "/drone/src",
       "TRAVIS_OS_NAME": "linux",
@@ -38,6 +38,7 @@ def linux_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_
       "os": "linux",
       "arch": arch
     },
+    "node": node,
     "steps": [
       {
         "name": "Everything",
