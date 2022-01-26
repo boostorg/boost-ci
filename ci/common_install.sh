@@ -18,8 +18,11 @@
 # - BOOST_CI_TARGET_BRANCH
 # - BOOST_CI_SRC_FOLDER
 # - GIT_FETCH_JOBS to fetch in parallel
+#
 # Will set:
+# - BOOST_BRANCH
 # - BOOST_ROOT
+# - SELF
 
 set -ex
 
