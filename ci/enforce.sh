@@ -19,6 +19,8 @@ function enforce_b2
         if [ -n "${!old_varname}" ]; then
             if [ "$TRAVIS" = "true" ]; then
                 local ci_script=".travis.yml"
+            elif [ ! -z "${GITHUB_WORKFLOW}" ]; then
+                local ci_script="${GITHUB_WORKFLOW} workflow"
             elif [ -n "$AGENT_OS" ]; then
                 local ci_script=".azure-pipelines.yml or azure-pipelines.yml"
             fi

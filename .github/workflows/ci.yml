@@ -1,10 +1,11 @@
 # Copyright 2020-2021 Peter Dimov
 # Copyright 2021 Andrey Semashev
 # Copyright 2021 Alexander Grund
+# Copyright 2022 James E. King III
 #
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at http://boost.org/LICENSE_1_0.txt)
-
+---
 name: CI
 
 on:
@@ -66,13 +67,14 @@ jobs:
           - { compiler: clang-5.0, cxxstd: '03,11,14,1z',    os: ubuntu-18.04 }
           - { compiler: clang-6.0, cxxstd: '03,11,14,17',    os: ubuntu-18.04 }
           - { compiler: clang-7,   cxxstd: '03,11,14,17',    os: ubuntu-18.04 }
-            # Note: clang-8 does not fully support C++20, so it is not compatible with some libstdc++ versions in this mode
+          # Note: clang-8 does not fully support C++20, so it is not compatible with some libstdc++ versions in this mode
           - { compiler: clang-8,   cxxstd: '03,11,14,17,2a', os: ubuntu-18.04, install: 'clang-8 g++-7', gcc_toolchain: 7 }
           - { compiler: clang-9,   cxxstd: '03,11,14,17,2a', os: ubuntu-20.04 }
           - { compiler: clang-10,  cxxstd: '03,11,14,17,20', os: ubuntu-20.04 }
           - { compiler: clang-11,  cxxstd: '03,11,14,17,20', os: ubuntu-20.04 }
           - { compiler: clang-12,  cxxstd: '03,11,14,17,20', os: ubuntu-20.04 }
-            # libc++
+
+          # libc++
           - { compiler: clang-6.0, cxxstd: '03,11,14',       os: ubuntu-18.04, stdlib: libc++, install: 'clang-6.0 libc++-dev libc++abi-dev' }
           - { compiler: clang-12,  cxxstd: '03,11,14,17,20', os: ubuntu-20.04, stdlib: libc++, install: 'clang-12 libc++-12-dev libc++abi-12-dev' }
           - { name: Clang w/ sanitizers, sanitize: yes,
@@ -80,6 +82,12 @@ jobs:
 
           # OSX, clang
           - { compiler: clang,     cxxstd: '03,11,14,17,2a', os: macos-10.15, sanitize: yes }
+
+          # Coverity Scan
+          # requires two github secrets in repo to activate; see ci/github/coverity.sh
+          # does not run on pull requests, only on pushes into develop and master
+          - { name: Coverity, coverity: yes,
+              compiler: clang-10,  cxxstd: '17',             os: ubuntu-20.04 }
 
     timeout-minutes: 120
     runs-on: ${{matrix.os}}
@@ -101,6 +109,9 @@ jobs:
                 apt-get -o Acquire::Retries=$NET_RETRY_COUNT update
                 apt-get -o Acquire::Retries=$NET_RETRY_COUNT install -y g++ python libpython-dev git
             fi
+            if [ ! -z "${{ matrix.coverity }}" ]; then
+                echo "B2_USE_CCACHE=0" >> $GITHUB_ENV
+            fi
             git config --global pack.threads 0
 
       - uses: actions/checkout@v2
@@ -112,6 +123,7 @@ jobs:
 
       - name: Cache ccache
         uses: actions/cache@v2
+        if: env.B2_USE_CCACHE
         with:
           path: ~/.ccache
           key: ${{matrix.os}}-${{matrix.container}}-${{matrix.compiler}}
@@ -180,11 +192,19 @@ jobs:
         run: ci/github/codecov.sh "setup"
 
       - name: Run tests
+        if: '!matrix.coverity'
         run: ci/build.sh
 
       - name: Upload coverage
         if: matrix.coverage
         run: ci/codecov.sh "upload"
+
+      - name: Run coverity
+        if: matrix.coverity && github.event_name == 'push'
+        run: ci/github/coverity.sh
+        env:
+          COVERITY_SCAN_NOTIFICATION_EMAIL: ${{ secrets.COVERITY_SCAN_NOTIFICATION_EMAIL }}
+          COVERITY_SCAN_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
 
   windows:
     defaults:
