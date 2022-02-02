@@ -87,7 +87,12 @@ jobs:
           # requires two github secrets in repo to activate; see ci/github/coverity.sh
           # does not run on pull requests, only on pushes into develop and master
           - { name: Coverity, coverity: yes,
-              compiler: clang-10,  cxxstd: '17',             os: ubuntu-20.04 }
+              compiler: clang-10,  cxxstd: '17',             os: ubuntu-20.04, ccache: no }
+
+          # multiarch (bigendian testing) - does not support coverage yet
+          - { name: Big-endian, multiarch: yes,
+              compiler: clang,     cxxstd: '17',             os: ubuntu-20.04, ccache: no, distro: fedora, edition: 34, arch: s390x }
+
 
     timeout-minutes: 120
     runs-on: ${{matrix.os}}
@@ -109,13 +114,15 @@ jobs:
                 apt-get -o Acquire::Retries=$NET_RETRY_COUNT update
                 apt-get -o Acquire::Retries=$NET_RETRY_COUNT install -y g++ python libpython-dev git
             fi
-            if [[ "${{ matrix.coverity }}" == "yes" ]]; then
+            # multiple job types are not compatible with ccache, they use "ccache: no" in the matrix
+            if [[ "${{ matrix.ccache }}" == "no" ]]; then
                 echo "B2_USE_CCACHE=0" >> $GITHUB_ENV
             fi
             git config --global pack.threads 0
 
       - uses: actions/checkout@v2
         if: '!matrix.coverage'
+
       - uses: actions/checkout@v2
         if: 'matrix.coverage'
         with:
@@ -134,6 +141,7 @@ jobs:
           repository: boostorg/boost-ci
           ref: master
           path: boost-ci-cloned
+
       - name: Get CI scripts folder
         run: |
             # Copy ci folder if not testing Boost.CI
@@ -177,6 +185,18 @@ jobs:
             ln -s /usr/bin "$GCC_TOOLCHAIN_ROOT/bin"
             mkdir -p "$GCC_TOOLCHAIN_ROOT/lib/gcc/$MULTIARCH_TRIPLET"
             ln -s "/usr/lib/gcc/$MULTIARCH_TRIPLET/${{matrix.gcc_toolchain}}" "$GCC_TOOLCHAIN_ROOT/lib/gcc/$MULTIARCH_TRIPLET/${{matrix.gcc_toolchain}}"
+
+      - name: Setup multiarch
+        if: matrix.multiarch
+        run: |
+          sudo apt-get install --no-install-recommends -y binfmt-support qemu-user-static
+          sudo docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          git clone https://github.com/jeking3/bdde.git
+          echo "$(pwd)/bdde/bin/linux" >> ${GITHUB_PATH}
+          echo "BDDE_DISTRO=${{ matrix.distro }}" >> ${GITHUB_ENV}
+          echo "BDDE_EDITION=${{ matrix.edition }}" >> ${GITHUB_ENV}
+          echo "BDDE_ARCH=${{ matrix.arch }}" >> ${GITHUB_ENV}
+          echo "B2_WRAPPER=bdde" >> ${GITHUB_ENV}
 
       - name: Setup Boost
         env:
