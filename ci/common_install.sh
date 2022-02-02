@@ -147,7 +147,7 @@ function show_bootstrap_log
 
 if [[ "$B2_DONT_BOOTSTRAP" != "1" ]]; then
     trap show_bootstrap_log ERR
-    ./bootstrap.sh
+    ${B2_WRAPPER} ./bootstrap.sh
     trap - ERR
-    ./b2 headers
+    ${B2_WRAPPER} ./b2 headers
 fi
