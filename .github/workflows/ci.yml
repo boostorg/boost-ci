@@ -109,7 +109,7 @@ jobs:
                 apt-get -o Acquire::Retries=$NET_RETRY_COUNT update
                 apt-get -o Acquire::Retries=$NET_RETRY_COUNT install -y g++ python libpython-dev git
             fi
-            if [ ! -z "${{ matrix.coverity }}" ]; then
+            if [[ "${{ matrix.coverity }}" == "yes" ]]; then
                 echo "B2_USE_CCACHE=0" >> $GITHUB_ENV
             fi
             git config --global pack.threads 0
@@ -200,7 +200,7 @@ jobs:
         run: ci/codecov.sh "upload"
 
       - name: Run coverity
-        if: matrix.coverity && github.event_name == 'push'
+        if: matrix.coverity && github.event_name == 'push' && (github.ref_name == 'develop' || github.ref_name == 'master')
         run: ci/github/coverity.sh
         env:
           COVERITY_SCAN_NOTIFICATION_EMAIL: ${{ secrets.COVERITY_SCAN_NOTIFICATION_EMAIL }}
