@@ -121,12 +121,9 @@ jobs:
             git config --global pack.threads 0
 
       - uses: actions/checkout@v2
-        if: '!matrix.coverage'
-
-      - uses: actions/checkout@v2
-        if: 'matrix.coverage'
         with:
-          fetch-depth: 0
+          # For coverage builds fetch the whole history, else only 1 commit using a 'fake ternary'
+          fetch-depth: ${{ matrix.coverage && '0' || '1' }}
 
       - name: Cache ccache
         uses: actions/cache@v2
