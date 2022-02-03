@@ -23,9 +23,9 @@ set -ex
 if [[ "$1" == "setup" ]]; then
     export B2_VARIANT=debug
     if [ -z "$B2_CI_VERSION" ]; then
-        export B2_CXXFLAGS="${B2_CXXFLAGS:+$B2_CXXFLAGS }cxxflags=-fkeep-static-functions cxxflags=--coverage"
+        export B2_CXXFLAGS="${B2_CXXFLAGS:+$B2_CXXFLAGS }cxxflags=-fprofile-generate cxxflags=--coverage"
     else
-        export B2_CXXFLAGS="${B2_CXXFLAGS:+$B2_CXXFLAGS }-fkeep-static-functions --coverage"
+        export B2_CXXFLAGS="${B2_CXXFLAGS:+$B2_CXXFLAGS }-fprofile-generate --coverage"
     fi
     export B2_LINKFLAGS="${B2_LINKFLAGS:+$B2_LINKFLAGS }--coverage"
 
@@ -38,14 +38,16 @@ elif [[ "$1" == "upload" ]]; then
             elif [[ "$B2_COMPILER" =~ gcc- ]]; then
                 ver="${B2_COMPILER##*gcc-}"
             fi
+            GCOV=gcov-${ver}
+        else
+            GCOV=gcov
         fi
-        GCOV=gcov-${ver}
     fi
 
     # install the latest lcov we know works
     rm -rf /tmp/lcov
     cd /tmp
-    git clone --depth 1 -b v1.14 https://github.com/linux-test-project/lcov.git
+    git clone --depth 1 -b v1.15 https://github.com/linux-test-project/lcov.git
     export PATH=/tmp/lcov/bin:$PATH
     command -v lcov
     lcov --version
@@ -55,18 +57,11 @@ elif [[ "$1" == "upload" ]]; then
     : "${LCOV_BRANCH_COVERAGE:=1}" # Set default
 
     # coverage files are in ../../b2 from this location
-    lcov --gcov-tool=$GCOV --rc lcov_branch_coverage=${LCOV_BRANCH_COVERAGE} --base-directory "$BOOST_ROOT/libs/$SELF" --directory "$BOOST_ROOT" --capture --output-file all.info
+    lcov --gcov-tool=$GCOV --rc lcov_branch_coverage=${LCOV_BRANCH_COVERAGE} --directory "$BOOST_ROOT" --no-external --capture --output-file all.info
+    lcov --extract all.info "**/${SELF}/**" -o "${SELF}-all.info"
+    lcov --remove "${SELF}-all.info" "**/${SELF}/test/**" -o "coverage.info"
+
     # dump a summary on the console
-    lcov --list all.info
-
-    # all.info contains all the coverage info for all projects - limit to ours
-    # first we extract the interesting headers for our project then we use that list to extract the right things
-    for f in `for f in include/boost/*; do echo $f; done | cut -f2- -d/`; do echo "*/$f*"; done > /tmp/interesting
-    echo headers that matter:
-    cat /tmp/interesting
-    xargs -L 999999 -a /tmp/interesting lcov --gcov-tool=$GCOV --rc lcov_branch_coverage=${LCOV_BRANCH_COVERAGE:-1} --extract all.info {} "*/libs/$SELF/*" --output-file coverage.info
-
-    # dump a summary on the console - helps us identify problems in pathing
     lcov --list coverage.info
 
     #
