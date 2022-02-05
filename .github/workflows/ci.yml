@@ -31,6 +31,7 @@ env:
 
 jobs:
   posix:
+    if: false
     defaults:
       run:
         shell: bash
@@ -224,6 +225,7 @@ jobs:
           COVERITY_SCAN_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
 
   windows:
+    if: false
     defaults:
       run:
         shell: cmd
@@ -231,10 +233,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { toolset: msvc-14.1, cxxstd: '14,17,latest',   addrmd: '32,64', os: windows-2016 }
-          - { toolset: msvc-14.2, cxxstd: '14,17,20',       addrmd: '32,64', os: windows-2019 }
-          - { toolset: msvc-14.3, cxxstd: '14,17,20',       addrmd: '32,64', os: windows-2022 }
-          - { toolset: gcc,       cxxstd: '03,11,14,17,2a', addrmd: '64',    os: windows-2019 }
+          # - { toolset: msvc-14.1, cxxstd: '14,17,latest',   addrmd: '32,64', os: windows-2016 }
+          # - { toolset: msvc-14.2, cxxstd: '14,17,20',       addrmd: '32,64', os: windows-2019 }
+          - { name: Collect coverage, coverage: yes,
+              toolset: msvc-14.3, cxxstd: '14,17,20',       addrmd: '32,64', os: windows-2022 }
+          # - { toolset: gcc,       cxxstd: '03,11,14,17,2a', addrmd: '64',    os: windows-2019 }
 
     runs-on: ${{matrix.os}}
 
@@ -263,7 +266,17 @@ jobs:
           B2_CXXSTD: ${{matrix.cxxstd}}
           B2_ADDRESS_MODEL: ${{matrix.addrmd}}
 
+      - name: Upload coverage
+        shell: powershell
+        if: matrix.coverage
+        run: ci\codecov.ps1
+        env:
+          B2_TOOLSET: ${{matrix.toolset}}
+          B2_CXXSTD: ${{matrix.cxxstd}}
+          B2_ADDRESS_MODEL: ${{matrix.addrmd}}
+
   CMake:
+    if: false
     defaults:
       run:
         shell: bash
