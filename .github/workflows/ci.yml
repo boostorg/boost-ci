@@ -14,7 +14,10 @@ on:
     branches:
       - master
       - develop
+      - bugfix/**
       - feature/**
+      - fix/**
+      - pr/**
 
 concurrency:
   group: ${{format('{0}:{1}', github.repository, github.ref)}}
