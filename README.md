@@ -67,7 +67,7 @@ Build jobs that will severely impact performance (such as `valgrind`) will defin
 
 ## Topic Branch Support ##
 
-The configuration for Travis CI and Appveyor allow for automated branch builds on branch pushes matching these names:
+The configuration for Travis CI, Github Actions, Azure Pipelines and Appveyor allow for automated branch builds on branch pushes matching these names:
 
 - master
 - develop
