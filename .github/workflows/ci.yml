@@ -201,6 +201,7 @@ jobs:
       - name: Setup Boost
         env:
           B2_ADDRESS_MODEL: ${{matrix.address-model}}
+          B2_BOOTSTRAP_TOOLSET: ${{matrix.bootstrap-toolset}}
           B2_COMPILER: ${{matrix.compiler}}
           B2_CXXSTD: ${{matrix.cxxstd}}
           B2_SANITIZE: ${{matrix.sanitize}}
@@ -237,7 +238,7 @@ jobs:
           - { toolset: msvc-14.1, cxxstd: '14,17,latest',   addrmd: '32,64', os: windows-2016 }
           - { toolset: msvc-14.2, cxxstd: '14,17,20',       addrmd: '32,64', os: windows-2019 }
           - { toolset: msvc-14.3, cxxstd: '14,17,20',       addrmd: '32,64', os: windows-2022 }
-          - { toolset: gcc,       cxxstd: '03,11,14,17,2a', addrmd: '64',    os: windows-2019 }
+          - { toolset: gcc,       cxxstd: '03,11,14,17,2a', addrmd: '64',    os: windows-2022, bootstrap-toolset: mingw }
 
     runs-on: ${{matrix.os}}
 
@@ -258,6 +259,8 @@ jobs:
 
       - name: Setup Boost
         run: ci\github\install.bat
+        env:
+          B2_BOOTSTRAP_TOOLSET: ${{ matrix.bootstrap-toolset }}
 
       - name: Run tests
         run: ci\build.bat

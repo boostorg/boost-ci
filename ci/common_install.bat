@@ -1,7 +1,12 @@
 REM Generic install script for Windows
+REM
 REM The following CI specific environment variables need to be set:
 REM - BOOST_CI_TARGET_BRANCH
 REM - BOOST_CI_SRC_FOLDER
+REM
+REM Optional environment variables:
+REM - B2_BOOTSTRAP_TOOLSET (in some cases bootstrap.bat uses different toolset names)
+REM
 
 @ECHO ON
 
@@ -52,7 +57,7 @@ if NOT %cxx_exe% == "" (
 
 REM Bootstrap is not expecting B2_CXXFLAGS content so we zero it out for the bootstrap only
 SET B2_CXXFLAGS=
-cmd /c bootstrap
+cmd /c bootstrap %B2_BOOTSTRAP_TOOLSET%
 IF NOT %ERRORLEVEL% == 0 (
     type bootstrap.log
     EXIT /B 1

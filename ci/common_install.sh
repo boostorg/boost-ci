@@ -1,6 +1,6 @@
 #! /bin/bash
 #
-# Copyright 2017 - 2019 James E. King III
+# Copyright 2017 - 2022 James E. King III
 # Copyright 2019 Mateusz Loskot <mateusz at loskot dot net>
 # Copyright 2020 Alexander Grund
 # Distributed under the Boost Software License, Version 1.0.
@@ -18,6 +18,9 @@
 # - BOOST_CI_TARGET_BRANCH
 # - BOOST_CI_SRC_FOLDER
 # - GIT_FETCH_JOBS to fetch in parallel
+#
+# Optional environment variables:
+# - B2_BOOTSTRAP_TOOLSET (in some cases bootstrap.sh uses different toolset names)
 #
 # Will set:
 # - BOOST_BRANCH
@@ -147,7 +150,7 @@ function show_bootstrap_log
 
 if [[ "$B2_DONT_BOOTSTRAP" != "1" ]]; then
     trap show_bootstrap_log ERR
-    ${B2_WRAPPER} ./bootstrap.sh
+    ${B2_WRAPPER} ./bootstrap.sh ${B2_BOOTSTRAP_TOOLSET:+--with-toolset=$B2_BOOTSTRAP_TOOLSET}
     trap - ERR
     ${B2_WRAPPER} ./b2 headers
 fi
