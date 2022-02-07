@@ -5,7 +5,8 @@ REM - BOOST_CI_TARGET_BRANCH
 REM - BOOST_CI_SRC_FOLDER
 REM
 REM Optional environment variables:
-REM - B2_BOOTSTRAP_TOOLSET (in some cases bootstrap.bat uses different toolset names)
+REM - B2_BOOTSTRAP_TOOLSET - Toolset to be used by bootstrap. If unset one is automatically chosen.
+REM -         Can be different than the toolset used for tests and must e.g. support C++11.
 REM
 
 @ECHO ON
