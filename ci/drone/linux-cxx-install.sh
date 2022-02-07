@@ -2,7 +2,11 @@
 
 set -ex
 echo ">>>>> APT: REPO.."
-for i in {1..3}; do sudo -E apt-add-repository -y "ppa:ubuntu-toolchain-r/test" && break || sleep 10; done
+if [ "$UBUNTU_TOOLCHAIN_DISABLE" != "true" ]; then
+    for i in {1..3}; do sudo -E apt-add-repository -y "ppa:ubuntu-toolchain-r/test" && break || sleep 10; done
+else
+    echo "UBUNTU_TOOLCHAIN_DISABLE is 'true'. Not installing ppa:ubuntu-toolchain-r/test"
+fi
 
 if test -n "${LLVM_OS}" ; then
     wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
