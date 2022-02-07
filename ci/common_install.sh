@@ -20,7 +20,8 @@
 # - GIT_FETCH_JOBS to fetch in parallel
 #
 # Optional environment variables:
-# - B2_BOOTSTRAP_TOOLSET (in some cases bootstrap.sh uses different toolset names)
+# - B2_BOOTSTRAP_TOOLSET - Toolset to be used by bootstrap. If unset, one is automatically chosen.
+#      Can be different than the toolset used for tests and must e.g. support C++11.
 #
 # Will set:
 # - BOOST_BRANCH
