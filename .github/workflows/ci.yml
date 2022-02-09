@@ -267,7 +267,7 @@ jobs:
           B2_CXXSTD: ${{matrix.cxxstd}}
           B2_ADDRESS_MODEL: ${{matrix.addrmd}}
 
-      - name: Run coverage
+      - name: Collect coverage
         shell: powershell
         if: matrix.coverage
         run: ci\opencppcoverage.ps1
