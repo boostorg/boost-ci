@@ -28,6 +28,9 @@ if [[ "$B2_SANITIZE" == "yes" ]]; then
   if [[ -f $BOOST_CI_SRC_FOLDER/ubsan-blacklist ]]; then
     echo "B2_CXXFLAGS=${B2_CXXFLAGS:+$B2_CXXFLAGS }-fsanitize-blacklist=libs/$SELF/ubsan-blacklist" >> $GITHUB_ENV
   fi
+  if [[ -f $BOOST_CI_SRC_FOLDER/.ubsan-ignorelist ]]; then
+    echo "B2_CXXFLAGS=${B2_CXXFLAGS:+$B2_CXXFLAGS }-fsanitize-blacklist=libs/$SELF/.ubsan-ignorelist" >> $GITHUB_ENV
+  fi
 fi
 
 . $(dirname "${BASH_SOURCE[0]}")/../common_install.sh
