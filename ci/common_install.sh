@@ -126,14 +126,20 @@ if [ -n "$B2_COMPILER" ]; then
         echo "Error: Compiler $CXX was not installed properly"
         exit 1
     fi
+    set +x
     echo "Compiler location: $(command -v $CXX)"
     echo "Compiler version: $($CXX --version)"
+    set -x
     if [ "$B2_USE_CCACHE" == "1" ]; then
         CXX="ccache $CXX"
     fi
     export CXX
 
     echo -n "using $B2_TOOLSET : : $CXX" > ~/user-config.jam
+    # On MSYS B2 needs the .exe suffix to find the compiler
+    if [ "$OSTYPE" == "msys" ]; then
+      echo -n ".exe" >> ~/user-config.jam
+    fi
     if [ -n "$GCC_TOOLCHAIN_ROOT" ]; then
         echo -n " : <compileflags>\"--gcc-toolchain=$GCC_TOOLCHAIN_ROOT\" <linkflags>\"--gcc-toolchain=$GCC_TOOLCHAIN_ROOT\"" >> ~/user-config.jam
     fi
@@ -146,8 +152,14 @@ function show_bootstrap_log
 }
 
 if [[ "$B2_DONT_BOOTSTRAP" != "1" ]]; then
-    trap show_bootstrap_log ERR
-    ${B2_WRAPPER} ./bootstrap.sh
-    trap - ERR
-    ${B2_WRAPPER} ./b2 headers
+    # Bootstrapping under MSYS doesn't work yet, run on the cmd instead with empty (auto-detected) CXX
+    if [ "$OSTYPE" == "msys" ]; then
+        unset CXX
+        "$CI_DIR"/common_bootstrap.bat
+    else
+        trap show_bootstrap_log ERR
+        ${B2_WRAPPER} ./bootstrap.sh
+        trap - ERR
+        ${B2_WRAPPER} ./b2 headers
+    fi
 fi

@@ -50,15 +50,7 @@ if NOT %cxx_exe% == "" (
 )
 @ECHO ON
 
-REM Bootstrap is not expecting B2_CXXFLAGS content so we zero it out for the bootstrap only
-SET B2_CXXFLAGS=
-cmd /c bootstrap
-IF NOT %ERRORLEVEL% == 0 (
-    type bootstrap.log
-    EXIT /B 1
-)
-
-b2 headers
+call %~dp0\common_bootstrap.bat
 ENDLOCAL
 
 if DEFINED B2_CI_VERSION (
