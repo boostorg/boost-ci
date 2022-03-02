@@ -152,14 +152,8 @@ function show_bootstrap_log
 }
 
 if [[ "$B2_DONT_BOOTSTRAP" != "1" ]]; then
-    # Bootstrapping under MSYS doesn't work yet, run on the cmd instead with empty (auto-detected) CXX
-    if [ "$OSTYPE" == "msys" ]; then
-        unset CXX
-        "$CI_DIR"/common_bootstrap.bat
-    else
-        trap show_bootstrap_log ERR
-        ${B2_WRAPPER} ./bootstrap.sh
-        trap - ERR
-        ${B2_WRAPPER} ./b2 headers
-    fi
+    trap show_bootstrap_log ERR
+    ${B2_WRAPPER} ./bootstrap.sh
+    trap - ERR
+    ${B2_WRAPPER} ./b2 headers
 fi
