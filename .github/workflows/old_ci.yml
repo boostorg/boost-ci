@@ -38,9 +38,21 @@ jobs:
               B2_VARIANT: variant=release
               # Possible (ab)usage
               B2_CXXFLAGS: define=norecover
-
               B2_DEFINES: define=BOOST_NO_STRESS_TEST=1
               B2_LINKFLAGS: linkflags=-fuse-ld=gold
+            os: ubuntu-20.04
+            install: g++-8
+          - name: Old var usage, multiple LINKFLAGS
+            env:
+              B2_TOOLSET: gcc-8
+              B2_ADDRESS_MODEL: address-model=64
+              B2_LINK: link=shared,static
+              B2_THREADING: threading=multi,single
+              B2_VARIANT: variant=release
+              # Possible (ab)usage
+              B2_CXXFLAGS: define=norecover
+              B2_DEFINES: define=BOOST_NO_STRESS_TEST=1
+              B2_LINKFLAGS: linkflags=-fsanitize=undefined linkflags=-fno-sanitize-recover=all linkflags=-fuse-ld=gold
             os: ubuntu-20.04
             install: g++-8
           - name: Travis-like coverage collection
