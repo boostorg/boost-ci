@@ -104,9 +104,9 @@ The configuration for Github Actions, Azure Pipelines, Appveyor and Travis CI al
 - fix/*
 - pr/*
 
-Note that when opening a Pull Request (PR) the use of a topic branch name is not required and even discouraged as PRs are always build on CI and the use of a topic branch name will lead to duplicating all builds.
+Note that when opening a Pull Request (PR) the use of a topic branch name is not required and even discouraged as PRs are always built on CI and the use of a topic branch name will lead to duplicating all builds.
 
-A good strategy is to only use a topic branch name when actively working on a changeset and when you want CI to run branch for each push of that branch.
+A good strategy is to only use a topic branch name when actively working on a changeset and when you want CI to run for each push of that branch.
 When the changeset is (mostly) done it is advised to rename the branch right before opening a PR to avoid that double-build issue.
 This can be done easily via the GitHub website (check the "branches" link at the repo overview page) or of course via command line (push to a new remote branch and delete the old one).
 
