@@ -28,13 +28,16 @@ set -ex
 . $(dirname "${BASH_SOURCE[0]}")/enforce.sh
 
 if [[ "$1" == "setup" ]]; then
-    export B2_VARIANT=debug
     if [ -z "$B2_CI_VERSION" ]; then
+        # Old CI version needs to use the prefixes
+        export B2_VARIANT="variant=debug"
         export B2_CXXFLAGS="${B2_CXXFLAGS:+$B2_CXXFLAGS }cxxflags=-fkeep-static-functions cxxflags=--coverage"
+        export B2_LINKFLAGS="${B2_LINKFLAGS:+$B2_LINKFLAGS } linkflags=--coverage"
     else
+        export B2_VARIANT=debug
         export B2_CXXFLAGS="${B2_CXXFLAGS:+$B2_CXXFLAGS }-fkeep-static-functions --coverage"
+        export B2_LINKFLAGS="${B2_LINKFLAGS:+$B2_LINKFLAGS }--coverage"
     fi
-    export B2_LINKFLAGS="${B2_LINKFLAGS:+$B2_LINKFLAGS }--coverage"
 
 elif [[ "$1" == "upload" ]]; then
     if [ -z "$GCOV" ]; then

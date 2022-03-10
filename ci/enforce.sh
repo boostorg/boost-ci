@@ -52,41 +52,42 @@ if [ -z "${B2_JOBS}" ]; then
     export B2_JOBS=$((cpus + 1))
 fi
 
-# For old versions strip prefix from variables
-if [ -z "$B2_CI_VERSION" ]; then
-    # Skipped:
-    # B2_THREADING: can be threading= or threadapi=
-    B2_DEFINES="${B2_DEFINES#define=}"
-    B2_INCLUDE="${B2_INCLUDE#include=}"
-    B2_LINKFLAGS="${B2_LINKFLAGS#linkflags=}"
-    B2_ADDRESS_MODEL="${B2_ADDRESS_MODEL#address-model=}"
-    B2_LINK="${B2_LINK#link=}"
-    B2_VARIANT="${B2_VARIANT#variant=}"
-    if [ -n "$B2_CXXFLAGS" ]; then
-        # Sometimes (ab)used for sanitizers, so play safe and add it to B2_FLAGS
-        B2_FLAGS="$B2_FLAGS $B2_CXXFLAGS"
-        unset B2_CXXFLAGS
-    fi
-fi
-
 # Build cmdline arguments for B2 as an array to preserve quotes
-B2_ARGS=(
-    ${B2_TOOLSET:+"toolset=$B2_TOOLSET"}
-    "cxxstd=$B2_CXXSTD"
-    ${B2_CXXFLAGS:+"cxxflags=$B2_CXXFLAGS"}
-    ${B2_DEFINES:+"define=$B2_DEFINES"}
-    ${B2_INCLUDE:+"include=$B2_INCLUDE"}
-    ${B2_LINKFLAGS:+"linkflags=$B2_LINKFLAGS"}
-    ${B2_TESTFLAGS}
-    ${B2_ADDRESS_MODEL:+address-model=$B2_ADDRESS_MODEL}
-    ${B2_LINK:+link=$B2_LINK}
-    ${B2_VISIBILITY:+visibility=$B2_VISIBILITY}
-    ${B2_STDLIB:+"stdlib=$B2_STDLIB"}
-    ${B2_THREADING}
-    ${B2_VARIANT:+variant=$B2_VARIANT}
-    ${B2_ASAN:+address-sanitizer=norecover}
-    ${B2_TSAN:+thread-sanitizer=norecover}
-    ${B2_UBSAN:+undefined-sanitizer=norecover}
-    -j${B2_JOBS}
-    ${B2_FLAGS}
-)
+if [ -z "$B2_CI_VERSION" ]; then
+  # For old versions the prefix was included in (most) variables
+  B2_ARGS=(
+      toolset=$B2_TOOLSET
+      cxxstd=$B2_CXXSTD
+      $B2_CXXFLAGS
+      $B2_DEFINES
+      $B2_INCLUDE
+      $B2_LINKFLAGS
+      $B2_TESTFLAGS
+      $B2_ADDRESS_MODEL
+      $B2_LINK
+      $B2_THREADING
+      $B2_VARIANT
+      -j${B2_JOBS}
+  )
+else
+  B2_ARGS=(
+      ${B2_TOOLSET:+"toolset=$B2_TOOLSET"}
+      "cxxstd=$B2_CXXSTD"
+      ${B2_CXXFLAGS:+"cxxflags=$B2_CXXFLAGS"}
+      ${B2_DEFINES:+"define=$B2_DEFINES"}
+      ${B2_INCLUDE:+"include=$B2_INCLUDE"}
+      ${B2_LINKFLAGS:+"linkflags=$B2_LINKFLAGS"}
+      ${B2_TESTFLAGS}
+      ${B2_ADDRESS_MODEL:+address-model=$B2_ADDRESS_MODEL}
+      ${B2_LINK:+link=$B2_LINK}
+      ${B2_VISIBILITY:+visibility=$B2_VISIBILITY}
+      ${B2_STDLIB:+"stdlib=$B2_STDLIB"}
+      ${B2_THREADING}
+      ${B2_VARIANT:+variant=$B2_VARIANT}
+      ${B2_ASAN:+address-sanitizer=norecover}
+      ${B2_TSAN:+thread-sanitizer=norecover}
+      ${B2_UBSAN:+undefined-sanitizer=norecover}
+      -j${B2_JOBS}
+      ${B2_FLAGS}
+  )
+fi
