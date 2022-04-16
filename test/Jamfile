@@ -8,6 +8,11 @@
 import os ;
 import testing ;
 
+project boost/ci/test
+    : requirements
+      <include>.
+    ;
+
 local B2_ADDRESS_MODEL = [ os.environ B2_ADDRESS_MODEL ] ;
 local B2_CXXFLAGS = [ os.environ B2_CXXFLAGS ] ;
 local B2_CXXSTD = [ os.environ B2_CXXSTD ] ;
