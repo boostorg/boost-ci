@@ -8,6 +8,7 @@ project(cmake_subdir_test LANGUAGES CXX)
 
 # Those 2 should work the same
 # while using find_package for the installed Boost avoids the need to manually specify dependencies
+option(BOOST_CI_INSTALL_TEST "Try to use an installed Boost" OFF)
 if(BOOST_CI_INSTALL_TEST)
     find_package(boost_boost_ci REQUIRED)
 else()
