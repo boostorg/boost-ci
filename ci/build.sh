@@ -14,7 +14,7 @@ set -ex
 
 . "$(dirname "${BASH_SOURCE[0]}")"/enforce.sh
 
-export UBSAN_OPTIONS=print_stacktrace=1,report_error_type=1
+export UBSAN_OPTIONS=print_stacktrace=1,report_error_type=1,${UBSAN_OPTIONS}
 
 cd "$BOOST_ROOT"
 
