@@ -27,7 +27,7 @@ if [[ "$B2_SANITIZE" == "yes" ]]; then
     B2_CXXFLAGS="${B2_CXXFLAGS:+$B2_CXXFLAGS }-fsanitize-blacklist=libs/$SELF/ubsan-blacklist"
   fi
   if [[ -f $BOOST_CI_SRC_FOLDER/.ubsan-ignorelist ]]; then
-    B2_CXXFLAGS="${B2_CXXFLAGS:+$B2_CXXFLAGS }-fsanitize-blacklist=libs/$SELF/.ubsan-ignorelist"
+    export UBSAN_OPTIONS="suppressions=${BOOST_CI_SRC_FOLDER}/.ubsan-ignorelist,${UBSAN_OPTIONS}"
   fi
 fi
 
