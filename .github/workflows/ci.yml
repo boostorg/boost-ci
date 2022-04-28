@@ -374,39 +374,18 @@ jobs:
             [[ "$GITHUB_REPOSITORY" =~ "boost-ci" ]] || cp -r boost-ci-cloned/ci .
             rm -rf boost-ci-cloned
       - name: Setup Boost
-        env: {B2_DONT_BOOTSTRAP: 1}
+        env:
+          B2_DONT_BOOTSTRAP: 1
+          BCM_GENERATOR: ${{matrix.generator}}
+          BCM_BUILD_TYPE: ${{matrix.build_type}}
+          BCM_SHARED_LIBS: ${{matrix.build_shared}}
         run: source ci/github/install.sh
 
       - name: Run CMake tests
-        run: |
-            cd "$BOOST_ROOT"
-            mkdir __build_cmake_test__ && cd __build_cmake_test__
-            cmake -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DBOOST_INCLUDE_LIBRARIES=$SELF -DBUILD_SHARED_LIBS=${{matrix.build_shared}} -DBUILD_TESTING=ON -DBoost_VERBOSE=ON ..
-            cmake --build . --target tests --config ${{matrix.build_type}}
-            ctest --output-on-failure --build-config ${{matrix.build_type}}
+        run: ci/cmake_test.sh
 
       - name: Run CMake subdir tests
-        run: |
-            cmake_test_folder="$BOOST_ROOT/libs/$SELF/test/cmake_test" # New unified folder
-            [ -d "$cmake_test_folder" ] || cmake_test_folder="$BOOST_ROOT/libs/$SELF/test/cmake_subdir_test"
-            cd "$cmake_test_folder"
-            mkdir __build_cmake_subdir_test__ && cd __build_cmake_subdir_test__
-            cmake -G "${{matrix.generator}}" -DBOOST_CI_INSTALL_TEST=OFF -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DBUILD_SHARED_LIBS=${{matrix.build_shared}} ..
-            cmake --build . --config ${{matrix.build_type}}
-            ctest --output-on-failure --build-config ${{matrix.build_type}}
+        run: ci/cmake_subdir_test.sh
 
-      - name: Install Library
-        run: |
-            cd "$BOOST_ROOT"
-            mkdir __build_cmake_install_test__ && cd __build_cmake_install_test__
-            cmake -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DBOOST_INCLUDE_LIBRARIES=$SELF -DBUILD_SHARED_LIBS=${{matrix.build_shared}} -DCMAKE_INSTALL_PREFIX=~/.local -DBoost_VERBOSE=ON -DBoost_DEBUG=ON ..
-            cmake --build . --target install --config ${{matrix.build_type}}
       - name: Run CMake install tests
-        run: |
-            cmake_test_folder="$BOOST_ROOT/libs/$SELF/test/cmake_test" # New unified folder
-            [ -d "$cmake_test_folder" ] || cmake_test_folder="$BOOST_ROOT/libs/$SELF/test/cmake_install_test"
-            cd "$cmake_test_folder"
-            mkdir __build_cmake_install_test__ && cd __build_cmake_install_test__
-            cmake -G "${{matrix.generator}}" -DBOOST_CI_INSTALL_TEST=ON -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DBUILD_SHARED_LIBS=${{matrix.build_shared}} -DCMAKE_PREFIX_PATH=~/.local ..
-            cmake --build . --config ${{matrix.build_type}}
-            ctest --output-on-failure --build-config ${{matrix.build_type}}
+        run: ci/cmake_install_test.sh
