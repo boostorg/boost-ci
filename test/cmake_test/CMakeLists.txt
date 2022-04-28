@@ -11,8 +11,27 @@ project(cmake_subdir_test LANGUAGES CXX)
 if(BOOST_CI_INSTALL_TEST)
     find_package(boost_boost_ci REQUIRED)
 else()
-    add_subdirectory(../.. boostorg/ci)
-    add_subdirectory(../../../config boostorg/config)
+    add_subdirectory(../.. boostorg/boost-ci)
+
+    set(deps
+      # Primary dependencies
+      atomic
+      config
+      core
+      # Secondary dependencies
+      align
+      assert
+      predef
+      preprocessor
+      static_assert
+      throw_exception
+      type_traits
+      winapi
+    )
+
+    foreach(dep IN LISTS deps)
+      add_subdirectory(../../../${dep} boostorg/${dep})
+    endforeach()
 endif()
 
 add_executable(main main.cpp)
