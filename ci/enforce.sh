@@ -46,11 +46,7 @@ if [ -z "$B2_CXXSTD" ]; then
     export B2_CXXSTD=11
 fi
 
-# default parallel build jobs: number of CPUs available + 1
-if [ -z "${B2_JOBS}" ]; then
-    cpus=$(grep -c 'processor' /proc/cpuinfo || python -c 'import multiprocessing as mp; print(mp.cpu_count())' || echo "2")
-    export B2_JOBS=$((cpus + 1))
-fi
+. "$(dirname "${BASH_SOURCE[0]}")"/set_num_jobs.sh
 
 # Build cmdline arguments for B2 as an array to preserve quotes
 if [ -z "$B2_CI_VERSION" ]; then
