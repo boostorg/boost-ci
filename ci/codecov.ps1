@@ -17,9 +17,9 @@ if (Get-Command "gpg.exe" -ErrorAction SilentlyContinue){
     Invoke-WebRequest -Uri https://uploader.codecov.io/latest/windows/codecov.exe.SHA256SUM.sig -Outfile codecov.exe.SHA256SUM.sig
 
     $ErrorActionPreference = "Continue"
-    gpg.exe --import codecov.asc
+    gpg.exe --logger-fd 1 --import codecov.asc
     if ($LASTEXITCODE -ne 0) { Throw "Importing the key failed." }
-    gpg.exe --verify codecov.exe.SHA256SUM.sig codecov.exe.SHA256SUM
+    gpg.exe --logger-fd 1 --verify codecov.exe.SHA256SUM.sig codecov.exe.SHA256SUM
     if ($LASTEXITCODE -ne 0) { Throw "Signature validation of the SHASUM failed." }
     If ($(Compare-Object -ReferenceObject  $(($(certUtil -hashfile codecov.exe SHA256)[1], "codecov.exe") -join "  ") -DifferenceObject $(Get-Content codecov.exe.SHA256SUM)).length -eq 0) { 
         echo "SHASUM verified"
@@ -30,9 +30,6 @@ if (Get-Command "gpg.exe" -ErrorAction SilentlyContinue){
 
 &"$scriptPath\opencppcoverage.ps1"
 if ($LASTEXITCODE -ne 0) { Throw "Coverage collection failed." }
-
-# Workaround for https://github.com/codecov/uploader/issues/525
-if("${env:APPVEYOR_PULL_REQUEST_HEAD_COMMIT}" -ne ""){ $env:APPVEYOR_REPO_COMMIT = "${env:APPVEYOR_PULL_REQUEST_HEAD_COMMIT}" }
 
 # Upload
 ./codecov.exe --name Appveyor --env APPVEYOR_BUILD_WORKER_IMAGE --verbose --nonZero --dir __out --rootDir "${env:BOOST_CI_SRC_FOLDER}"
