@@ -17,9 +17,9 @@ if (Get-Command "gpg.exe" -ErrorAction SilentlyContinue){
     Invoke-WebRequest -Uri https://uploader.codecov.io/latest/windows/codecov.exe.SHA256SUM.sig -Outfile codecov.exe.SHA256SUM.sig
 
     $ErrorActionPreference = "Continue"
-    gpg.exe --import codecov.asc
+    gpg.exe --logger-fd 1 --import codecov.asc
     if ($LASTEXITCODE -ne 0) { Throw "Importing the key failed." }
-    gpg.exe --verify codecov.exe.SHA256SUM.sig codecov.exe.SHA256SUM
+    gpg.exe --logger-fd 1 --verify codecov.exe.SHA256SUM.sig codecov.exe.SHA256SUM
     if ($LASTEXITCODE -ne 0) { Throw "Signature validation of the SHASUM failed." }
     If ($(Compare-Object -ReferenceObject  $(($(certUtil -hashfile codecov.exe SHA256)[1], "codecov.exe") -join "  ") -DifferenceObject $(Get-Content codecov.exe.SHA256SUM)).length -eq 0) { 
         echo "SHASUM verified"
