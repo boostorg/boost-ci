@@ -42,6 +42,7 @@ echo "B2_TOOLSET=$B2_TOOLSET" >> $GITHUB_ENV
 echo "B2_COMPILER=$B2_COMPILER" >> $GITHUB_ENV
 # Usually set by the env-key of the "Setup Boost" step
 [ -z "$B2_CXXSTD" ] || echo "B2_CXXSTD=$B2_CXXSTD" >> $GITHUB_ENV
+[ -z "$B2_JOBS" ] || echo "B2_JOBS=$B2_JOBS" >> $GITHUB_ENV
 [ -z "$B2_CXXFLAGS" ] || echo "B2_CXXFLAGS=$B2_CXXFLAGS" >> $GITHUB_ENV
 [ -z "$B2_DEFINES" ] || echo "B2_DEFINES=$B2_DEFINES" >> $GITHUB_ENV
 [ -z "$B2_INCLUDE" ] || echo "B2_INCLUDE=$B2_INCLUDE" >> $GITHUB_ENV
