@@ -823,4 +823,12 @@ jobs:
             mkdir __build_cmake_install_test__ && cd __build_cmake_install_test__
             cmake -G "${{matrix.generator}}" -DBOOST_CI_INSTALL_TEST=ON -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DBUILD_SHARED_LIBS=${{matrix.build_shared}} -DCMAKE_PREFIX_PATH="$BCM_INSTALL_PATH" ..
             cmake --build . --config ${{matrix.build_type}} -j$B2_JOBS
+            if [[ "${{matrix.build_shared}}" == "ON" ]]; then
+                # Make sure shared libs can be found at runtime
+                if [ "$RUNNER_OS" == "Windows" ]; then
+                    export PATH="$BCM_INSTALL_PATH/bin:$PATH"
+                else
+                    export LD_LIBRARY_PATH="$BCM_INSTALL_PATH/lib:$LD_LIBRARY_PATH"
+                fi
+            fi
             ctest --output-on-failure --build-config ${{matrix.build_type}}
