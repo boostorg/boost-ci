@@ -8,9 +8,8 @@
 import os ;
 import testing ;
 
-project boost/ci/test
-    : requirements
-      <include>.
+project : requirements
+      <library>/boost/ci//boost_ci
     ;
 
 local B2_ADDRESS_MODEL = [ os.environ B2_ADDRESS_MODEL ] ;
