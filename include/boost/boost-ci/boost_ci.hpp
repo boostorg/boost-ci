@@ -7,32 +7,38 @@
 
 // Just something so we can test dependencies on other Boost libs
 #include <boost/config.hpp>
+#include <stdexcept>
 #ifndef BOOST_NO_CXX11_SMART_PTR
 #include <memory>
+#endif
+
+#ifdef BOOST_MSVC
+#define MSVC_VALUE 1
+#else
+#define MSVC_VALUE 0
 #endif
 
 namespace boost
 {
   namespace boost_ci
   {
-#ifdef BOOST_MSVC
-#define MSVC_VALUE true
-#else
-#define MSVC_VALUE false
-#endif
+    class BOOST_SYMBOL_VISIBLE example_error : public std::runtime_error {
+    public:
+      example_error() : std::runtime_error("Example error for demonstration") {}
+    };
 
     // Some function to test
-    BOOST_NOINLINE int get_answer(const bool isMsvc = MSVC_VALUE)
+    BOOST_NOINLINE int get_answer(const int isMsvc = MSVC_VALUE)
     {
       int answer;
       // Specifically crafted condition to check for coverage from MSVC and non MSVC builds
-      if(isMsvc)
-      {
-        answer = 21;
-      } else
-      {
+      if(isMsvc == 0)
         answer = 42;
-      }
+      else if(isMsvc == 1)
+        answer = 21;
+      else
+        throw example_error();
+
 #ifdef BOOST_NO_CXX11_SMART_PTR
       return answer;
 #else

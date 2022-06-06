@@ -31,5 +31,6 @@ int main()
       BOOST_TEST_EQ(boost::boost_ci::get_answer(), 42);
     }
     BOOST_TEST_EQ(map["result"].size(), 1u);
+    BOOST_TEST_THROWS(boost::boost_ci::get_answer(-1), boost::boost_ci::example_error);
     return boost::report_errors();
 }
