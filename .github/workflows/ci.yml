@@ -35,6 +35,10 @@ on:
       - meta/**
       - README.md
 
+env:
+  # If set to 1 coverage collection may use b2 testing.launcher. Disable if the tests already need that.
+  B2_ALLOW_COVERAGE_TEST_LAUNCHER: 1
+
 jobs:
   call-boost-ci:
     name: Run Boost.CI
