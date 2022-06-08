@@ -51,6 +51,8 @@ environment:
     B2_LINK: shared,static
     # B2_THREADING: threading=multi,single
     B2_VARIANT: release
+    # If set to 1 coverage collection may use b2 testing.launcher. Disable if the tests already need that.
+    B2_ALLOW_COVERAGE_TEST_LAUNCHER: 1
 
   matrix:
     - FLAVOR: Visual Studio 2008, 2010, 2012
