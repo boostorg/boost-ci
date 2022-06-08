@@ -86,9 +86,8 @@ environment:
       B2_TOOLSET: msvc-14.3
 
     - FLAVOR: clang-cl
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
-      B2_ADDRESS_MODEL: 64
-      B2_CXXSTD: 11,14,17
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+      B2_CXXSTD: 11,14,17,latest
       B2_TOOLSET: clang-win
 
     - FLAVOR: cygwin (32-bit)
