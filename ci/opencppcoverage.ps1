@@ -33,6 +33,13 @@ $cmd += $exclusions.ForEach({"--excluded_line_regex '{0}'" -f $_}) -join " "
 # Cover all subprocess of the build script (-> b2 -> test binary)
 $cmd += "--cover_children -- cmd.exe /c $scriptPath\build.bat"
 
+echo "Starting build without running tests"
+$old_B2_FLAGS = $env:B2_FLAGS
+$env:B2_FLAGS += 'testing.execute=off'
+Invoke-Expression "cmd.exe /c $scriptPath\build.bat"
+$env:B2_FLAGS = $old_B2_FLAGS
+
 # Print generated command and run
 $cmd
+echo "Starting build with coverage collection"
 Invoke-Expression $cmd
