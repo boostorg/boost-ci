@@ -46,6 +46,7 @@ jobs:
     # Customization:
     with:
       enable_reflection: true
+      enable_posix: false
     #  enable_windows: false
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
