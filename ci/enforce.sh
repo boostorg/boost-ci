@@ -10,6 +10,14 @@
 
 set -e
 
+if command -v python ; then
+    export pythonexecutable="python"
+elif command -v python3 ; then
+    export pythonexecutable="python3"
+else
+    export pythonexecutable="python"
+fi
+
 function enforce_b2
 {
     local old_varname=$1
@@ -48,7 +56,7 @@ fi
 
 # default parallel build jobs: number of CPUs available + 1
 if [ -z "${B2_JOBS}" ]; then
-    cpus=$(grep -c 'processor' /proc/cpuinfo || python -c 'import multiprocessing as mp; print(mp.cpu_count())' || echo "2")
+    cpus=$(grep -c 'processor' /proc/cpuinfo || $pythonexecutable -c 'import multiprocessing as mp; print(mp.cpu_count())' || echo "2")
     export B2_JOBS=$((cpus + 1))
 fi
 
