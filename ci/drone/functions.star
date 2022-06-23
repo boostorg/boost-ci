@@ -137,7 +137,11 @@ def osx_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ve
   if xcode_version:
     environment_current.update({"DEVELOPER_DIR": "/Applications/Xcode-" + xcode_version +  ".app/Contents/Developer"})
     if not osx_version:
-        if xcode_version[0:2] in [ "12","11","10"]:
+        if xcode_version[0:2] in [ "13"]:
+            osx_version="monterey"
+        elif xcode_version[0:4] in [ "12.5"]:
+            osx_version="monterey"
+        elif xcode_version[0:2] in [ "12","11","10"]:
             osx_version="catalina"
         elif xcode_version[0:1] in [ "9","8","7","6"]:
             osx_version="highsierra"
@@ -166,7 +170,6 @@ def osx_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ve
 
           "echo '==================================> SETUP'",
           "uname -a",
-          "hostname",
           # "apt-get -o Acquire::Retries=3 update && apt-get -o Acquire::Retries=3 -y install git",
           "BOOST_CI_ORG=boostorg BOOST_CI_BRANCH=master && /usr/local/bin/wget https://github.com/$BOOST_CI_ORG/boost-ci/archive/$BOOST_CI_BRANCH.tar.gz && tar -xvf $BOOST_CI_BRANCH.tar.gz && mv boost-ci-$BOOST_CI_BRANCH .drone/boost-ci && rm $BOOST_CI_BRANCH.tar.gz",
           "echo '==================================> PACKAGES'",
