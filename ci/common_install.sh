@@ -29,11 +29,14 @@ set -ex
 CI_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 
 if command -v python ; then
-    export pythonexecutable="python"
+    pythonexecutable="python"
 elif command -v python3 ; then
-    export pythonexecutable="python3"
+    pythonexecutable="python3"
+elif command -v python2 ; then
+    pythonexecutable="python2"
 else
-    export pythonexecutable="python"
+   echo "Please install Python!"
+   false
 fi
 
 . "$CI_DIR"/enforce.sh

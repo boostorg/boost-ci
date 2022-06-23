@@ -11,11 +11,14 @@
 set -e
 
 if command -v python ; then
-    export pythonexecutable="python"
+    pythonexecutable="python"
 elif command -v python3 ; then
-    export pythonexecutable="python3"
+    pythonexecutable="python3"
+elif command -v python2 ; then
+    pythonexecutable="python2"
 else
-    export pythonexecutable="python"
+   echo "Please install Python!"
+   false
 fi
 
 function enforce_b2
