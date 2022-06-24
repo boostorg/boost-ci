@@ -28,10 +28,21 @@ set -ex
 
 CI_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 
+if command -v python ; then
+    pythonexecutable="python"
+elif command -v python3 ; then
+    pythonexecutable="python3"
+elif command -v python2 ; then
+    pythonexecutable="python2"
+else
+   echo "Please install Python!"
+   false
+fi
+
 . "$CI_DIR"/enforce.sh
 
 if [ -z "$SELF" ]; then
-    export SELF=$(python "$CI_DIR/get_libname.py")
+    export SELF=$($pythonexecutable "$CI_DIR/get_libname.py")
 fi
 
 # Handle also /refs/head/master
@@ -57,7 +68,7 @@ if [[ -n "$GIT_FETCH_JOBS" ]]; then
     DEPINST_ARGS+=("--git_args" "--jobs $GIT_FETCH_JOBS")
 fi
 
-python tools/boostdep/depinst/depinst.py --include benchmark --include example --include examples --include tools "${DEPINST_ARGS[@]}" $DEPINST $SELF
+$pythonexecutable tools/boostdep/depinst/depinst.py --include benchmark --include example --include examples --include tools "${DEPINST_ARGS[@]}" $DEPINST $SELF
 
 # Deduce B2_TOOLSET if unset from B2_COMPILER
 if [ -z "$B2_TOOLSET" ] && [ -n "$B2_COMPILER" ]; then
