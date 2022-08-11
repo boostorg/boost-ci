@@ -85,12 +85,33 @@ if [ -z "$B2_CI_VERSION" ]; then
       -j${B2_JOBS}
   )
 else
+  # Generate multiple "option=value" entries from the value of an environment variable
+  # Handles correct splitting and quoting
+  function append_b2_args
+  {
+      local var_name="$1"
+      local option_name="$2"
+      if [ -n "${!var_name}" ]; then
+          while IFS= read -r -d '' value; do
+              # If the value has an assignment and a space we need to quote it
+              if [[ $value == *"="*" "* ]]; then
+                B2_ARGS+=("${option_name}=${value%%=*}=\"${value#*=}\"")
+              else
+                B2_ARGS+=("${option_name}=${value}")
+              fi
+          done < <(echo "${!var_name}" | xargs -n 1 printf '%s\0')
+      fi
+  }
+
   B2_ARGS=(
       ${B2_TOOLSET:+"toolset=$B2_TOOLSET"}
       "cxxstd=$B2_CXXSTD"
       ${B2_CXXFLAGS:+"cxxflags=$B2_CXXFLAGS"}
-      ${B2_DEFINES:+"define=$B2_DEFINES"}
-      ${B2_INCLUDE:+"include=$B2_INCLUDE"}
+  )
+  append_b2_args B2_DEFINES define
+  append_b2_args B2_INCLUDE include
+  B2_ARGS=(
+      "${B2_ARGS[@]}"
       ${B2_LINKFLAGS:+"linkflags=$B2_LINKFLAGS"}
       ${B2_TESTFLAGS}
       ${B2_ADDRESS_MODEL:+address-model=$B2_ADDRESS_MODEL}
