@@ -10,16 +10,19 @@
 
 set -e
 
-if command -v python ; then
-    pythonexecutable="python"
-elif command -v python3 ; then
-    pythonexecutable="python3"
-elif command -v python2 ; then
-    pythonexecutable="python2"
-else
-   echo "Please install Python!"
-   false
-fi
+function get_python_executable
+{
+    if command -v python &> /dev/null; then
+        echo "python"
+    elif command -v python3 &> /dev/null; then
+        echo "python3"
+    elif command -v python2 &> /dev/null; then
+        echo "python2"
+    else
+       echo "Please install Python!" >&2
+       false
+    fi
+}
 
 function enforce_b2
 {
@@ -59,6 +62,7 @@ fi
 
 # default parallel build jobs: number of CPUs available + 1
 if [ -z "${B2_JOBS}" ]; then
+    pythonexecutable=$(get_python_executable)
     cpus=$(grep -c 'processor' /proc/cpuinfo || $pythonexecutable -c 'import multiprocessing as mp; print(mp.cpu_count())' || echo "2")
     export B2_JOBS=$((cpus + 1))
 fi
