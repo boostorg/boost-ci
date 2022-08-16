@@ -43,6 +43,7 @@ def linux_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_
       {
         "name": "Everything",
         "image": image,
+        "pull": "if-not-exists",
         "privileged" : privileged,
         "environment": environment_current,
         "commands": [
@@ -97,6 +98,7 @@ def windows_cxx(name, cxx="g++", cxxflags="", packages="", sources="", llvm_os="
       {
         "name": "Everything",
         "image": image,
+        "pull": "if-not-exists",
         "privileged": privileged,
         "environment": environment_current,
         "commands": [
@@ -164,6 +166,7 @@ def osx_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ve
       {
         "name": "Everything",
         # "image": image,
+        # "pull": "if-not-exists",
         "privileged" : privileged,
         "environment": environment_current,
         "commands": [
