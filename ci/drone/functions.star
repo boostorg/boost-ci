@@ -43,17 +43,19 @@ def linux_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_
       {
         "name": "Everything",
         "image": image,
+        "pull": "if-not-exists",
         "privileged" : privileged,
         "environment": environment_current,
         "commands": [
 
           "echo '==================================> SETUP'",
           "uname -a",
-          # Moved to Docker
+          # Moved to Docker:
           # "apt-get -o Acquire::Retries=3 update && DEBIAN_FRONTEND=noninteractive apt-get -y install tzdata && apt-get -o Acquire::Retries=3 install -y sudo software-properties-common wget curl apt-transport-https git make cmake apt-file sudo unzip libssl-dev build-essential autotools-dev autoconf libc++-helpers automake g++",
           # "for i in {1..3}; do apt-add-repository ppa:git-core/ppa && break || sleep 10; done",
           # "apt-get -o Acquire::Retries=3 update && apt-get -o Acquire::Retries=3 -y install git",
-          "BOOST_CI_ORG=boostorg BOOST_CI_BRANCH=master && wget https://github.com/$BOOST_CI_ORG/boost-ci/archive/$BOOST_CI_BRANCH.tar.gz && tar -xvf $BOOST_CI_BRANCH.tar.gz && mv boost-ci-$BOOST_CI_BRANCH .drone/boost-ci && rm $BOOST_CI_BRANCH.tar.gz",
+          #
+          "BOOST_CI_ORG=boostorg BOOST_CI_BRANCH=master && curl -s -S --retry 10 -L -o $BOOST_CI_BRANCH.tar.gz https://github.com/$BOOST_CI_ORG/boost-ci/archive/$BOOST_CI_BRANCH.tar.gz && tar -xvf $BOOST_CI_BRANCH.tar.gz && mv boost-ci-$BOOST_CI_BRANCH .drone/boost-ci && rm $BOOST_CI_BRANCH.tar.gz",
           "echo '==================================> PACKAGES'",
           # "./.drone/linux-cxx-install.sh",
           "./.drone/boost-ci/ci/drone/linux-cxx-install.sh",
@@ -65,7 +67,7 @@ def linux_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_
     ]
   }
 
-def windows_cxx(name, cxx="g++", cxxflags="", packages="", sources="", llvm_os="", llvm_ver="", arch="amd64", image="cppalliance/dronevs2019", buildtype="boost", buildscript="", environment={}, globalenv={}, triggers={ "branch": [ "master", "develop", "drone*", "bugfix/*", "feature/*", "fix/*", "pr/*" ] }, privileged=False):
+def windows_cxx(name, cxx="g++", cxxflags="", packages="", sources="", llvm_os="", llvm_ver="", arch="amd64", image="cppalliance/dronevs2019", buildtype="boost", buildscript="", environment={}, globalenv={}, triggers={ "branch": [ "master", "develop", "drone*", "bugfix/*", "feature/*", "fix/*", "pr/*" ] }, node={}, privileged=False):
   environment_global = {
       "TRAVIS_OS_NAME": "windows",
       "CXX": cxx,
@@ -93,15 +95,18 @@ def windows_cxx(name, cxx="g++", cxxflags="", packages="", sources="", llvm_os="
       "os": "windows",
       "arch": arch
     },
+    "node": node,
     "steps": [
       {
         "name": "Everything",
         "image": image,
+        "pull": "if-not-exists",
         "privileged": privileged,
         "environment": environment_current,
         "commands": [
           "echo '==================================> SETUP'",
-          "Invoke-WebRequest https://github.com/boostorg/boost-ci/archive/master.tar.gz -Outfile master.tar.gz",
+          "echo $env:DRONE_STAGE_MACHINE",
+          "try { pwsh.exe -Command Invoke-WebRequest https://github.com/boostorg/boost-ci/archive/master.tar.gz -Outfile master.tar.gz -MaximumRetryCount 10 -RetryIntervalSec 15 } catch { Invoke-WebRequest https://github.com/boostorg/boost-ci/archive/master.tar.gz -Outfile master.tar.gz ; echo 'Using powershell' }",
           "tar -xvf master.tar.gz",
           "mv boost-ci-master .drone/boost-ci",
           "Remove-Item master.tar.gz",
@@ -164,14 +169,15 @@ def osx_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ve
       {
         "name": "Everything",
         # "image": image,
+        # "pull": "if-not-exists",
         "privileged" : privileged,
         "environment": environment_current,
         "commands": [
 
           "echo '==================================> SETUP'",
           "uname -a",
-          # "apt-get -o Acquire::Retries=3 update && apt-get -o Acquire::Retries=3 -y install git",
-          "BOOST_CI_ORG=boostorg BOOST_CI_BRANCH=master && /usr/local/bin/wget https://github.com/$BOOST_CI_ORG/boost-ci/archive/$BOOST_CI_BRANCH.tar.gz && tar -xvf $BOOST_CI_BRANCH.tar.gz && mv boost-ci-$BOOST_CI_BRANCH .drone/boost-ci && rm $BOOST_CI_BRANCH.tar.gz",
+          "BOOST_CI_ORG=boostorg BOOST_CI_BRANCH=master && curl -s -S --retry 10 -L -o $BOOST_CI_BRANCH.tar.gz https://github.com/$BOOST_CI_ORG/boost-ci/archive/$BOOST_CI_BRANCH.tar.gz && tar -xvf $BOOST_CI_BRANCH.tar.gz && mv boost-ci-$BOOST_CI_BRANCH .drone/boost-ci && rm $BOOST_CI_BRANCH.tar.gz",
+
           "echo '==================================> PACKAGES'",
           "./.drone/boost-ci/ci/drone/osx-cxx-install.sh",
 
