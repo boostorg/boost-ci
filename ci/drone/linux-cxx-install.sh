@@ -9,7 +9,8 @@ else
 fi
 
 if test -n "${LLVM_OS}" ; then
-    wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+    # wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+    curl https://apt.llvm.org/llvm-snapshot.gpg.key | sudo gpg --dearmor > /etc/apt/trusted.gpg.d/llvm-snapshot.gpg
     if test -n "${LLVM_VER}" ; then
         sudo -E apt-add-repository "deb http://apt.llvm.org/${LLVM_OS}/ llvm-toolchain-${LLVM_OS}-${LLVM_VER} main"
     else
