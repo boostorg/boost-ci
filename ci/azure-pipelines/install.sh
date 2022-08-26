@@ -50,7 +50,7 @@ if [ "$AGENT_OS" != "Darwin" ]; then
             sudo -E apt-add-repository -y "ppa:ubuntu-toolchain-r/test" && break || sleep 10
         done
         if [ -n "${LLVM_REPO}" ]; then
-            wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+            curl -sSL --retry ${NET_RETRY_COUNT:-5} https://apt.llvm.org/llvm-snapshot.gpg.key | sudo gpg --dearmor > /etc/apt/trusted.gpg.d/llvm-snapshot.gpg
             for i in {1..${NET_RETRY_COUNT:-3}}; do 
                 sudo -E apt-add-repository "deb http://apt.llvm.org/${LLVM_OS:-xenial}/ ${LLVM_REPO} main" && break || sleep 10
             done
