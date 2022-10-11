@@ -38,6 +38,9 @@ def linux_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_
       "os": "linux",
       "arch": arch
     },
+    "clone": {
+       "retries": 5
+    },
     "node": node,
     "steps": [
       {
@@ -188,5 +191,59 @@ def osx_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ve
     ]
   }
 
-def freebsd_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ver="", arch="amd64", image="", buildtype="boost", buildscript="", environment={}, globalenv={}, triggers={ "branch": [ "master", "develop", "drone*", "bugfix/*", "feature/*", "fix/*", "pr/*" ] }, privileged=False):
-    pass
+def freebsd_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ver="", arch="amd64", image="", freebsd_version="13.1", buildtype="boost", buildscript="", environment={}, globalenv={}, triggers={ "branch": [ "master", "develop", "drone*", "bugfix/*", "feature/*", "fix/*", "pr/*" ] }, privileged=False):
+
+  environment_global = {
+      # "TRAVIS_BUILD_DIR": "/drone/src",
+      "TRAVIS_OS_NAME": "freebsd",
+      "CXX": cxx,
+      "CXXFLAGS": cxxflags,
+      "PACKAGES": packages,
+      "LLVM_OS": llvm_os,
+      "LLVM_VER": llvm_ver,
+      "DRONE_JOB_BUILDTYPE": buildtype
+      }
+  environment_global.update(globalenv)
+  environment_current=environment_global
+  environment_current.update(environment)
+
+  if buildscript:
+    buildscript_to_run = buildscript
+  else:
+    buildscript_to_run = buildtype
+
+  return {
+    "name": "FreeBSD %s" % name,
+    "kind": "pipeline",
+    "type": "exec",
+    "trigger": triggers,
+    "platform": {
+      "os": "freebsd",
+      "arch": arch
+    },
+    "node": {
+      "os": "freebsd" + freebsd_version
+      },
+    "steps": [
+      {
+        "name": "Everything",
+        # "image": image,
+        # "pull": "if-not-exists",
+        "privileged" : privileged,
+        "environment": environment_current,
+        "commands": [
+
+          "echo '==================================> SETUP'",
+          "uname -a",
+          "export PATH=/usr/local/bin:$PATH",
+          "BOOST_CI_ORG=boostorg BOOST_CI_BRANCH=master && curl -s -S --retry 10 -L -o $BOOST_CI_BRANCH.tar.gz https://github.com/$BOOST_CI_ORG/boost-ci/archive/$BOOST_CI_BRANCH.tar.gz && tar -xvf $BOOST_CI_BRANCH.tar.gz && mv boost-ci-$BOOST_CI_BRANCH .drone/boost-ci && rm $BOOST_CI_BRANCH.tar.gz",
+
+          "echo '==================================> PACKAGES'",
+          "./.drone/boost-ci/ci/drone/freebsd-cxx-install.sh",
+
+          "echo '==================================> INSTALL AND COMPILE'",
+          "./.drone/%s.sh" % buildscript_to_run,
+        ]
+      }
+    ]
+  }
