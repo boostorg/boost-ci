@@ -57,6 +57,7 @@ Here are all the steps you need to take as a Boost repository maintainer to enab
     * "asan" jobs require elevated privileges. Contact an administrator or open an issue at [drone-ci](https://github.com/CPPAlliance/drone-ci) to set your drone repository to "Trusted".
     * If not using asan, simply remove the jobs.
     * For Codecov you need to copy the "Repository Upload Token" from the settings page of your repo on [Codecov](https://codecov.io) and use it to create a new secret named `codecov_token` on the settings page of your repo on [Drone](https://drone.cpp.al).
+    * If you need a package installed on MacOS or FreeBSD, by the root user, please open an issue.
     * Further info available at https://github.com/CPPAlliance/drone-ci
 
 ## Code coverage
