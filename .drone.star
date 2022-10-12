@@ -3,48 +3,250 @@
 # file LICENSE.txt)
 #
 # Copyright Rene Rivera 2020.
+# Copyright Alexander Grund 2022.
 
 # For Drone CI we use the Starlark scripting language to reduce duplication.
 # As the yaml syntax for Drone CI is rather limited.
-#
-#
+
+# Base environment for all jobs
 globalenv={'B2_CI_VERSION': '1', 'B2_VARIANT': 'release'}
-linuxglobalimage="cppalliance/droneubuntu1804:1"
-windowsglobalimage="cppalliance/dronevs2019"
+
+# Define a job, i.e. a single entry in the build matrix
+# It takes values for OS, compiler and C++-standard and optional arguments.
+# A default value of `None` is a hint that the value is 'auto-detected/-set',
+# as opposed to a default of `''` (empty string) which means the value is not used.
+def job(
+        # Required:
+        os, compiler, cxxstd,
+        # Name of the job, a reasonable default will be generated based on the other arguments
+        name=None,
+        arch='amd64', image=None,
+        # Those correspond to the B2_* variables and hence arguments to b2 (with the default build.sh)
+        variant='', address_model='', stdlib='', defines=None, cxxflags='', linkflags='', testflags='',
+        # Sanitizers. Using any will set the variant to 'debug' and default `defines` to 'BOOST_NO_STRESS_TEST=1'
+        valgrind=False, asan=False, ubsan=False, tsan=False,
+        # Packages to install, will default to the compiler and the value of `install` (for additional packages)
+        packages=None, install='',
+        # If True then the LLVM repo corresponding to the Ubuntu image will be added
+        add_llvm=False,
+        # .drone/*.sh script to run
+        buildscript='drone',
+        # build type env variable (defaults to 'boost' or 'valgrind', sets the token when set to 'codecov')
+        buildtype=None, 
+        environment={}, **kwargs):
+
+  if not name:
+    deduced_name = True
+    name = compiler.replace('-', ' ')
+    if address_model:
+      name += ' x' + address_model
+    if stdlib:
+      name += ' ' + stdlib
+    if cxxstd:
+      name += ' C++' + cxxstd
+    if arch != 'amd64':
+      name = '%s: %s' % (arch.upper(), name)
+  else:
+    deduced_name = False
+
+  cxx = compiler.replace('gcc-', 'g++-')
+  if packages == None:
+    packages = cxx
+    if install:
+      packages += ' ' + install
+
+  env = dict(globalenv)
+  env['B2_TOOLSET' if os == 'windows' else 'B2_COMPILER'] = compiler
+  if cxxstd != None:
+    env['B2_CXXSTD'] = cxxstd
+
+  if valgrind:
+    if buildtype == None:
+      buildtype = 'valgrind'
+    if not testflags:
+      testflags = 'testing.launcher=valgrind'
+    env.setdefault('VALGRIND_OPTS', '--error-exitcode=1')
+
+  if asan:
+    privileged = True
+    env.update({
+      'B2_ASAN': '1',
+      'DRONE_EXTRA_PRIVILEGED': 'True',
+    })
+  else:
+    privileged = False
+
+  if ubsan:
+    env['B2_UBSAN'] = '1'
+  if tsan:
+    env['B2_TSAN'] = '1'
+
+  # Set defaults for all sanitizers
+  if valgrind or asan or ubsan:
+    if not variant:
+      variant = 'debug'
+    if not defines:
+      defines = 'BOOST_NO_STRESS_TEST=1'
+
+  if variant:
+    env['B2_VARIANT'] = variant
+  if address_model:
+    env['B2_ADDRESS_MODEL'] = address_model
+  if stdlib:
+    env['B2_STDLIB'] = stdlib
+  if defines:
+    env['B2_DEFINES'] = defines
+  if cxxflags:
+    env['B2_CXXFLAGS'] = cxxflags
+  if linkflags:
+    env['B2_LINKFLAGS'] = linkflags
+  if testflags:
+    env['B2_TESTFLAGS'] = testflags
+  env.update(environment)
+  
+  if buildtype == None:
+    buildtype = 'boost'
+  elif buildtype == 'codecov':
+    env.setdefault('CODECOV_TOKEN', {'from_secret': 'codecov_token'})
+
+  # Put common args of all *_cxx calls not modified below into kwargs to avoid duplicating them
+  kwargs['arch'] = arch
+  kwargs['buildtype'] = buildtype
+  kwargs['buildscript'] = buildscript
+  kwargs['environment'] = env
+
+  if os.startswith('ubuntu'):
+    if not image:
+      image = 'cppalliance/droneubuntu%s:1' % os.split('-')[1].replace('.', '')
+      if arch != 'amd64':
+        image = image[0:-1] + 'multiarch'
+    if add_llvm:
+      names = {
+        '1604': 'xenial',
+        '1804': 'bionic',
+        '2004': 'focal',
+        '2204': 'jammy',
+      }
+      kwargs['llvm_os'] = names[image.split('ubuntu')[-1].split(':')[0]] # get part between 'ubuntu' and ':'
+      kwargs['llvm_ver'] = compiler.split('-')[1]
+
+    return linux_cxx(name, cxx, packages=packages, image=image, privileged=privileged, **kwargs)
+  elif os.startswith('freebsd'):
+    if not image:
+      image = os.split('-')[1]
+    return freebsd_cxx(name, cxx, freebsd_version=image, **kwargs)
+  elif os.startswith('osx'):
+    # If format is `osx-xcode-<version>` deduce xcode_version, else assume it is passed directly
+    if os.startswith('osx-xcode-'):
+      xcode_version = os.split('osx-xcode-')[1] 
+      kwargs['xcode_version'] = xcode_version
+      if deduced_name:
+        name = 'XCode %s: %s' % (xcode_version, name)
+        
+    return osx_cxx(name, cxx, **kwargs)
+  elif os == 'windows':
+    if not image:
+      names = {
+        'msvc-14.0': 'dronevs2015',
+        'msvc-14.1': 'dronevs2017',
+        'msvc-14.2': 'dronevs2019:2',
+        'msvc-14.3': 'dronevs2022:1',
+      }
+      image = 'cppalliance/' + names[compiler]
+    kwargs.setdefault('cxx', '')
+    return windows_cxx(name, image=image, **kwargs)
+  else:
+    fail('Unknown OS:', os)
+
 
 def main(ctx):
   return [
-  linux_cxx("codecov", "g++-8", packages="g++-8", buildtype="codecov", buildscript="drone", image=linuxglobalimage, environment={'COMMENT': 'codecov.io', 'B2_CXXSTD': '03,11', 'B2_TOOLSET': 'gcc-8', 'B2_DEFINES': 'BOOST_NO_STRESS_TEST=1', 'CODECOV_TOKEN': {'from_secret': 'codecov_token'}, 'DRONE_JOB_UUID': 'b6589fc6ab'}, globalenv=globalenv),
-  linux_cxx("asan", "g++-8", packages="g++-8", buildtype="boost", buildscript="drone", image=linuxglobalimage, environment={'COMMENT': 'asan', 'B2_VARIANT': 'debug', 'B2_TOOLSET': 'gcc-8', 'B2_CXXSTD': '03,11,14', 'B2_ASAN': '1', 'B2_DEFINES': 'BOOST_NO_STRESS_TEST=1', 'DRONE_EXTRA_PRIVILEGED': 'True', 'DRONE_JOB_UUID': '356a192b79'}, globalenv=globalenv, privileged=True),
-  linux_cxx("tsan", "g++-8", packages="g++-8", buildtype="boost", buildscript="drone", image=linuxglobalimage, environment={'COMMENT': 'tsan', 'B2_VARIANT': 'debug', 'B2_TOOLSET': 'gcc-8', 'B2_CXXSTD': '03,11,14', 'B2_TSAN': '1', 'B2_DEFINES': 'BOOST_NO_STRESS_TEST=1', 'DRONE_JOB_UUID': 'da4b9237ba'}, globalenv=globalenv),
-  linux_cxx("ubsan", "g++-8", packages="g++-8", buildtype="boost", buildscript="drone", image=linuxglobalimage, environment={'COMMENT': 'ubsan', 'B2_VARIANT': 'debug', 'B2_TOOLSET': 'gcc-8', 'B2_CXXSTD': '03,11,14', 'B2_UBSAN': '1', 'B2_DEFINES': 'BOOST_NO_STRESS_TEST=1', 'B2_LINKFLAGS': '-fuse-ld=gold', 'DRONE_JOB_UUID': '77de68daec'}, globalenv=globalenv),
-  linux_cxx("valgrind", "clang++-6.0", packages="clang-6.0 libc6-dbg libc++-dev libstdc++-8-dev", llvm_os="bionic", llvm_ver="6.0", buildtype="valgrind", buildscript="drone", image=linuxglobalimage, environment={'COMMENT': 'valgrind', 'B2_TOOLSET': 'clang-6.0', 'B2_CXXSTD': '03,11,14', 'B2_DEFINES': 'BOOST_NO_STRESS_TEST=1', 'B2_VARIANT': 'debug', 'B2_TESTFLAGS': 'testing.launcher=valgrind', 'VALGRIND_OPTS': '--error-exitcode=1', 'DRONE_JOB_UUID': '1b64538924'}, globalenv=globalenv),
-  linux_cxx("gcc 4.8", "g++-4.8", packages="g++-4.8", buildtype="boost", buildscript="drone", image="cppalliance/droneubuntu1604:1", environment={'B2_TOOLSET': 'gcc-4.8', 'B2_CXXSTD': '03,11', 'DRONE_JOB_UUID': 'ac3478d69a'}, globalenv=globalenv),
-  linux_cxx("gcc 4.9", "g++-4.9", packages="g++-4.9", buildtype="boost", buildscript="drone", image="cppalliance/droneubuntu1604:1", environment={'B2_TOOLSET': 'gcc-4.9', 'B2_CXXSTD': '03,11', 'DRONE_JOB_UUID': 'c1dfd96eea'}, globalenv=globalenv),
-  linux_cxx("gcc 5", "g++-5", packages="g++-5", buildtype="boost", buildscript="drone", image=linuxglobalimage, environment={'B2_TOOLSET': 'gcc-5', 'B2_CXXSTD': '03,11', 'DRONE_JOB_UUID': '902ba3cda1'}, globalenv=globalenv),
-  linux_cxx("gcc 6", "g++-6", packages="g++-6", buildtype="boost", buildscript="drone", image=linuxglobalimage, environment={'B2_TOOLSET': 'gcc-6', 'B2_CXXSTD': '11,14', 'DRONE_JOB_UUID': 'fe5dbbcea5'}, globalenv=globalenv),
-  linux_cxx("gcc 7", "g++-7", packages="g++-7", buildtype="boost", buildscript="drone", image=linuxglobalimage, environment={'B2_TOOLSET': 'gcc-7', 'B2_CXXSTD': '14,17', 'DRONE_JOB_UUID': '0ade7c2cf9'}, globalenv=globalenv),
-  linux_cxx("gcc 8", "g++-8", packages="g++-8", buildtype="boost", buildscript="drone", image=linuxglobalimage, environment={'B2_TOOLSET': 'gcc-8', 'B2_CXXSTD': '17,2a', 'DRONE_JOB_UUID': 'b1d5781111'}, globalenv=globalenv),
-  linux_cxx("gcc 9", "g++-9", packages="g++-9", buildtype="boost", buildscript="drone", image=linuxglobalimage, environment={'B2_TOOLSET': 'gcc-9', 'B2_CXXSTD': '17,2a', 'DRONE_JOB_UUID': '17ba079149'}, globalenv=globalenv),
-  linux_cxx("gcc 10", "g++-10", packages="g++-10", buildtype="boost", buildscript="drone", image="cppalliance/droneubuntu2004:1", environment={'B2_TOOLSET': 'gcc-10', 'B2_CXXSTD': '17,2a', 'DRONE_JOB_UUID': '17ba079159'}, globalenv=globalenv),
-  linux_cxx("gcc 11", "g++-11", packages="g++-11", buildtype="boost", buildscript="drone", image="cppalliance/droneubuntu2004:1", environment={'B2_TOOLSET': 'gcc-11', 'B2_CXXSTD': '17,2a', 'DRONE_JOB_UUID': '17ba079169'}, globalenv=globalenv),
-  linux_cxx("gcc 12", "g++-12", packages="g++-12", buildtype="boost", buildscript="drone", image="cppalliance/droneubuntu2204:1", environment={'B2_TOOLSET': 'gcc-12', 'B2_CXXSTD': '17,20', 'DRONE_JOB_UUID': '17ba079179'}, globalenv=globalenv),
-  linux_cxx("clang 3.8", "clang++-3.8", packages="clang-3.8", buildtype="boost", buildscript="drone", image="cppalliance/droneubuntu1604:1", environment={'B2_TOOLSET': 'clang-3.8', 'B2_CXXSTD': '03,11', 'DRONE_JOB_UUID': '7b52009b64'}, globalenv=globalenv),
-  linux_cxx("clang 4.0", "clang++-4.0", packages="clang-4.0 libstdc++-6-dev", llvm_os="xenial", llvm_ver="4.0", buildtype="boost", buildscript="drone", image="cppalliance/droneubuntu1604:1", environment={'B2_TOOLSET': 'clang-4.0', 'B2_CXXSTD': '11,14', 'DRONE_JOB_UUID': 'bd307a3ec3'}, globalenv=globalenv),
-  linux_cxx("clang 5.0", "clang++-5.0", packages="clang-5.0 libstdc++-7-dev", llvm_os="bionic", llvm_ver="5.0", buildtype="boost", buildscript="drone", image=linuxglobalimage, environment={'B2_TOOLSET': 'clang-5.0', 'B2_CXXSTD': '11,14', 'DRONE_JOB_UUID': 'fa35e19212'}, globalenv=globalenv),
-  linux_cxx("clang 6.0", "clang++-6.0", packages="clang-6.0 libc6-dbg libc++-dev libstdc++-8-dev", llvm_os="bionic", llvm_ver="6.0", buildtype="boost", buildscript="drone", image=linuxglobalimage, environment={'B2_TOOLSET': 'clang-6.0', 'B2_CXXSTD': '14,17', 'DRONE_JOB_UUID': 'f1abd67035'}, globalenv=globalenv),
-  linux_cxx("clang 7", "clang++-7", packages="clang-7 libc6-dbg libc++-dev libstdc++-8-dev", llvm_os="bionic", llvm_ver="7", buildtype="boost", buildscript="drone", image=linuxglobalimage, environment={'B2_TOOLSET': 'clang-7', 'B2_CXXSTD': '17,2a', 'DRONE_JOB_UUID': '1574bddb75'}, globalenv=globalenv),
-  linux_cxx("clang 8", "clang++-8", packages="clang-8 libc6-dbg libc++-dev libstdc++-8-dev", llvm_os="bionic", llvm_ver="8", buildtype="boost", buildscript="drone", image=linuxglobalimage, environment={'B2_TOOLSET': 'clang-8', 'B2_CXXSTD': '17,2a', 'DRONE_JOB_UUID': '0716d9708d'}, globalenv=globalenv),
-  linux_cxx("clang 9", "clang++-9", packages="clang-9 libc6-dbg libc++-dev libstdc++-9-dev", llvm_os="bionic", llvm_ver="9", buildtype="boost", buildscript="drone", image=linuxglobalimage, environment={'B2_TOOLSET': 'clang-9', 'B2_CXXSTD': '03,11,14,17,2a', 'DRONE_JOB_UUID': '9e6a55b6b4'}, globalenv=globalenv),
-  linux_cxx("clang 10", "clang++-10", packages="clang-10 libc6-dbg libc++-dev libstdc++-9-dev", llvm_os="focal", llvm_ver="10", buildtype="boost", buildscript="drone", image="cppalliance/droneubuntu2004:1", environment={'B2_TOOLSET': 'clang-10', 'B2_CXXSTD': '03,11,14,17,2a', 'DRONE_JOB_UUID': '9e6a55b6c4'}, globalenv=globalenv),
-  linux_cxx("clang 11", "clang++-11", packages="clang-11 libc6-dbg libc++-dev libstdc++-9-dev", llvm_os="focal", llvm_ver="11", buildtype="boost", buildscript="drone", image="cppalliance/droneubuntu2004:1", environment={'B2_TOOLSET': 'clang-11', 'B2_CXXSTD': '03,11,14,17,2a', 'DRONE_JOB_UUID': '9e6a55b6b4'}, globalenv=globalenv),
-  linux_cxx("clang 12", "clang++-12", packages="clang-12 libc6-dbg libc++-dev libstdc++-9-dev", llvm_os="focal", llvm_ver="12", buildtype="boost", buildscript="drone", image="cppalliance/droneubuntu2004:1", environment={'B2_TOOLSET': 'clang-12', 'B2_CXXSTD': '03,11,14,17,20', 'DRONE_JOB_UUID': '9e6a55b6b5'}, globalenv=globalenv),
-  linux_cxx("clang 13", "clang++-13", packages="clang-13 libc6-dbg libc++-dev libstdc++-10-dev", llvm_os="jammy", llvm_ver="13", buildtype="boost", buildscript="drone", image="cppalliance/droneubuntu2204:1", environment={'B2_TOOLSET': 'clang-13', 'B2_CXXSTD': '03,11,14,17,20', 'DRONE_JOB_UUID': '9e6a55b6b6'}, globalenv=globalenv),
-  linux_cxx("clang 14", "clang++-14", packages="clang-14 libc6-dbg libc++-dev libstdc++-10-dev", llvm_os="jammy", llvm_ver="14", buildtype="boost", buildscript="drone", image="cppalliance/droneubuntu2204:1", environment={'B2_TOOLSET': 'clang-14', 'B2_CXXSTD': '03,11,14,17,20', 'DRONE_JOB_UUID': '9e6a55b6b7'}, globalenv=globalenv),
-  linux_cxx("clang 6.0 libc++", "clang++-6.0", packages="clang-6.0 libc6-dbg libc++-dev libc++abi-dev libstdc++-8-dev", llvm_os="bionic", llvm_ver="6.0", buildtype="boost", buildscript="drone", image=linuxglobalimage, environment={'B2_TOOLSET': 'clang-6.0', 'B2_CXXSTD': '03,11,14', 'B2_STDLIB': 'libc++', 'DRONE_JOB_UUID': 'b3f0c7f6bb'}, globalenv=globalenv),
-  osx_cxx("clang", "g++", packages="", buildtype="boost", buildscript="drone", environment={'B2_TOOLSET': 'clang', 'B2_CXXSTD': '03,11,17', 'DRONE_JOB_UUID': '91032ad7bb'}, globalenv=globalenv),
-  linux_cxx("coverity", "g++", packages="", buildtype="coverity", buildscript="drone", image=linuxglobalimage, environment={'COMMENT': 'Coverity Scan', 'B2_TOOLSET': 'clang', 'DRONE_JOB_UUID': '472b07b9fc'}, globalenv=globalenv),
-    ]
+    job(compiler='clang-3.5', cxxstd='03,11',             os='ubuntu-16.04'),
+    job(compiler='clang-3.6', cxxstd='03,11,14',          os='ubuntu-16.04'),
+    job(compiler='clang-3.8', cxxstd='03,11,14',          os='ubuntu-16.04'),
+    job(compiler='clang-3.9', cxxstd='03,11,14',          os='ubuntu-18.04'),
+    job(compiler='clang-4.0', cxxstd='03,11,14',          os='ubuntu-18.04'),
+    job(compiler='clang-5.0', cxxstd='03,11,14,1z',       os='ubuntu-18.04'),
+    job(compiler='clang-6.0', cxxstd='03,11,14,17',       os='ubuntu-18.04'),
+    job(compiler='clang-7',   cxxstd='03,11,14,17',       os='ubuntu-18.04'),
+    job(compiler='clang-8',   cxxstd='03,11,14,17,2a',    os='ubuntu-18.04'),
+    job(compiler='clang-9',   cxxstd='03,11,14,17,2a',    os='ubuntu-18.04'),
+    job(compiler='clang-10',  cxxstd='03,11,14,17,2a',    os='ubuntu-18.04'),
+    job(compiler='clang-11',  cxxstd='03,11,14,17,2a',    os='ubuntu-22.04'),
+    job(compiler='clang-12',  cxxstd='03,11,14,17,20',    os='ubuntu-22.04'),
+    job(compiler='clang-13',  cxxstd='03,11,14,17,20,2b', os='ubuntu-22.04'),
+    job(compiler='clang-14',  cxxstd='03,11,14,17,20,2b', os='ubuntu-22.04'),
+    job(compiler='clang-15',  cxxstd='03,11,14,17,20,2b', os='ubuntu-22.04', add_llvm=True),
+
+    job(compiler='gcc-4.7',   cxxstd='03,11',             os='ubuntu-16.04'),
+    job(compiler='gcc-4.8',   cxxstd='03,11',             os='ubuntu-16.04'),
+    job(compiler='gcc-4.9',   cxxstd='03,11',             os='ubuntu-16.04'),
+    job(compiler='gcc-5',     cxxstd='03,11,14,1z',       os='ubuntu-18.04'),
+    job(compiler='gcc-6',     cxxstd='03,11,14,1z',       os='ubuntu-18.04'),
+    job(compiler='gcc-7',     cxxstd='03,11,14,1z',       os='ubuntu-18.04'),
+    job(compiler='gcc-8',     cxxstd='03,11,14,17,2a',    os='ubuntu-18.04'),
+    job(compiler='gcc-9',     cxxstd='03,11,14,17,2a',    os='ubuntu-18.04'),
+    job(compiler='gcc-10',    cxxstd='03,11,14,17,20',    os='ubuntu-22.04'),
+    job(compiler='gcc-11',    cxxstd='03,11,14,17,20,2b', os='ubuntu-22.04'),
+    job(compiler='gcc-12',    cxxstd='03,11,14,17,20,2b', os='ubuntu-22.04'),
+
+    job(name='Coverage', buildtype='codecov',
+        compiler='gcc-8',     cxxstd='03,11,14,17,2a', os='ubuntu-18.04'),
+    job(name='Coverity Scan', buildtype='coverity',
+        compiler='clang',     cxxstd=None,             os='ubuntu-18.04', packages=''),
+    # Sanitizers
+    job(name='ASAN',  asan=True,
+        compiler='gcc-12',    cxxstd='03,11,14,17,20', os='ubuntu-22.04'),
+    job(name='UBSAN', ubsan=True,
+        compiler='gcc-12',    cxxstd='03,11,14,17,20', os='ubuntu-22.04'),
+    job(name='TSAN',  tsan=True,
+        compiler='gcc-12',    cxxstd='03,11,14,17,20', os='ubuntu-22.04'),
+    job(name='Clang 15 w/ sanitizers', asan=True, ubsan=True,
+        compiler='clang-15',  cxxstd='03,11,14,17,20', os='ubuntu-22.04', add_llvm=True),
+    job(name='Clang 11 libc++ w/ sanitizers', asan=True, ubsan=True, # libc++-11 is the latest working with ASAN: https://github.com/llvm/llvm-project/issues/59432
+        compiler='clang-11',  cxxstd='03,11,14,17,20', os='ubuntu-20.04', stdlib='libc++', install='libc++-11-dev libc++abi-11-dev'),
+    job(name='Valgrind', valgrind=True,
+        compiler='clang-6.0', cxxstd='03,11,14,1z',    os='ubuntu-18.04', install='libc6-dbg libc++-dev libstdc++-8-dev'),
+
+    # libc++
+    job(compiler='clang-6.0', cxxstd='03,11,14,17,2a', os='ubuntu-18.04', stdlib='libc++', install='libc++-dev libc++abi-dev'),
+    job(compiler='clang-7',   cxxstd='03,11,14,17,2a', os='ubuntu-20.04', stdlib='libc++', install='libc++-7-dev libc++abi-7-dev'),
+    job(compiler='clang-8',   cxxstd='03,11,14,17,2a', os='ubuntu-20.04', stdlib='libc++', install='libc++-8-dev libc++abi-8-dev'),
+    job(compiler='clang-9',   cxxstd='03,11,14,17,2a', os='ubuntu-20.04', stdlib='libc++', install='libc++-9-dev libc++abi-9-dev'),
+    job(compiler='clang-10',  cxxstd='03,11,14,17,20', os='ubuntu-20.04', stdlib='libc++', install='libc++-10-dev libc++abi-10-dev'),
+    job(compiler='clang-11',  cxxstd='03,11,14,17,20', os='ubuntu-20.04', stdlib='libc++', install='libc++-11-dev libc++abi-11-dev'),
+    job(compiler='clang-12',  cxxstd='03,11,14,17,20', os='ubuntu-22.04', stdlib='libc++', install='libc++-12-dev libc++abi-12-dev libunwind-12-dev'),
+    job(compiler='clang-13',  cxxstd='03,11,14,17,20', os='ubuntu-22.04', stdlib='libc++', install='libc++-13-dev libc++abi-13-dev'),
+    job(compiler='clang-14',  cxxstd='03,11,14,17,20', os='ubuntu-22.04', stdlib='libc++', install='libc++-14-dev libc++abi-14-dev'),
+    job(compiler='clang-15',  cxxstd='03,11,14,17,20', os='ubuntu-22.04', stdlib='libc++', install='libc++-15-dev libc++abi-15-dev', add_llvm=True),
+
+    # FreeBSD
+    job(compiler='clang-10',  cxxstd='03,11,14,17,20', os='freebsd-13.1'),
+    job(compiler='clang-15',  cxxstd='03,11,14,17,20', os='freebsd-13.1'),
+    job(compiler='gcc-11',    cxxstd='03,11,14,17,20', os='freebsd-13.1', linkflags='-Wl,-rpath=/usr/local/lib/gcc11'),
+    # OSX
+    job(compiler='clang',     cxxstd='03,11,14,17,2a',    os='osx-xcode-9.4.1'),
+    job(compiler='clang',     cxxstd='03,11,14,17,2a',    os='osx-xcode-10.3'),
+    job(compiler='clang',     cxxstd='03,11,14,17,2a',    os='osx-xcode-12'),
+    job(compiler='clang',     cxxstd='03,11,14,17,20',    os='osx-xcode-12.5.1'),
+    job(compiler='clang',     cxxstd='03,11,14,17,20',    os='osx-xcode-13.4.1'),
+    job(compiler='clang',     cxxstd='03,11,14,17,20,2b', os='osx-xcode-14.1'),
+    # ARM64
+    job(compiler='clang-12',  cxxstd='03,11,14,17,20', os='ubuntu-20.04', arch='arm64', add_llvm=True),
+    job(compiler='gcc-11',    cxxstd='03,11,14,17,20', os='ubuntu-20.04', arch='arm64'),
+    # S390x
+    job(compiler='clang-12',  cxxstd='03,11,14,17,20', os='ubuntu-20.04', arch='s390x', add_llvm=True),
+    job(compiler='gcc-11',    cxxstd='03,11,14,17,20', os='ubuntu-20.04', arch='s390x'),
+    # Windows
+    job(compiler='msvc-14.0', cxxstd=None,              os='windows'),
+    job(compiler='msvc-14.1', cxxstd=None,              os='windows'),
+    job(compiler='msvc-14.2', cxxstd=None,              os='windows'),
+    job(compiler='msvc-14.3', cxxstd=None,              os='windows'),
+    job(compiler='msvc-14.0', cxxstd='14,17,20',        os='windows'),
+    job(compiler='msvc-14.1', cxxstd='14,17,20',        os='windows'),
+    job(compiler='msvc-14.2', cxxstd='14,17,20',        os='windows'),
+    job(compiler='msvc-14.3', cxxstd='14,17,20,latest', os='windows'),
+  ]
 
 # from https://github.com/boostorg/boost-ci
 load("@boost_ci//ci/drone/:functions.star", "linux_cxx","windows_cxx","osx_cxx","freebsd_cxx")
