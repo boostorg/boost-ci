@@ -64,9 +64,9 @@ $pythonexecutable tools/boostdep/depinst/depinst.py --include benchmark --includ
 # Deduce B2_TOOLSET if unset from B2_COMPILER
 if [ -z "$B2_TOOLSET" ] && [ -n "$B2_COMPILER" ]; then
     if [[ "$B2_COMPILER" =~ clang ]]; then
-        B2_TOOLSET=clang
+        export B2_TOOLSET=clang
     elif [[ "$B2_COMPILER" =~ gcc|g\+\+ ]]; then
-        B2_TOOLSET=gcc
+        export B2_TOOLSET=gcc
     else
         echo "Unknown compiler: '$B2_COMPILER'. Need either clang or gcc/g++" >&2
         false
