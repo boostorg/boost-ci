@@ -17,31 +17,7 @@
 # COVERITY_SCAN_TOKEN               - the Coverity Scan token (should be secure)
 # SELF                              - the boost libs directory name
 
-set -ex
+export BOOST_REPO="$TRAVIS_REPO_SLUG"
+export BOOST_BRANCH="${BOOST_BRANCH:-$TRAVIS_BRANCH}"
 
-CI_DIR="$(dirname "${BASH_SOURCE[0]}")/.."
-
-sudo wget -nv https://entrust.com/root-certificates/entrust_l1k.cer -O /tmp/scanca.cer
-
-pushd /tmp
-if [[ "$1" != "--skipdownload" ]]; then
-  rm -rf coverity_tool.tgz cov-analysis*
-  curl --cacert /tmp/scanca.cer -L -d "token=$COVERITY_SCAN_TOKEN&project=$TRAVIS_REPO_SLUG" -X POST https://scan.coverity.com/download/cxx/linux64 -o coverity_tool.tgz
-  tar xzf coverity_tool.tgz
-fi
-COVBIN=$(echo $(pwd)/cov-analysis*/bin)
-export PATH=$COVBIN:$PATH
-popd
-
-"$CI_DIR"/build.sh clean
-rm -rf cov-int/
-cov-build --dir cov-int "$CI_DIR"/build.sh
-tail -50 cov-int/build-log.txt 
-tar cJf cov-int.tar.xz cov-int/
-curl --cacert /tmp/scanca.cer \
-     --form token="$COVERITY_SCAN_TOKEN" \
-     --form email="$COVERITY_SCAN_NOTIFICATION_EMAIL" \
-     --form file=@cov-int.tar.xz \
-     --form version="$BOOST_BRANCH" \
-     --form description="$TRAVIS_REPO_SLUG" \
-     https://scan.coverity.com/builds?project="$TRAVIS_REPO_SLUG"
+"$(dirname "${BASH_SOURCE[0]}")/../coverity.sh"
