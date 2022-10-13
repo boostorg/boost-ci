@@ -17,7 +17,9 @@
 
 set -ex
 
-. $(dirname "${BASH_SOURCE[0]}")/../enforce.sh
+CI_DIR="$(dirname "${BASH_SOURCE[0]}")/.."
+
+. "$CI_DIR"/enforce.sh
 
 if [ -z "$INTEL_ICC_SERIAL_NUMBER" ]; then
     echo "ERROR: you did not set the INTEL_ICC_SERIAL_NUMBER environment variable"
@@ -32,7 +34,7 @@ pushd /tmp
 wget --quiet http://registrationcenter-download.intel.com/akdlm/irc_nas/tec/15270/parallel_studio_xe_2019_update3_professional_edition_for_cpp_online.tgz
 tar xzf parallel_studio_xe_2019_update3_professional_edition_for_cpp_online.tgz
 cd parallel_studio_xe_2019_update3_professional_edition_for_cpp_online/
-cp $(dirname "${BASH_SOURCE[0]}")/intelicc.cfg silent.cfg
+cp "$CI_DIR"/travis/intelicc.cfg silent.cfg
 trap finish EXIT
 sed -i "s/ACTIVATION_SERIAL_NUMBER=.*/ACTIVATION_SERIAL_NUMBER=$INTEL_ICC_SERIAL_NUMBER/g" silent.cfg
 sudo ./install.sh -s silent.cfg
@@ -41,5 +43,4 @@ export PATH=/opt/intel/bin:$PATH
 popd
 cd ../..
 ./bootstrap.sh --with-toolset=$B2_TOOLSET
-cd libs/$SELF
-ci/travis/build.sh
+"$CI_DIR"/build.sh

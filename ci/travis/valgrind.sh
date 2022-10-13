@@ -27,4 +27,4 @@ popd
 export PATH=/tmp/vg/bin:$PATH
 export B2_INCLUDE=/tmp/vg/include
 
-ci/travis/build.sh
+. $(dirname "${BASH_SOURCE[0]}")/../build.sh

@@ -19,6 +19,8 @@
 
 set -ex
 
+CI_DIR="$(dirname "${BASH_SOURCE[0]}")/.."
+
 sudo wget -nv https://entrust.com/root-certificates/entrust_l1k.cer -O /tmp/scanca.cer
 
 pushd /tmp
@@ -31,9 +33,9 @@ COVBIN=$(echo $(pwd)/cov-analysis*/bin)
 export PATH=$COVBIN:$PATH
 popd
 
-ci/travis/build.sh clean
+"$CI_DIR"/build.sh clean
 rm -rf cov-int/
-cov-build --dir cov-int ci/travis/build.sh
+cov-build --dir cov-int "$CI_DIR"/build.sh
 tail -50 cov-int/build-log.txt 
 tar cJf cov-int.tar.xz cov-int/
 curl --cacert /tmp/scanca.cer \
