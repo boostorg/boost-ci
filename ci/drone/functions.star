@@ -7,6 +7,13 @@
 # For Drone CI we use the Starlark scripting language to reduce duplication.
 # As the yaml syntax for Drone CI is rather limited.
 
+# Helper function to compose a download command from BoostCI
+# Downloads the file inside the directory @boostCI_dir from the master branch of BoostCI into @out_dir (defaults to @boostCI_dir)
+def download_from_boostCI(filename, boostCI_dir, out_dir=None):
+  if out_dir == None:
+    out_dir = boostCI_dir
+  return 'curl -s -S --retry 10 --create-dirs -L "https://github.com/boostorg/boost-ci/raw/master/{1}/{0}" -o "{2}/{0}" && chmod 755 {2}/{0}'.format(filename, boostCI_dir, out_dir)
+
 # Common steps for unix systems
 # Takes the install script (inside the Boost.CI "ci/drone" folder) and the build script (relative to the root .drone folder)
 def unix_common(install_script, buildscript_to_run):
@@ -15,15 +22,14 @@ def unix_common(install_script, buildscript_to_run):
   download_scripts = [
     # Only when not testing Boost.CI
     'if [ "$(basename "$DRONE_REPO")" != "boost-ci" ]; then',
-    
     # Install script
-    'wget "https://github.com/boostorg/boost-ci/raw/master/ci/drone/%s" -P ci/drone' % install_script,
+    download_from_boostCI(install_script, 'ci/drone'),
     # Default build script (if not exists) 
-    '[ ! -e .drone/drone.sh ] || wget "https://github.com/boostorg/boost-ci/raw/master/.drone/drone.sh" -P .drone',
+    '[ ! -e .drone/drone.sh ] || ' + download_from_boostCI('drone.sh', '.drone'),
     # Chosen build script inside .drone (if a filename/stem and does not exist)
-    '{{ [ "$(basename "{0}")" == "{0}" ] && [ ! -e .drone/{0}.sh ]; }} || wget "https://github.com/boostorg/boost-ci/raw/master/.drone/{0}.sh" -P .drone'.format(buildscript_to_run),
-    
-    'fi'
+    '{{ [ "$(basename "{0}")" = "{0}" ] && [ ! -e .drone/{0}.sh ]; }} || '.format(buildscript_to_run) + download_from_boostCI(buildscript_to_run + ".sh", '.drone'),
+    # Done
+    'fi',
   ]
   return [
     "echo '==================================> SETUP'",
