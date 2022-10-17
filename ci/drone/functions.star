@@ -7,6 +7,44 @@
 # For Drone CI we use the Starlark scripting language to reduce duplication.
 # As the yaml syntax for Drone CI is rather limited.
 
+# Helper function to compose a download command from BoostCI
+# Downloads the file inside the directory @boostCI_dir from the master branch of BoostCI into @out_dir (defaults to @boostCI_dir)
+def download_from_boostCI(filename, boostCI_dir, out_dir=None):
+  if out_dir == None:
+    out_dir = boostCI_dir
+  url = 'https://github.com/boostorg/boost-ci/raw/master/%s/%s' % (boostCI_dir, filename)
+  target_path = '%s/%s' % (out_dir, filename)
+  return 'echo "Downloading {0} to {1}"; curl -s -S --retry 10 --create-dirs -L "{0}" -o "{1}" && chmod 755 {1}'.format(url, target_path)
+
+# Common steps for unix systems
+# Takes the install script (inside the Boost.CI "ci/drone" folder) and the build script (relative to the root .drone folder)
+def unix_common(install_script, buildscript_to_run):
+  if not buildscript_to_run.endswith('.sh'):
+    buildscript_to_run += '.sh'
+  return [
+    "echo '==================================> SETUP'",
+    "uname -a",
+    "export PATH=/usr/local/bin:$PATH",
+    '\n'.join([
+      # Only when not testing Boost.CI
+      'if [ "$(basename "$DRONE_REPO")" != "boost-ci" ]; then',
+        # Install script
+        download_from_boostCI(install_script, 'ci/drone'),
+        # Default build script (if not exists) 
+        'if [ ! -e .drone/drone.sh ]; then %s; fi' % download_from_boostCI('drone.sh', '.drone'),
+        # Chosen build script inside .drone (if a filename and does not exist)
+        'if [ "$(basename "{0}")" = "{0}" ] && [ ! -e .drone/{0} ]; then {1}; fi'.format(buildscript_to_run, download_from_boostCI(buildscript_to_run, '.drone')),
+      # Done
+      'fi',
+    ]),
+
+    "echo '==================================> PACKAGES'",
+    "ci/drone/" + install_script,
+
+    "echo '==================================> INSTALL AND TEST'",
+    ".drone/" + buildscript_to_run,
+  ]
+
 # Generate pipeline for Linux platform compilers.
 def linux_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ver="", arch="amd64", image="cppalliance/ubuntu16.04:1", buildtype="boost", buildscript="", environment={}, globalenv={}, triggers={ "branch": [ "master", "develop", "drone*", "bugfix/*", "feature/*", "fix/*", "pr/*" ] }, node={}, privileged=False):
   environment_global = {
@@ -24,10 +62,8 @@ def linux_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_
   environment_current=environment_global
   environment_current.update(environment)
 
-  if buildscript:
-    buildscript_to_run = buildscript
-  else:
-    buildscript_to_run = buildtype
+  if not buildscript:
+    buildscript = buildtype
 
   return {
     "name": "Linux %s" % name,
@@ -49,23 +85,10 @@ def linux_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_
         "pull": "if-not-exists",
         "privileged" : privileged,
         "environment": environment_current,
-        "commands": [
-
-          "echo '==================================> SETUP'",
-          "uname -a",
-          # Moved to Docker:
-          # "apt-get -o Acquire::Retries=3 update && DEBIAN_FRONTEND=noninteractive apt-get -y install tzdata && apt-get -o Acquire::Retries=3 install -y sudo software-properties-common wget curl apt-transport-https git make cmake apt-file sudo unzip libssl-dev build-essential autotools-dev autoconf libc++-helpers automake g++",
-          # "for i in {1..3}; do apt-add-repository ppa:git-core/ppa && break || sleep 10; done",
-          # "apt-get -o Acquire::Retries=3 update && apt-get -o Acquire::Retries=3 -y install git",
-          #
-          "BOOST_CI_ORG=boostorg BOOST_CI_BRANCH=master && curl -s -S --retry 10 -L -o $BOOST_CI_BRANCH.tar.gz https://github.com/$BOOST_CI_ORG/boost-ci/archive/$BOOST_CI_BRANCH.tar.gz && tar -xvf $BOOST_CI_BRANCH.tar.gz && mv boost-ci-$BOOST_CI_BRANCH .drone/boost-ci && rm $BOOST_CI_BRANCH.tar.gz",
-          "echo '==================================> PACKAGES'",
-          # "./.drone/linux-cxx-install.sh",
-          "./.drone/boost-ci/ci/drone/linux-cxx-install.sh",
-
-          "echo '==================================> INSTALL AND COMPILE'",
-          "./.drone/%s.sh" % buildscript_to_run,
-        ]
+        # Installed in Docker:
+        # - ppa:git-core/ppa
+        # - tzdata sudo software-properties-common wget curl apt-transport-https git make cmake apt-file sudo unzip libssl-dev build-essential autotools-dev autoconf libc++-helpers automake g++ git
+        "commands": unix_common("linux-cxx-install.sh", buildscript)
       }
     ]
   }
@@ -137,10 +160,8 @@ def osx_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ve
   environment_current=environment_global
   environment_current.update(environment)
 
-  if buildscript:
-    buildscript_to_run = buildscript
-  else:
-    buildscript_to_run = buildtype
+  if not buildscript:
+    buildscript = buildtype
 
   if xcode_version:
     environment_current.update({"DEVELOPER_DIR": "/Applications/Xcode-" + xcode_version +  ".app/Contents/Developer"})
@@ -175,18 +196,7 @@ def osx_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llvm_ve
         # "pull": "if-not-exists",
         "privileged" : privileged,
         "environment": environment_current,
-        "commands": [
-
-          "echo '==================================> SETUP'",
-          "uname -a",
-          "BOOST_CI_ORG=boostorg BOOST_CI_BRANCH=master && curl -s -S --retry 10 -L -o $BOOST_CI_BRANCH.tar.gz https://github.com/$BOOST_CI_ORG/boost-ci/archive/$BOOST_CI_BRANCH.tar.gz && tar -xvf $BOOST_CI_BRANCH.tar.gz && mv boost-ci-$BOOST_CI_BRANCH .drone/boost-ci && rm $BOOST_CI_BRANCH.tar.gz",
-
-          "echo '==================================> PACKAGES'",
-          "./.drone/boost-ci/ci/drone/osx-cxx-install.sh",
-
-          "echo '==================================> INSTALL AND COMPILE'",
-          "./.drone/%s.sh" % buildscript_to_run,
-        ]
+        "commands": unix_common("osx-cxx-install.sh", buildscript)
       }
     ]
   }
@@ -207,10 +217,8 @@ def freebsd_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llv
   environment_current=environment_global
   environment_current.update(environment)
 
-  if buildscript:
-    buildscript_to_run = buildscript
-  else:
-    buildscript_to_run = buildtype
+  if not buildscript:
+    buildscript = buildtype
 
   return {
     "name": "FreeBSD %s" % name,
@@ -231,19 +239,7 @@ def freebsd_cxx(name, cxx, cxxflags="", packages="", sources="", llvm_os="", llv
         # "pull": "if-not-exists",
         "privileged" : privileged,
         "environment": environment_current,
-        "commands": [
-
-          "echo '==================================> SETUP'",
-          "uname -a",
-          "export PATH=/usr/local/bin:$PATH",
-          "BOOST_CI_ORG=boostorg BOOST_CI_BRANCH=master && curl -s -S --retry 10 -L -o $BOOST_CI_BRANCH.tar.gz https://github.com/$BOOST_CI_ORG/boost-ci/archive/$BOOST_CI_BRANCH.tar.gz && tar -xvf $BOOST_CI_BRANCH.tar.gz && mv boost-ci-$BOOST_CI_BRANCH .drone/boost-ci && rm $BOOST_CI_BRANCH.tar.gz",
-
-          "echo '==================================> PACKAGES'",
-          "./.drone/boost-ci/ci/drone/freebsd-cxx-install.sh",
-
-          "echo '==================================> INSTALL AND COMPILE'",
-          "./.drone/%s.sh" % buildscript_to_run,
-        ]
+        "commands": unix_common("freebsd-cxx-install.sh", buildscript)
       }
     ]
   }
