@@ -14,7 +14,8 @@ def download_from_boostCI(filename, boostCI_dir, out_dir=None):
     out_dir = boostCI_dir
   url = 'https://github.com/boostorg/boost-ci/raw/master/%s/%s' % (boostCI_dir, filename)
   target_path = '%s/%s' % (out_dir, filename)
-  return 'echo "Downloading {0} to {1}"; curl -s -S --retry 10 --create-dirs -L "{0}" -o "{1}" && chmod 755 {1}'.format(url, target_path)
+  # return 'echo "Downloading {0} to {1}"; curl -s -S --retry 10 --create-dirs -L "{0}" -o "{1}" && chmod 755 {1}'.format(url, target_path)
+  return 'curl -s -S --retry 10 --create-dirs -L "{0}" -o "{1}" && chmod 755 {1}'.format(url, target_path)
 
 # Common steps for unix systems
 # Takes the install script (inside the Boost.CI "ci/drone" folder) and the build script (relative to the root .drone folder)
@@ -22,7 +23,7 @@ def unix_common(install_script, buildscript_to_run):
   if not buildscript_to_run.endswith('.sh'):
     buildscript_to_run += '.sh'
   return [
-    "echo '==================================> SETUP'",
+    "echo '============> SETUP'",
     "uname -a",
     "export PATH=/usr/local/bin:$PATH",
     '\n'.join([
@@ -31,17 +32,17 @@ def unix_common(install_script, buildscript_to_run):
         # Install script
         download_from_boostCI(install_script, 'ci/drone'),
         # Default build script (if not exists) 
-        'if [ ! -e .drone/drone.sh ]; then %s; fi' % download_from_boostCI('drone.sh', '.drone'),
+        # 'if [ ! -e .drone/drone.sh ]; then %s; fi' % download_from_boostCI('drone.sh', '.drone'),
         # Chosen build script inside .drone (if a filename and does not exist)
-        'if [ "$(basename "{0}")" = "{0}" ] && [ ! -e .drone/{0} ]; then {1}; fi'.format(buildscript_to_run, download_from_boostCI(buildscript_to_run, '.drone')),
+        # 'if [ "$(basename "{0}")" = "{0}" ] && [ ! -e .drone/{0} ]; then {1}; fi'.format(buildscript_to_run, download_from_boostCI(buildscript_to_run, '.drone')),
       # Done
       'fi',
     ]),
 
-    "echo '==================================> PACKAGES'",
+    "echo '============> PACKAGES'",
     "ci/drone/" + install_script,
 
-    "echo '==================================> INSTALL AND TEST'",
+    "echo '============> INSTALL AND TEST'",
     ".drone/" + buildscript_to_run,
   ]
 
@@ -130,16 +131,16 @@ def windows_cxx(name, cxx="g++", cxxflags="", packages="", sources="", llvm_os="
         "privileged": privileged,
         "environment": environment_current,
         "commands": [
-          "echo '==================================> SETUP'",
+          "echo '============> SETUP'",
           "echo $env:DRONE_STAGE_MACHINE",
           "try { pwsh.exe -Command Invoke-WebRequest https://github.com/boostorg/boost-ci/archive/master.tar.gz -Outfile master.tar.gz -MaximumRetryCount 10 -RetryIntervalSec 15 } catch { Invoke-WebRequest https://github.com/boostorg/boost-ci/archive/master.tar.gz -Outfile master.tar.gz ; echo 'Using powershell' }",
           "tar -xvf master.tar.gz",
           "mv boost-ci-master .drone/boost-ci",
           "Remove-Item master.tar.gz",
-          "echo '==================================> PACKAGES'",
+          "echo '============> PACKAGES'",
           ".drone/boost-ci/ci/drone/windows-cxx-install.bat",
 
-          "echo '==================================> INSTALL AND COMPILE'",
+          "echo '============> INSTALL AND COMPILE'",
           "cmd /c .drone\\\%s.bat `& exit" % buildscript_to_run,
         ]
       }
