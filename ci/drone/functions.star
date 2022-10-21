@@ -7,15 +7,14 @@
 # For Drone CI we use the Starlark scripting language to reduce duplication.
 # As the yaml syntax for Drone CI is rather limited.
 
-# Helper function to compose a download command from BoostCI
-# Downloads the file inside the directory @boostCI_dir from the master branch of BoostCI into @out_dir (defaults to @boostCI_dir)
-def download_from_boostCI(filename, boostCI_dir, out_dir=None):
-  if out_dir == None:
-    out_dir = boostCI_dir
+# Downloads the script inside the directory @boostCI_dir from the master branch of BoostCI into @boostCI_dir
+# Does NOT download if the file already exists, e.g. when testing BoostCI or when there is a customized file
+# Then makes the script executable
+def download_script_from_boostCI(filename, boostCI_dir):
   url = '$BOOST_CI_URL/%s/%s' % (boostCI_dir, filename)
-  target_path = '%s/%s' % (out_dir, filename)
-  # return 'echo "Downloading {0} to {1}"; curl -s -S --retry 10 --create-dirs -L "{0}" -o "{1}" && chmod 755 {1}'.format(url, target_path)
-  return 'curl -s -S --retry 10 --create-dirs -L "{0}" -o "{1}" && chmod 755 {1}'.format(url, target_path)
+  target_path = '%s/%s' % (boostCI_dir, filename)
+  # Note that this always runs the `chmod` even when not downloading
+  return '[ -e "{1}" ] || curl -s -S --retry 10 --create-dirs -L "{0}" -o "{1}" && chmod 755 {1}'.format(url, target_path)
 
 # Common steps for unix systems
 # Takes the install script (inside the Boost.CI "ci/drone" folder) and the build script (relative to the root .drone folder)
@@ -26,22 +25,12 @@ def unix_common(install_script, buildscript_to_run):
     "echo '============> SETUP'",
     "uname -a",
     "export PATH=/usr/local/bin:$PATH",
-    '\n'.join([
-      # Only when not testing Boost.CI
-      'if [ "$(basename "$DRONE_REPO")" != "boost-ci" ]; then',
-        # Install script
-        download_from_boostCI(install_script, 'ci/drone'),
-        # Default build script (if not exists) 
-        # 'if [ ! -e .drone/drone.sh ]; then %s; fi' % download_from_boostCI('drone.sh', '.drone'),
-        # Chosen build script inside .drone (if a filename and does not exist)
-        'if [ "$(basename "{0}")" = "{0}" ] && [ ! -e .drone/{0} ]; then {1}; fi'.format(buildscript_to_run, download_from_boostCI(buildscript_to_run, '.drone')),
-      # Done
-      'fi',
-    ]),
-
+    # Install script
+    download_script_from_boostCI(install_script, 'ci/drone'),
+    # Chosen build script inside .drone
+    download_script_from_boostCI(buildscript_to_run, '.drone'),
     "echo '============> PACKAGES'",
     "ci/drone/" + install_script,
-
     "echo '============> INSTALL AND TEST'",
     ".drone/" + buildscript_to_run,
   ]
