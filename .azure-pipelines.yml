@@ -70,18 +70,16 @@ parameters:
       - { name: Linux_clang_6_libcxx,
           compiler: clang-6.0, cxxstd: '11,14,17', os: ubuntu-18.04, install: 'clang-6.0 libc6-dbg libc++-dev libc++abi-dev libstdc++-8-dev', env: {B2_STDLIB: libc++ } }
       # OSX
-      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-10.15, xcode: 11.2.1 }
-      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-10.15, xcode: 11.3 }
-      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-10.15, xcode: 11.3.1 }
-      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-10.15, xcode: 11.4.1 }
-      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-10.15, xcode: 11.5 }
-      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-10.15, xcode: 11.6 }
-      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-10.15, xcode: 11.7 }
-      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-10.15, xcode: 12.0.1 }
-      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-10.15, xcode: 12.1.1 }
-      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-10.15, xcode: 12.2 }
-      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-10.15, xcode: 12.3 }
-      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-10.15, xcode: 12.4 }
+      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-11, xcode: '11.7' }
+      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-11, xcode: '12.4' }
+      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-11, xcode: '12.5.1' }
+      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-11, xcode: '13.0' }
+      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-12, xcode: '13.1' }
+      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-12, xcode: '13.2.1' }
+      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-12, xcode: '13.3.1' }
+      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-12, xcode: '13.4' }
+      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-12, xcode: '13.4.1' }
+      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-12, xcode: '14.0.1' }
 
 stages:
   - stage: Test
