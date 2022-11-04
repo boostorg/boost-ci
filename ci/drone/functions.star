@@ -170,7 +170,7 @@ def osx_cxx(
     arch="amd64", osx_version=None, xcode_version=None,
     buildtype="boost", buildscript="",
     environment={}, globalenv={},
-    triggers={ "branch": [ "master", "develop", "drone*", "bugfix/*", "feature/*", "fix/*", "pr/*" ] },
+    triggers={ "branch": [ "master", "develop", "drone*", "bugfix/*", "feature/*", "fix/*", "pr/*" ] }, node={},
     privileged=False):
 
   job_env = {
@@ -195,7 +195,7 @@ def osx_cxx(
   if xcode_version:
     job_env["DEVELOPER_DIR"] = "/Applications/Xcode-" + xcode_version +  ".app/Contents/Developer"
     if not osx_version:
-        if xcode_version[0:2] in [ "13"]:
+        if xcode_version[0:2] in [ "14", "13"]:
             osx_version="monterey"
         elif xcode_version[0:4] in [ "12.5"]:
             osx_version="monterey"
@@ -206,6 +206,10 @@ def osx_cxx(
   elif not osx_version:
     osx_version="catalina"
 
+  nodetmp={}
+  nodetmp.update(node)
+  nodetmp.update({"os": osx_version})
+
   return {
     "name": "OSX %s" % name,
     "kind": "pipeline",
@@ -215,9 +219,7 @@ def osx_cxx(
       "os": "darwin",
       "arch": arch
     },
-    "node": {
-      "os": osx_version
-    },
+    "node": nodetmp,
     "steps": [
       {
         "name": "Everything",
@@ -234,7 +236,7 @@ def freebsd_cxx(
     arch="amd64", freebsd_version="13.1",
     buildtype="boost", buildscript="",
     environment={}, globalenv={},
-    triggers={ "branch": [ "master", "develop", "drone*", "bugfix/*", "feature/*", "fix/*", "pr/*" ] },
+    triggers={ "branch": [ "master", "develop", "drone*", "bugfix/*", "feature/*", "fix/*", "pr/*" ] }, node={},
     privileged=False):
 
   job_env = {
@@ -255,6 +257,10 @@ def freebsd_cxx(
   if not buildscript:
     buildscript = buildtype
 
+  nodetmp={}
+  nodetmp.update(node)
+  nodetmp.update({"os": "freebsd" + freebsd_version})
+
   return {
     "name": "FreeBSD %s" % name,
     "kind": "pipeline",
@@ -264,9 +270,7 @@ def freebsd_cxx(
       "os": "freebsd",
       "arch": arch
     },
-    "node": {
-      "os": "freebsd" + freebsd_version
-    },
+    "node": nodetmp,
     "steps": [
       {
         "name": "Everything",
