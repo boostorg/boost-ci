@@ -9,10 +9,29 @@ function add_repository {
     return 1 # Failed
 }
 
+function add_repository_toolchain {
+    name="$1"
+    echo -e "\tAdding repository $name"
+    # an alternative method, if apt-add-repository seems to be unresponsive
+    VERSION_CODENAME=$(grep -ioP '^VERSION_CODENAME=\K.+' /etc/os-release || true)
+    if [ -z $VERSION_CODENAME ]; then
+        if grep -i trusty /etc/os-release; then
+            VERSION_CODENAME=trusty
+        elif grep -i precise /etc/os-release; then
+            VERSION_CODENAME=precise
+        fi
+    fi
+    echo "VERSION_CODENAME is ${VERSION_CODENAME}"
+    echo "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu ${VERSION_CODENAME} main" > /etc/apt/sources.list.d/ubuntu-toolchain-r-ubuntu-test-${VERSION_CODENAME}.list
+    echo "# deb-src http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu ${VERSION_CODENAME} main" >> /etc/apt/sources.list.d/ubuntu-toolchain-r-ubuntu-test-${VERSION_CODENAME}.list
+    curl -sSL --retry ${NET_RETRY_COUNT:-5} 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x1E9377A2BA9EF27F' | sudo gpg --dearmor > /etc/apt/trusted.gpg.d/toolchain-r.gpg
+}
+
 echo ">>>>> APT: REPOSITORIES..."
 
 if [ "$UBUNTU_TOOLCHAIN_DISABLE" != "true" ]; then
-    add_repository "ppa:ubuntu-toolchain-r/test"
+    # add_repository "ppa:ubuntu-toolchain-r/test"
+    add_repository_toolchain "ppa:ubuntu-toolchain-r/test"
 else
     echo "UBUNTU_TOOLCHAIN_DISABLE is 'true'. Not installing ppa:ubuntu-toolchain-r/test"
 fi
