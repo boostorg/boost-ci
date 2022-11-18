@@ -58,7 +58,7 @@ IF NOT %ERRORLEVEL% == 0 (
     EXIT /B 1
 )
 
-b2 headers
+b2 -d0 headers
 ENDLOCAL
 
 if DEFINED B2_CI_VERSION (
