@@ -90,6 +90,7 @@ Optionally you may want to use:
 
 - [`target_sources`](https://cmake.org/cmake/help/latest/command/target_sources.html)`(boost_<name> PRIVATE <sources>)`:  
     If you don't want to or cannot pass (all) sources (and/or headers) to the `add_library` command you can add them with this command.
+    Note that you (almost) always need to use `PRIVATE` here.
 - [`target_compile_definitions`](https://cmake.org/cmake/help/latest/command/target_compile_definitions.html)`(boost_<name> PRIVATE <name>=<value>)`:  
     Add definitions to be used when compiling the library, i.e. `-D<name>=value`.
     The `=<value>` part is optional to define a valueless preprocessor symbol.
@@ -115,9 +116,10 @@ Optionally you may want to use:
 
 All of the above applies (almost) unchanged to header-only libraries:  
 They are added as 2 targets and with their dependencies just as compiled libraries but with `add_library(boost_<name> INTERFACE)`, i.e. no sources and use of `INTERFACE`.
-The "sources" (i.e. headers) *can* then be added via [`target_sources`](https://cmake.org/cmake/help/latest/command/target_sources.html).
+The "sources" (i.e. headers) *can* then be added via [`target_sources`](https://cmake.org/cmake/help/latest/command/target_sources.html) in CMake >= 3.19.
 
 The only other difference is the use of `INTERFACE` instead of `PUBLIC`/`PRIVATE` in the `target_*` commands.
+The single exception of this rule is `target_sources` which needs `PRIVATE` as you want to associate the headers with this target (only) and not consumers of it.
 
 ### Scopes
 
