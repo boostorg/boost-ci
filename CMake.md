@@ -67,10 +67,10 @@ Key elements usually required by Boost libraries are (in order of use, with `<na
     This is not recommended for source files because sources should be explicitely listed in order to regenerate the build system when the list of sources changes.  
     **Special case:** For [header-only libraries](#header-only-libraries) use `INTERFACE` instead of `<sources>`.
 - [`add_library`](https://cmake.org/cmake/help/latest/command/add_library.html#alias-libraries)`(Boost::<name> ALIAS boost_<name>)`:  
-    Register the ("Boost")-namespaced target which users will use instead of the `boost_<name>` target.
+    Register the ("Boost")-namespaced target which **users** will use instead of the `boost_<name>` target.
     This makes usage more conventional and allows to detect missing libraries earlier but the "real" target (the one with the sources) cannot have special characters in its name.
-    Hence the need to have an actual library namespaced/prefixed with `"boost_"` and an alias prefixed with `"Boost::"`.  
-    **IMPORTANT:** The `<name>` here and above **must** be the library/repository name with non-alphanumeric characters replaced by underscores in order to be compatible with expectations by the Boost super-project.
+    Hence the need to have an actual library namespaced/prefixed with `"boost_"` (which we can manipulate) and an alias prefixed with `"Boost::"`.  
+    **IMPORTANT:** The `<name>` here and above **must** be the library/repository name with non-alphanumeric characters replaced by underscores in order to be compatible with expectations by the [Boost super-project](#boost-super-project--boostcmake).
     Examples: `add_library(Boost::locale ALIAS boost_locale)`, `add_library(Boost::type_traits ALIAS boost_type_traits)`.  
     It makes sense to use the name of the real target (e.g. `boost_locale`) as the project name.
 - [`target_include_directories`](https://cmake.org/cmake/help/latest/command/target_include_directories.html)`(boost_<name> PUBLIC include)`:  
@@ -84,7 +84,7 @@ Key elements usually required by Boost libraries are (in order of use, with `<na
     If your "`PUBLIC`" headers include headers of a dependency then it needs to be here as `PUBLIC`.
     If you only include those headers in your compiled sources then the dependency can be `PRIVATE`.  
     Boost dependencies should be their namespaced name, e.g. `Boost::type_traits` or `Boost::core`.   
-    **IMPORTANT:** Each Boost dependency must be listed on its own line because the Boost super-project uses a very simple dependency scanner.
+    **IMPORTANT:** Each Boost dependency must be listed on its own line because the [Boost super-project](#boost-super-project--boostcmake) uses a very simple dependency scanner.
 
 Optionally you may want to use:
 
@@ -101,7 +101,7 @@ Optionally you may want to use:
     Often you want `if(<variable>)` (check if variable is not "false", i.e. unset, empty, `"OFF"`, `"FALSE"` etc.) or `if(<variable> STREQUAL "<string>")` or `if(NOT <variable> STREQUAL <other_variable>)`.  
     Examples:
     - `if(BOOST_SUPERPROJECT_SOURCE_DIR)`  
-        If the super-project is being built
+        If the [super-project](#boost-super-project--boostcmake) is being built
     - `if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)`  
         If CMake was invoked on the library folder, i.e. not the root Boost folder, using predefined variables.
     - `if(MSVC)`
@@ -157,6 +157,8 @@ It will then search for the `Boost::<name>` and `boost_<name>` targets with `<na
 Those targets will be added to-be-installed and the name and location of the library file are changed to match that of the B2 build.
 The super-project build will also try to automatically find and include dependencies of the library by checking for lines containing **only** `Boost::<library>`.
 
+For this to work, libraries **must** follow the convention to have 2 targets named `Boost::<name>` and `boost_<name>` with `<name>` being the repository/folder name.
+Any special character in the name needs to be replaced by underscores.  
+Also any Boost dependency (i.e. `Boost::<lib>` targets) must be listed on its own line (whitespace is allowed).
+
 **Note:** Building Boost via CMake is experimental!
-
-
