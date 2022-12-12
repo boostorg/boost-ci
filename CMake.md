@@ -2,12 +2,24 @@
 
 This document is meant to provide useful hints for Boost library maintainers to integrate CMake into their library.
 
+TOC:
+
+1. [Quickstart](#quickstart)
+1. How to add your [tests](#tests) to the CMake build
+1. The special [tests](#ci-tests) that [Boost.CI](https://github.com/boostorg/boost-ci) additionally uses
+1. Quick CMake [intro](#cmake-primer) of the CMake commands/functions you might need
+1. Additional info for [header-only](#header-only-libraries) libraries and [CMake scopes](#scopes)
+1. How the [Boost super-project](#boost-super-project--boostcmake) works
+
 ## Quickstart
+
 ### Build
+
 As the minimum you need a `CMakeLists.txt` file (or "CML") for short) in the root directory of the library.
 The [CMakeLists from Boost.CI](CMakeLists.txt) can be used as a starting point with only small modifications required.
 
 ### Tests
+
 You may also want a CML in the "test" folder for your tests.
 To avoid duplicating tests in B2 and CMake you can use `include(BoostTestJamfile)` to get access to `boost_test_jamfile(FILE Jamfile.v2)` which will "translate" (only) `run <name>.cpp ;` into CMake tests.
 You can also use `boost_test(NAME <name> SOURCES <name>.cpp)` to add tests semi-automated.  
@@ -22,6 +34,7 @@ You should then use a unique name for the created binaries.
 The ones created by the `boost_test` macro use `${PROJECT_NAME}-` as the prefix for each test.
 
 ### CI Tests
+
 Additionally the Boost.CI CI scripts reference subfolders of the `test` folder to test 2 common cases:
 1. Searching for the installed library and using it.
 1. Including the library to be built alongside the library/application that uses it.
@@ -98,15 +111,17 @@ Optionally you may want to use:
     - `if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")  
         If either GCC or Clang (or "AppleClang") is used.
 
-## Header-only libraries
+### Header-only libraries
 
 All of the above applies (almost) unchanged to header-only libraries:  
-They are added as (2) targets and with their dependencies just as compiled libraries but with `add_library(boost_<name> INTERFACE)`, i.e. no sources and use of `INTERFACE`.
-The "sources" (i.e. headers) *can* then be added via [`target_sources`](https://cmake.org/cmake/help/latest/command/target_sources.html)`.
+They are added as 2 targets and with their dependencies just as compiled libraries but with `add_library(boost_<name> INTERFACE)`, i.e. no sources and use of `INTERFACE`.
+The "sources" (i.e. headers) *can* then be added via [`target_sources`](https://cmake.org/cmake/help/latest/command/target_sources.html).
 
 The only other difference is the use of `INTERFACE` instead of `PUBLIC`/`PRIVATE` in the `target_*` commands.
 
-**Info:** `PUBLIC`, `PRIVATE` & `INTERFACE` are "scopes" in CMake. 
+### Scopes
+
+`PUBLIC`, `PRIVATE` & `INTERFACE` are "scopes" in CMake. 
   - `PRIVATE`: Compile requirements, i.e. what is required for building the library.
   - `INTERFACE`: Usage requirements, i.e. what is required for using/linking to the library.
   - `PUBLIC`: Combines `PRIVATE` and `INTERFACE`, i.e. what is required for building **and** using the library.
