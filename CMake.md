@@ -52,7 +52,7 @@ Key elements usually required by Boost libraries are (in order of use, with `<na
     `<sources>` is a list of relative paths (space separated so double-quote if the path contains spaces) and can (and should) contain headers too, so they show up in IDEs.
     For getting all headers without explicitely listing them use `file(GLOB_RECURSE headers include/*.hpp)` prior to this command and pass `${headers}` to this command.
     This is not recommended for source files because sources should be explicitely listed in order to regenerate the build system when the list of sources changes.  
-    **Special case:** For header-only libraries use `INTERFACE` instead of `<sources>`.
+    **Special case:** For [header-only libraries](#header-only-libraries) use `INTERFACE` instead of `<sources>`.
 - [`add_library`](https://cmake.org/cmake/help/latest/command/add_library.html#alias-libraries)`(Boost::<name> ALIAS boost_<name>)`:  
     Register the ("Boost")-namespaced target which users will use instead of the `boost_<name>` target.
     This makes usage more conventional and allows to detect missing libraries earlier but the "real" target (the one with the sources) cannot have special characters in its name.
@@ -98,6 +98,27 @@ Optionally you may want to use:
     - `if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")  
         If either GCC or Clang (or "AppleClang") is used.
 
+## Header-only libraries
+
+All of the above applies (almost) unchanged to header-only libraries:  
+They are added as (2) targets and with their dependencies just as compiled libraries but with `add_library(boost_<name> INTERFACE)`, i.e. no sources and use of `INTERFACE`.
+The "sources" (i.e. headers) *can* then be added via [`target_sources`](https://cmake.org/cmake/help/latest/command/target_sources.html)`.
+
+The only other difference is the use of `INTERFACE` instead of `PUBLIC`/`PRIVATE` in the `target_*` commands.
+
+**Info:** `PUBLIC`, `PRIVATE` & `INTERFACE` are "scopes" in CMake. 
+  - `PRIVATE`: Compile requirements, i.e. what is required for building the library.
+  - `INTERFACE`: Usage requirements, i.e. what is required for using/linking to the library.
+  - `PUBLIC`: Combines `PRIVATE` and `INTERFACE`, i.e. what is required for building **and** using the library.
+
+To decide between `PUBLIC` and `PRIVATE` check what is visible in headers included by users, including transitive includes (e.g. `detail/*.hpp`).
+For example:   
+You most likely have a `<lib>/config.hpp` which is included by every header a user might include and that `config.hpp` includes `<boost/config.hpp>`.
+Hence even though a user never includes your config header directly it will transitively be included and hence also `<boost/config.hpp>` from Boost.Config.
+Therefore `Boost::config` is a `PUBLIC` dependency.
+
+For header-only libraries **everything** is "user-visible" so `PUBLIC` but there is no compiled part so `INTERFACE` is enough (and `PUBLIC` would actually be an error reported by CMake).
+
 ## Boost super-project / Boost.CMake
 
 CMake can be invoked on the Boost root folder due to its [CML](https://github.com/boostorg/boost/blob/master/CMakeLists.txt) which is its own project including each library as subprojects.  
@@ -115,6 +136,11 @@ The most important CMake variables (passed on the command line as `cmake -D<name
     Set to `ON` for shared or `OFF` for static libraries.
 - `BUILD_TESTING`:
     Set to `ON` or `OFF` (default) to build tests. This needs to be checked by [each libraries CML](https://github.com/boostorg/boost-ci/blob/dd0e6f1a934baa4ec8a588f36ef80fba9929fac2/CMakeLists.txt#L20-L22).
+
+In short what the super-project does is check each library folder for a `CMakeLists.txt` and include that if found.
+It will then search for the `Boost::<name>` and `boost_<name>` targets with `<name>` derived from the repository/folder name of the library.
+Those targets will be added to-be-installed and the name and location of the library file are changed to match that of the B2 build.
+The super-project build will also try to automatically find and include dependencies of the library by checking for lines containing **only** `Boost::<library>`.
 
 **Note:** Building Boost via CMake is experimental!
 
