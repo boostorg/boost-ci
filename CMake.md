@@ -52,7 +52,7 @@ See the [Boost.CI cmake_test CML](test/cmake_test/CMakeLists.txt) for an example
 Key elements usually required by Boost libraries are (in order of use, with `<name>` as placeholders):
 
 - [`cmake_minimum_required`](https://cmake.org/cmake/help/latest/command/cmake_minimum_required.html)`(VERSION <version>)`:  
-    Will error if the used CMake is older than specified.
+    Will error if the CMake being used is older than specified.
     Possibly changes behavior according to [CMake policies](https://cmake.org/cmake/help/latest/command/cmake_policy.html), i.e. potentially incompatible changes introduced in some CMake version.
     The `<version>` can be `<min>...<max>` which basically means: Require at least CMake `<min>` and enable all policies up to the current CMake version or `<max>`.
 - [`project`](https://cmake.org/cmake/help/latest/command/project.html)`(<boost-name> VERSION "${BOOST_SUPERPROJECT_VERSION}" LANGUAGES CXX)`:  
@@ -63,8 +63,8 @@ Key elements usually required by Boost libraries are (in order of use, with `<na
 - [`add_library`](https://cmake.org/cmake/help/latest/command/add_library.html)`(boost_<name> <sources>)`:  
     Register the library and its source files as a target.
     `<sources>` is a list of relative paths (space separated so double-quote if the path contains spaces) and can (and should) contain headers too, so they show up in IDEs.
-    For getting all headers without explicitely listing them use `file(GLOB_RECURSE headers include/*.hpp)` prior to this command and pass `${headers}` to this command.
-    This is not recommended for source files because sources should be explicitely listed in order to regenerate the build system when the list of sources changes.  
+    For getting all headers without explicitly listing them use `file(GLOB_RECURSE headers include/*.hpp)` prior to this command and pass `${headers}` to this command.
+    This is not recommended for source files because sources should be explicitly listed in order to regenerate the build system when the list of sources changes.  
     **Special case:** For [header-only libraries](#header-only-libraries) use `INTERFACE` instead of `<sources>`.
 - [`add_library`](https://cmake.org/cmake/help/latest/command/add_library.html#alias-libraries)`(Boost::<name> ALIAS boost_<name>)`:  
     Register the ("Boost")-namespaced target which **users** will use instead of the `boost_<name>` target.
@@ -80,7 +80,7 @@ Key elements usually required by Boost libraries are (in order of use, with `<na
     or `target_include_directories(boost_<name> PRIVATE src/helpers)` in addition to the above.
 - [`target_link_libraries`](https://cmake.org/cmake/help/latest/command/target_link_libraries.html)`(boost_<name> PUBLIC <list of libs> PRIVATE <list of libs>)`:  
     Add the libraries as dependencies.
-    This means their `PUBLIC` includes are visibile when compiling `boost_<name>` and if the dependency is not header-only that library is linked to this library.
+    This means their `PUBLIC` includes are visible when compiling `boost_<name>` and if the dependency is not header-only that library is linked to this library.
     If your "`PUBLIC`" headers include headers of a dependency then it needs to be here as `PUBLIC`.
     If you only include those headers in your compiled sources then the dependency can be `PRIVATE`.  
     Boost dependencies should be their namespaced name, e.g. `Boost::type_traits` or `Boost::core`.   

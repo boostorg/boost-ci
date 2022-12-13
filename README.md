@@ -32,7 +32,7 @@ Here are all the steps you need to take as a Boost repository maintainer to enab
 1. Copy the `.azure-pipelines.yml` file from this repository into the top level of your repository.
 1. Copy the `.travis.yml` file from this repository into the top level of your repository.
 1. Copy the `.github/workflows/ci.yml` file from this repository into the the same folder in your repository.
-    * Note that those include CMake tests, so see especially the [CMake docs](CMake.md#ci-tests) for what it expects.
+    * Note that those include CMake tests, so see the [CMake docs](CMake.md#ci-tests) for details and requirements.
 1. Copy the `.drone.star` file and `.drone` directory from this repository to the top level of your repository.
 1. Copy the `.codecov.yml` file from this repository to the top level of your repository and edit if required. Note that **only** the file in the default branch (usually `master`) is considered!
 1. Copy the `LICENSE` file from this repository to the top level of your repository.  This adds the `BSL-1.0` designation to your repository on github.
