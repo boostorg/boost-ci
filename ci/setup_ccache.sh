@@ -14,7 +14,14 @@ if ! command -v ccache &> /dev/null; then
     sudo apt-get install ${NET_RETRY_COUNT:+ -o Acquire::Retries=$NET_RETRY_COUNT} -y ccache
   elif command -v brew &> /dev/null; then
     brew update > /dev/null
-    brew install ccache
+    if ! brew install ccache; then
+        # Workaround issue with unexpected symlinks: https://github.com/actions/runner-images/issues/6817
+        for f in 2to3 idle3 pydoc3 python3 python3-config; do
+            rm /usr/local/bin/$f || true
+        done
+        # Try again
+        brew install ccache
+    fi
   fi
 fi
 ccache --set-config=cache_dir=${B2_CCACHE_DIR:-~/.ccache}
