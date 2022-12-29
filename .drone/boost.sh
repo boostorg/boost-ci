@@ -20,7 +20,11 @@ export CODECOV_NAME=${CODECOV_NAME:-"Drone CI"}
 
 set +x
 echo '==================================> INSTALL'
-. ./ci/common_install.sh
+. ci/common_install.sh
+
+set BOOST_CUSTOM_INSTALL_SCRIPT="$BOOST_CI_SRC_FOLDER\.drone\custom_install.sh"
+[ ! -e "$BOOST_CUSTOM_INSTALL_SCRIPT" ] || "$BOOST_CUSTOM_INSTALL_SCRIPT"
+
 set +x
 echo "B2 config: $(env | grep B2_ || true)"
 echo "==================================> SCRIPT ($DRONE_JOB_BUILDTYPE)"

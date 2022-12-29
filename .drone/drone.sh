@@ -18,9 +18,22 @@ export BOOST_CI_TARGET_BRANCH="$DRONE_BRANCH"
 export BOOST_CI_SRC_FOLDER=$(pwd)
 export CODECOV_NAME=${CODECOV_NAME:-"Drone CI"}
 
-echo '==================================> INSTALL'
-. ./ci/common_install.sh
 set +x
+echo '==================================> INSTALL'
+
+scripts=(
+    "$BOOST_CI_SRC_FOLDER/.drone/before-install.sh"
+    "$BOOST_CI_SRC_FOLDER/ci/common_install.sh"
+    "$BOOST_CI_SRC_FOLDER/.drone/after-install.sh"
+)
+for script in "${scripts[@]}"; do
+    if [ -e "$script" ]; then
+        echo "==============================> RUN $script"
+        source "$script"
+        set +x
+    fi
+done
+
 echo "B2 config: $(env | grep B2_ || true)"
 echo "==================================> SCRIPT ($DRONE_JOB_BUILDTYPE)"
 
