@@ -18,10 +18,12 @@ export BOOST_CI_TARGET_BRANCH="$DRONE_BRANCH"
 export BOOST_CI_SRC_FOLDER=$(pwd)
 export CODECOV_NAME=${CODECOV_NAME:-"Drone CI"}
 
+set +x
 echo '==================================> INSTALL'
 . ./ci/common_install.sh
+set +x
 echo "B2 config: $(env | grep B2_ || true)"
-echo '==================================> SCRIPT'
+echo "==================================> SCRIPT ($DRONE_JOB_BUILDTYPE)"
 
 case "$DRONE_JOB_BUILDTYPE" in
     boost)
@@ -36,9 +38,12 @@ case "$DRONE_JOB_BUILDTYPE" in
     coverity)
         if [ -z "$COVERITY_SCAN_NOTIFICATION_EMAIL" ] || [ -z "$COVERITY_SCAN_TOKEN" ]; then
             echo "Coverity details not set up"
+            [ -n "$COVERITY_SCAN_NOTIFICATION_EMAIL" ] || echo 'Missing $COVERITY_SCAN_NOTIFICATION_EMAIL'
+            [ -n "$COVERITY_SCAN_TOKEN" ] || echo 'Missing $COVERITY_SCAN_TOKEN'
             exit 1
         fi
-        if [[ "DRONE_BRANCH" =~ ^(master|develop)$ ]] && [[ "DRONE_BUILD_EVENT" =~ ^(push|cron)$ ]]; then
+        echo "DRONE_BRANCH=$DRONE_BRANCH, DRONE_BUILD_EVENT=$DRONE_BUILD_EVENT, DRONE_REPO=$DRONE_REPO"
+        if [[ "$DRONE_BRANCH" =~ ^(master|develop)$ ]] && [[ "$DRONE_BUILD_EVENT" =~ ^(push|cron)$ ]]; then
             export BOOST_REPO="$DRONE_REPO"
 			export BOOST_BRANCH="$DRONE_BRANCH"
             $BOOST_ROOT/libs/$SELF/ci/coverity.sh
