@@ -24,6 +24,7 @@ def unix_common(install_script, buildscript_to_run):
   return [
     "echo '============> SETUP'",
     "uname -a",
+    "echo $DRONE_STAGE_MACHINE",
     "export PATH=/usr/local/bin:$PATH",
     # Install script
     download_script_from_boostCI(install_script, 'ci/drone'),
