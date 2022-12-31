@@ -55,8 +55,8 @@ Here are all the steps you need to take as a Boost repository maintainer to enab
 1. To activate Drone, visit https://drone.cpp.al. Authorize Drone: Click the "Authorize cppalliance-drone" button. Sync repositories: Click the "sync" button. A list of repositories will appear. For the relevant repo, click and then choose "Activate Repository". In the settings page, change Configuration from .drone.yml to .drone.star. "Save".
 1. More pointers about Drone:
     * Ensure that shell scripts are executable: `chmod 755 .drone/drone.sh`
-    * The install-script (in `ci/drone`) and run-script (in `.drone`) for the Unix-ish jobs will be downloaded from Boost.CI if they don't exist, so you only need them when you need to customize the build.
-    * The `.drone/custom_install.*` scripts are run after the common_install step of the default ["boost" build](.drone/boost.sh), i.e. after bootstrapping B2, if they exist.
+    * The install-script (in `ci/drone`) and run-script (in `.drone`) for the Unix-ish jobs will be downloaded from Boost.CI if they don't exist, so you only need them when you want to customize the build.
+    * The `.drone/{before,after}-install.*` scripts are sourced around the common_install step (which e.g. bootstraps B2) of the [default build](.drone/drone.sh), if they exist. So you can remove them when not required.
     * "asan" jobs require elevated privileges. Contact an administrator or open an issue at [drone-ci](https://github.com/CPPAlliance/drone-ci) to set your drone repository to "Trusted".
     * If not using asan, simply remove the jobs.
     * For Codecov you need to copy the "Repository Upload Token" from the settings page of your repo on [Codecov](https://codecov.io) and use it to create a new secret named `codecov_token` on the settings page of your repo on [Drone](https://drone.cpp.al).
