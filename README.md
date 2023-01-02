@@ -33,7 +33,7 @@ Here are all the steps you need to take as a Boost repository maintainer to enab
 1. Copy the `.travis.yml` file from this repository into the top level of your repository.
 1. Copy the `.github/workflows/ci.yml` file from this repository into the the same folder in your repository.
     * Note that those include CMake tests, so see the [CMake docs](CMake.md#ci-tests) for details and requirements.
-1. Copy the `.drone.star` file and `.drone` directory from this repository to the top level of your repository.
+1. Copy the `.drone.star` file and optionally the `.drone` directory from this repository to the top level of your repository.
 1. Copy the `.codecov.yml` file from this repository to the top level of your repository and edit if required. Note that **only** the file in the default branch (usually `master`) is considered!
 1. Copy the `LICENSE` file from this repository to the top level of your repository.  This adds the `BSL-1.0` designation to your repository on github.
 1. [optional] Copy the `README.template.md` file from this repository to the top level `README.md` of your repository.  If you already have a README.md then you can take what you need from the template version to improve it, if desired.  Otherwise, you will need to customize README.md for your repository.  One useful step is to fixup the repository name using the command `sed -i 's/template/<myrepositoryname>/g' README.md`, and then update the first line description.
@@ -55,6 +55,8 @@ Here are all the steps you need to take as a Boost repository maintainer to enab
 1. To activate Drone, visit https://drone.cpp.al. Authorize Drone: Click the "Authorize cppalliance-drone" button. Sync repositories: Click the "sync" button. A list of repositories will appear. For the relevant repo, click and then choose "Activate Repository". In the settings page, change Configuration from .drone.yml to .drone.star. "Save".
 1. More pointers about Drone:
     * Ensure that shell scripts are executable: `chmod 755 .drone/drone.sh`
+    * The install-script (in `ci/drone`) and run-script (in `.drone`) for the Unix-ish jobs will be downloaded from Boost.CI if they don't exist, so you only need them when you want to customize the build.
+    * The `.drone/{before,after}-install.*` scripts are sourced around the common_install step (which e.g. bootstraps B2) of the [default build](.drone/drone.sh), if they exist. So you can remove them when not required.
     * "asan" jobs require elevated privileges. Contact an administrator or open an issue at [drone-ci](https://github.com/CPPAlliance/drone-ci) to set your drone repository to "Trusted".
     * If not using asan, simply remove the jobs.
     * For Codecov you need to copy the "Repository Upload Token" from the settings page of your repo on [Codecov](https://codecov.io) and use it to create a new secret named `codecov_token` on the settings page of your repo on [Drone](https://drone.cpp.al).
