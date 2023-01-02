@@ -161,80 +161,6 @@ def job(
 
 def main(ctx):
   return [
-    job(compiler='clang-3.5', cxxstd='03,11',             os='ubuntu-16.04'),
-    job(compiler='clang-3.6', cxxstd='03,11,14',          os='ubuntu-16.04'),
-    job(compiler='clang-3.8', cxxstd='03,11,14',          os='ubuntu-16.04'),
-    job(compiler='clang-3.9', cxxstd='03,11,14',          os='ubuntu-18.04'),
-    job(compiler='clang-4.0', cxxstd='03,11,14',          os='ubuntu-18.04'),
-    job(compiler='clang-5.0', cxxstd='03,11,14,1z',       os='ubuntu-18.04'),
-    job(compiler='clang-6.0', cxxstd='03,11,14,17',       os='ubuntu-18.04'),
-    job(compiler='clang-7',   cxxstd='03,11,14,17',       os='ubuntu-18.04'),
-    job(compiler='clang-8',   cxxstd='03,11,14,17,2a',    os='ubuntu-18.04'),
-    job(compiler='clang-9',   cxxstd='03,11,14,17,2a',    os='ubuntu-18.04'),
-    job(compiler='clang-10',  cxxstd='03,11,14,17,2a',    os='ubuntu-18.04'),
-    job(compiler='clang-11',  cxxstd='03,11,14,17,2a',    os='ubuntu-22.04'),
-    job(compiler='clang-12',  cxxstd='03,11,14,17,20',    os='ubuntu-22.04'),
-    job(compiler='clang-13',  cxxstd='03,11,14,17,20,2b', os='ubuntu-22.04'),
-    job(compiler='clang-14',  cxxstd='03,11,14,17,20,2b', os='ubuntu-22.04'),
-    job(compiler='clang-15',  cxxstd='03,11,14,17,20,2b', os='ubuntu-22.04', add_llvm=True),
-
-    job(compiler='gcc-4.7',   cxxstd='03,11',             os='ubuntu-16.04'),
-    job(compiler='gcc-4.8',   cxxstd='03,11',             os='ubuntu-16.04'),
-    job(compiler='gcc-4.9',   cxxstd='03,11',             os='ubuntu-16.04'),
-    job(compiler='gcc-5',     cxxstd='03,11,14,1z',       os='ubuntu-18.04'),
-    job(compiler='gcc-6',     cxxstd='03,11,14,1z',       os='ubuntu-18.04'),
-    job(compiler='gcc-7',     cxxstd='03,11,14,1z',       os='ubuntu-18.04'),
-    job(compiler='gcc-8',     cxxstd='03,11,14,17,2a',    os='ubuntu-18.04'),
-    job(compiler='gcc-9',     cxxstd='03,11,14,17,2a',    os='ubuntu-18.04'),
-    job(compiler='gcc-10',    cxxstd='03,11,14,17,20',    os='ubuntu-22.04'),
-    job(compiler='gcc-11',    cxxstd='03,11,14,17,20,2b', os='ubuntu-22.04'),
-    job(compiler='gcc-12',    cxxstd='03,11,14,17,20,2b', os='ubuntu-22.04'),
-
-    job(name='Coverage', buildtype='codecov',
-        compiler='gcc-8',     cxxstd='03,11,14,17,2a', os='ubuntu-18.04'),
-    # Sanitizers
-    job(name='ASAN',  asan=True,
-        compiler='gcc-12',    cxxstd='03,11,14,17,20', os='ubuntu-22.04'),
-    job(name='UBSAN', ubsan=True,
-        compiler='gcc-12',    cxxstd='03,11,14,17,20', os='ubuntu-22.04'),
-    job(name='TSAN',  tsan=True,
-        compiler='gcc-12',    cxxstd='03,11,14,17,20', os='ubuntu-22.04'),
-    job(name='Clang 15 w/ sanitizers', asan=True, ubsan=True,
-        compiler='clang-15',  cxxstd='03,11,14,17,20', os='ubuntu-22.04', add_llvm=True),
-    job(name='Clang 11 libc++ w/ sanitizers', asan=True, ubsan=True, # libc++-11 is the latest working with ASAN: https://github.com/llvm/llvm-project/issues/59432
-        compiler='clang-11',  cxxstd='03,11,14,17,20', os='ubuntu-20.04', stdlib='libc++', install='libc++-11-dev libc++abi-11-dev'),
-    job(name='Valgrind', valgrind=True,
-        compiler='clang-6.0', cxxstd='03,11,14,1z',    os='ubuntu-18.04', install='libc6-dbg libc++-dev libstdc++-8-dev'),
-
-    # libc++
-    job(compiler='clang-6.0', cxxstd='03,11,14,17,2a', os='ubuntu-18.04', stdlib='libc++', install='libc++-dev libc++abi-dev'),
-    job(compiler='clang-7',   cxxstd='03,11,14,17,2a', os='ubuntu-20.04', stdlib='libc++', install='libc++-7-dev libc++abi-7-dev'),
-    job(compiler='clang-8',   cxxstd='03,11,14,17,2a', os='ubuntu-20.04', stdlib='libc++', install='libc++-8-dev libc++abi-8-dev'),
-    job(compiler='clang-9',   cxxstd='03,11,14,17,2a', os='ubuntu-20.04', stdlib='libc++', install='libc++-9-dev libc++abi-9-dev'),
-    job(compiler='clang-10',  cxxstd='03,11,14,17,20', os='ubuntu-20.04', stdlib='libc++', install='libc++-10-dev libc++abi-10-dev'),
-    job(compiler='clang-11',  cxxstd='03,11,14,17,20', os='ubuntu-20.04', stdlib='libc++', install='libc++-11-dev libc++abi-11-dev'),
-    job(compiler='clang-12',  cxxstd='03,11,14,17,20', os='ubuntu-22.04', stdlib='libc++', install='libc++-12-dev libc++abi-12-dev libunwind-12-dev'),
-    job(compiler='clang-13',  cxxstd='03,11,14,17,20', os='ubuntu-22.04', stdlib='libc++', install='libc++-13-dev libc++abi-13-dev'),
-    job(compiler='clang-14',  cxxstd='03,11,14,17,20', os='ubuntu-22.04', stdlib='libc++', install='libc++-14-dev libc++abi-14-dev'),
-    job(compiler='clang-15',  cxxstd='03,11,14,17,20', os='ubuntu-22.04', stdlib='libc++', install='libc++-15-dev libc++abi-15-dev', add_llvm=True),
-
-    # FreeBSD
-    job(compiler='clang-10',  cxxstd='03,11,14,17,20', os='freebsd-13.1'),
-    job(compiler='clang-15',  cxxstd='03,11,14,17,20', os='freebsd-13.1'),
-    job(compiler='gcc-11',    cxxstd='03,11,14,17,20', os='freebsd-13.1', linkflags='-Wl,-rpath=/usr/local/lib/gcc11'),
-    # OSX
-    job(compiler='clang',     cxxstd='03,11,14,17,2a',    os='osx-xcode-9.4.1'),
-    job(compiler='clang',     cxxstd='03,11,14,17,2a',    os='osx-xcode-10.3'),
-    job(compiler='clang',     cxxstd='03,11,14,17,2a',    os='osx-xcode-12'),
-    job(compiler='clang',     cxxstd='03,11,14,17,20',    os='osx-xcode-12.5.1'),
-    job(compiler='clang',     cxxstd='03,11,14,17,20',    os='osx-xcode-13.4.1'),
-    job(compiler='clang',     cxxstd='03,11,14,17,20,2b', os='osx-xcode-14.1'),
-    # ARM64
-    job(compiler='clang-12',  cxxstd='03,11,14,17,20', os='ubuntu-20.04', arch='arm64', add_llvm=True),
-    job(compiler='gcc-11',    cxxstd='03,11,14,17,20', os='ubuntu-20.04', arch='arm64'),
-    # S390x
-    job(compiler='clang-12',  cxxstd='03,11,14,17,20', os='ubuntu-20.04', arch='s390x', add_llvm=True),
-    job(compiler='gcc-11',    cxxstd='03,11,14,17,20', os='ubuntu-20.04', arch='s390x'),
     # Windows
     job(compiler='msvc-14.0', cxxstd=None,              os='windows'),
     job(compiler='msvc-14.1', cxxstd=None,              os='windows'),
@@ -247,4 +173,81 @@ def main(ctx):
   ]
 
 # from https://github.com/boostorg/boost-ci
-load("@boost_ci//ci/drone/:functions.star", "linux_cxx","windows_cxx","osx_cxx","freebsd_cxx")
+load("@boost_ci//ci/drone/:functions.star", "linux_cxx","osx_cxx","freebsd_cxx","add_if_set")
+
+def download_script_from_boostCI_pwsh(filename, boostCI_dir):
+  url = '$env:BOOST_CI_URL/%s/%s' % (boostCI_dir, filename)
+  target_path = '%s/%s' % (boostCI_dir, filename)
+  # Note that this always runs the `chmod` even when not downloading
+  return ' '.join([
+    'if(![System.IO.File]::Exists("{1}")){{',
+      'md "%s" -ea 0;' % boostCI_dir,
+      'try{{',
+        'Invoke-WebRequest "{0}" -Outfile "{1}" -MaximumRetryCount 10 -RetryIntervalSec 15',
+      '}}catch{{',
+        'echo "Not using retry";',
+        'Invoke-WebRequest "{0}" -Outfile "{1}";',
+      '}}',
+    '}}',
+  ]).format(url, target_path)
+
+def windows_cxx(
+    name,
+    cxx="g++", cxxflags=None, packages=None, sources=None, llvm_os=None, llvm_ver=None,
+    arch="amd64", image="cppalliance/dronevs2019",
+    buildtype="boost", buildscript="",
+    environment={}, globalenv={},
+    triggers={ "branch": [ "master", "develop", "drone*", "bugfix/*", "feature/*", "fix/*", "pr/*" ] }, node={},
+    privileged=False):
+
+  job_env = {
+      "TRAVIS_OS_NAME": "windows",
+      "CXX": cxx,
+      "DRONE_JOB_BUILDTYPE": buildtype,
+      "BOOST_CI_URL": "https://github.com/boostorg/boost-ci/raw/master",
+  }
+
+  add_if_set(job_env, "CXXFLAGS", cxxflags)
+  add_if_set(job_env, "PACKAGES", packages)
+  add_if_set(job_env, "SOURCES", sources)
+  add_if_set(job_env, "LLVM_OS", llvm_os)
+  add_if_set(job_env, "LLVM_VER", llvm_ver)
+  job_env.update(globalenv)
+  job_env.update(environment)
+
+  if not buildscript:
+    buildscript = buildtype
+  buildscript_to_run = buildscript + '.bat'
+
+  return {
+    "name": "Windows %s" % name,
+    "kind": "pipeline",
+    "type": "docker",
+    "trigger": triggers,
+    "platform": {
+      "os": "windows",
+      "arch": arch
+    },
+    "node": node,
+    "steps": [
+      {
+        "name": "Everything",
+        "image": image,
+        "pull": "if-not-exists",
+        "privileged": privileged,
+        "environment": job_env,
+        "commands": [
+          "echo '============> SETUP'",
+          "echo $env:DRONE_STAGE_MACHINE",
+          # Install script
+          download_script_from_boostCI_pwsh('windows-cxx-install.bat', 'ci/drone'),
+          # Chosen build script inside .drone
+          download_script_from_boostCI_pwsh(buildscript_to_run, '.drone'),
+          "echo '============> PACKAGES'",
+          "ci/drone/windows-cxx-install.bat",
+          "echo '============> INSTALL AND COMPILE'",
+          "cmd /c .drone\\\\%s `& exit" % buildscript_to_run,
+        ]
+      }
+    ]
+  }
