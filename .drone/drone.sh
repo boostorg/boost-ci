@@ -39,13 +39,13 @@ echo "==================================> SCRIPT ($DRONE_JOB_BUILDTYPE)"
 
 case "$DRONE_JOB_BUILDTYPE" in
     boost)
-        $BOOST_ROOT/libs/$SELF/ci/build.sh
+        $BOOST_CI_SRC_FOLDER/ci/build.sh
         ;;
     codecov)
-        $BOOST_ROOT/libs/$SELF/ci/travis/codecov.sh
+        $BOOST_CI_SRC_FOLDER/ci/travis/codecov.sh
         ;;
     valgrind)
-        $BOOST_ROOT/libs/$SELF/ci/travis/valgrind.sh
+        $BOOST_CI_SRC_FOLDER/ci/travis/valgrind.sh
         ;;
     coverity)
         if [ -z "$COVERITY_SCAN_NOTIFICATION_EMAIL" ] || [ -z "$COVERITY_SCAN_TOKEN" ]; then
@@ -58,7 +58,7 @@ case "$DRONE_JOB_BUILDTYPE" in
         if [[ "$DRONE_BRANCH" =~ ^(master|develop)$ ]] && [[ "$DRONE_BUILD_EVENT" =~ ^(push|cron)$ ]]; then
             export BOOST_REPO="$DRONE_REPO"
 			export BOOST_BRANCH="$DRONE_BRANCH"
-            $BOOST_ROOT/libs/$SELF/ci/coverity.sh
+            $BOOST_CI_SRC_FOLDER/ci/coverity.sh
         fi
         ;;
     *)
