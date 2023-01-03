@@ -16,6 +16,22 @@ def download_script_from_boostCI(filename, boostCI_dir):
   # Note that this always runs the `chmod` even when not downloading
   return '[ -e "{1}" ] || curl -s -S --retry 10 --create-dirs -L "{0}" -o "{1}" && chmod 755 {1}'.format(url, target_path)
 
+# Same as above but using powershell
+def download_script_from_boostCI_pwsh(filename, boostCI_dir):
+  url = '$env:BOOST_CI_URL/%s/%s' % (boostCI_dir, filename)
+  target_path = '%s/%s' % (boostCI_dir, filename)
+  return ' '.join([
+    'if(![System.IO.File]::Exists("{1}")){{',
+      '$null = md "%s" -ea 0;' % boostCI_dir,
+      'try{{',
+        # Use pwsh.exe to invoke a potentially newer PowerShell
+        'pwsh.exe -Command Invoke-WebRequest "{0}" -Outfile "{1}" -MaximumRetryCount 10 -RetryIntervalSec 15',
+      '}}catch{{',
+        'Invoke-WebRequest "{0}" -Outfile "{1}";',
+      '}}',
+    '}}',
+  ]).format(url, target_path)
+
 # Common steps for unix systems
 # Takes the install script (inside the Boost.CI "ci/drone" folder) and the build script (relative to the root .drone folder)
 def unix_common(install_script, buildscript_to_run):
@@ -117,7 +133,7 @@ def windows_cxx(
       "TRAVIS_OS_NAME": "windows",
       "CXX": cxx,
       "DRONE_JOB_BUILDTYPE": buildtype,
-      "BOOST_CI_URL": "https://github.com/boostorg/boost-ci/archive/master.tar.gz",
+      "BOOST_CI_URL": "https://github.com/boostorg/boost-ci/raw/master",
   }
 
   add_if_set(job_env, "CXXFLAGS", cxxflags)
@@ -130,6 +146,7 @@ def windows_cxx(
 
   if not buildscript:
     buildscript = buildtype
+  buildscript_to_run = buildscript + '.bat'
 
   return {
     "name": "Windows %s" % name,
@@ -151,15 +168,14 @@ def windows_cxx(
         "commands": [
           "echo '============> SETUP'",
           "echo $env:DRONE_STAGE_MACHINE",
-          "try { pwsh.exe -Command Invoke-WebRequest $env:BOOST_CI_URL -Outfile master.tar.gz -MaximumRetryCount 10 -RetryIntervalSec 15 } catch { Invoke-WebRequest $env:BOOST_CI_URL -Outfile master.tar.gz ; echo 'Using powershell' }",
-          "tar -xvf master.tar.gz",
-          "mv boost-ci-master .drone/boost-ci",
-          "Remove-Item master.tar.gz",
+          # Install script
+          download_script_from_boostCI_pwsh('windows-cxx-install.bat', 'ci/drone'),
+          # Chosen build script inside .drone
+          download_script_from_boostCI_pwsh(buildscript_to_run, '.drone'),
           "echo '============> PACKAGES'",
-          ".drone/boost-ci/ci/drone/windows-cxx-install.bat",
-
+          "ci/drone/windows-cxx-install.bat",
           "echo '============> INSTALL AND COMPILE'",
-          "cmd /c .drone\\\%s.bat `& exit" % buildscript,
+          "cmd /c .drone\\\\%s `& exit" % buildscript_to_run,
         ]
       }
     ]
