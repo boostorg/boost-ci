@@ -183,7 +183,7 @@ def download_script_from_boostCI_pwsh(filename, boostCI_dir):
     'if(![System.IO.File]::Exists("{1}")){{',
       'md "%s" -ea 0;' % boostCI_dir,
       'try{{',
-        'Invoke-WebRequest "{0}" -Outfile "{1}" -MaximumRetryCount 10 -RetryIntervalSec 15',
+        'pwsh.exe -Command Invoke-WebRequest "{0}" -Outfile "{1}" -MaximumRetryCount 10 -RetryIntervalSec 15',
       '}}catch{{',
         'echo "Not using retry";',
         'Invoke-WebRequest "{0}" -Outfile "{1}";',
