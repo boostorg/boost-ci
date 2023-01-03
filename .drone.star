@@ -13,16 +13,16 @@ globalenv={'B2_CI_VERSION': '1', 'B2_VARIANT': 'release'}
 
 # Define a job, i.e. a single entry in the build matrix
 # It takes values for OS, compiler and C++-standard and optional arguments.
-# A default value of `None` is a hint that the value is 'auto-detected/-set',
-# as opposed to a default of `''` (empty string) which means the value is not used.
-def job(
+# A value of `None` means "unset" as opposed to an empty string which for environment variables will set them to empty.
+def job_impl(
         # Required:
         os, compiler, cxxstd,
         # Name of the job, a reasonable default will be generated based on the other arguments
         name=None,
+        # `image` will be deduced from `os`, `arch` and `compiler` when not set
         arch='amd64', image=None,
         # Those correspond to the B2_* variables and hence arguments to b2 (with the default build.sh)
-        variant='', address_model='', stdlib='', defines=None, cxxflags='', linkflags='', testflags='',
+        variant=None, address_model=None, stdlib=None, defines=None, cxxflags=None, linkflags=None, testflags=None,
         # Sanitizers. Using any will set the variant to 'debug' and default `defines` to 'BOOST_NO_STRESS_TEST=1'
         valgrind=False, asan=False, ubsan=False, tsan=False,
         # Packages to install, will default to the compiler and the value of `install` (for additional packages)
@@ -32,8 +32,11 @@ def job(
         # .drone/*.sh script to run
         buildscript='drone',
         # build type env variable (defaults to 'boost' or 'valgrind', sets the token when set to 'codecov')
-        buildtype=None, 
-        environment={}, **kwargs):
+        buildtype=None,
+        # job specific environment
+        env={},
+        # Any other keyword arguments are passed directly to the *_cxx-function
+        **kwargs):
 
   if not name:
     deduced_name = True
@@ -55,7 +58,6 @@ def job(
     if install:
       packages += ' ' + install
 
-  env = dict(globalenv)
   env['B2_TOOLSET' if os == 'windows' else 'B2_COMPILER'] = compiler
   if cxxstd != None:
     env['B2_CXXSTD'] = cxxstd
@@ -63,7 +65,7 @@ def job(
   if valgrind:
     if buildtype == None:
       buildtype = 'valgrind'
-    if not testflags:
+    if testflags == None:
       testflags = 'testing.launcher=valgrind'
     env.setdefault('VALGRIND_OPTS', '--error-exitcode=1')
 
@@ -83,25 +85,26 @@ def job(
 
   # Set defaults for all sanitizers
   if valgrind or asan or ubsan:
-    if not variant:
+    if variant == None:
       variant = 'debug'
-    if not defines:
+    if defines == None:
       defines = 'BOOST_NO_STRESS_TEST=1'
 
-  if variant:
+  if variant != None:
     env['B2_VARIANT'] = variant
-  if address_model:
+  if address_model != None:
     env['B2_ADDRESS_MODEL'] = address_model
-  if stdlib:
+  if stdlib != None:
     env['B2_STDLIB'] = stdlib
-  if defines:
+  if defines != None:
     env['B2_DEFINES'] = defines
-  if cxxflags:
+  if cxxflags != None:
     env['B2_CXXFLAGS'] = cxxflags
-  if linkflags:
+  if linkflags != None:
     env['B2_LINKFLAGS'] = linkflags
-  if testflags:
+  if testflags != None:
     env['B2_TESTFLAGS'] = testflags
+
   env.update(environment)
   
   if buildtype == None:
@@ -132,17 +135,20 @@ def job(
 
     return linux_cxx(name, cxx, packages=packages, image=image, privileged=privileged, **kwargs)
   elif os.startswith('freebsd'):
-    if not image:
-      image = os.split('-')[1]
-    return freebsd_cxx(name, cxx, freebsd_version=image, **kwargs)
+    # Deduce version if os is `freebsd-<version>`
+    parts = os.split('freebsd-')
+    if len(parts) == 2:
+      version = kwargs.setdefault('freebsd_version', parts[1])
+      if deduced_name:
+        name = '%s %s' % (kwargs['freebsd_version'], name)
+    return freebsd_cxx(name, cxx, **kwargs)
   elif os.startswith('osx'):
     # If format is `osx-xcode-<version>` deduce xcode_version, else assume it is passed directly
-    if os.startswith('osx-xcode-'):
-      xcode_version = os.split('osx-xcode-')[1] 
-      kwargs['xcode_version'] = xcode_version
+    parts = os.split('osx-xcode-')
+    if len(parts) == 2:
+      version =  kwargs.setdefault('xcode_version', parts[1])
       if deduced_name:
-        name = 'XCode %s: %s' % (xcode_version, name)
-        
+        name = 'XCode %s: %s' % (version, name)
     return osx_cxx(name, cxx, **kwargs)
   elif os == 'windows':
     if not image:
@@ -158,6 +164,14 @@ def job(
   else:
     fail('Unknown OS:', os)
 
+# Wrapper function to apply the globalenv to all jobs
+def job(
+        # job specific environment options
+        env={},
+        **kwargs):
+  real_env = dict(globalenv)
+  real_env.update(env)
+  return job_impl(env=real_env, **kwargs)
 
 def main(ctx):
   return [
