@@ -181,7 +181,7 @@ def download_script_from_boostCI_pwsh(filename, boostCI_dir):
   # Note that this always runs the `chmod` even when not downloading
   return ' '.join([
     'if(![System.IO.File]::Exists("{1}")){{',
-      'md "%s" -ea 0;' % boostCI_dir,
+      '$null = md "%s" -ea 0;' % boostCI_dir,
       'try{{',
         'pwsh.exe -Command Invoke-WebRequest "{0}" -Outfile "{1}" -MaximumRetryCount 10 -RetryIntervalSec 15',
       '}}catch{{',
