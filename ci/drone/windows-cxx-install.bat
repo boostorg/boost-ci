@@ -1,5 +1,0 @@
-
-REM windows script
-
-true
-
