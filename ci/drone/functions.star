@@ -22,12 +22,11 @@ def download_script_from_boostCI_pwsh(filename, boostCI_dir):
   target_path = '%s/%s' % (boostCI_dir, filename)
   return ' '.join([
     'if(![System.IO.File]::Exists("{1}")){{',
-      'md "%s" -ea 0;' % boostCI_dir,
+      '$null = md "%s" -ea 0;' % boostCI_dir,
       'try{{',
         # Use pwsh.exe to invoke a potentially newer PowerShell
         'pwsh.exe -Command Invoke-WebRequest "{0}" -Outfile "{1}" -MaximumRetryCount 10 -RetryIntervalSec 15',
       '}}catch{{',
-        'echo "Retry not supported";',
         'Invoke-WebRequest "{0}" -Outfile "{1}";',
       '}}',
     '}}',
