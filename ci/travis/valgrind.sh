@@ -15,8 +15,10 @@ set -ex
 # using valgrind 3.14 but we have to build it
 
 pushd /tmp
-git clone --depth 1 -b VALGRIND_3_14_0 git://sourceware.org/git/valgrind.git
-cd valgrind
+valgrindversion=3.20.0
+curl -sSL --retry ${NET_RETRY_COUNT:-5} https://sourceware.org/pub/valgrind/valgrind-${valgrindversion}.tar.bz2 --output valgrind-${valgrindversion}.tar.bz2
+tar -xvf valgrind-${valgrindversion}.tar.bz2
+cd valgrind-${valgrindversion}
 
 ./autogen.sh
 ./configure --prefix=/tmp/vg
