@@ -214,6 +214,7 @@ def osx_cxx(
     if not osx_version:
         if xcode_version[0:2] in [ "14", "13"]:
             osx_version="monterey"
+            arch="arm64"
         elif xcode_version[0:4] in [ "12.5"]:
             osx_version="monterey"
         elif xcode_version[0:2] in [ "12","11","10"]:
