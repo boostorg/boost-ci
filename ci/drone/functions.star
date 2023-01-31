@@ -217,6 +217,7 @@ def osx_cxx(
             arch="arm64"
         elif xcode_version[0:4] in [ "12.5"]:
             osx_version="monterey"
+            arch="arm64"
         elif xcode_version[0:2] in [ "12","11","10"]:
             osx_version="catalina"
         elif xcode_version[0:1] in [ "9","8","7","6"]:
@@ -298,3 +299,160 @@ def freebsd_cxx(
       }
     ]
   }
+
+# The functions job and job_impl were added in 2023-01 to provide a simplified job syntax.
+# Instead of calling linux_cxx() directly, run job() instead.
+#
+# Define a job, i.e. a single entry in the build matrix
+# It takes values for OS, compiler and C++-standard and optional arguments.
+# A value of `None` means "unset" as opposed to an empty string which for environment variables will set them to empty.
+def job_impl(
+        # Required:
+        os, compiler, cxxstd,
+        # Name of the job, a reasonable default will be generated based on the other arguments
+        name=None,
+        # `image` will be deduced from `os`, `arch` and `compiler` when not set
+        arch='amd64', image=None,
+        # Those correspond to the B2_* variables and hence arguments to b2 (with the default build.sh)
+        variant=None, address_model=None, stdlib=None, defines=None, cxxflags=None, linkflags=None, testflags=None,
+        # Sanitizers. Using any will set the variant to 'debug' and default `defines` to 'BOOST_NO_STRESS_TEST=1'
+        valgrind=False, asan=False, ubsan=False, tsan=False,
+        # Packages to install, will default to the compiler and the value of `install` (for additional packages)
+        packages=None, install='',
+        # If True then the LLVM repo corresponding to the Ubuntu image will be added
+        add_llvm=False,
+        # .drone/*.sh script to run
+        buildscript='drone',
+        # build type env variable (defaults to 'boost' or 'valgrind', sets the token when set to 'codecov')
+        buildtype=None,
+        # job specific environment
+        env={},
+        # Any other keyword arguments are passed directly to the *_cxx-function
+        **kwargs):
+
+  if not name:
+    deduced_name = True
+    name = compiler.replace('-', ' ')
+    if address_model:
+      name += ' x' + address_model
+    if stdlib:
+      name += ' ' + stdlib
+    if cxxstd:
+      name += ' C++' + cxxstd
+    if arch != 'amd64':
+      name = '%s: %s' % (arch.upper(), name)
+  else:
+    deduced_name = False
+
+  cxx = compiler.replace('gcc-', 'g++-')
+  if packages == None:
+    packages = cxx
+    if install:
+      packages += ' ' + install
+
+  env['B2_TOOLSET' if os == 'windows' else 'B2_COMPILER'] = compiler
+  if cxxstd != None:
+    env['B2_CXXSTD'] = cxxstd
+
+  if valgrind:
+    if buildtype == None:
+      buildtype = 'valgrind'
+    if testflags == None:
+      testflags = 'testing.launcher=valgrind'
+    env.setdefault('VALGRIND_OPTS', '--error-exitcode=1')
+
+  if asan:
+    privileged = True
+    env.update({
+      'B2_ASAN': '1',
+      'DRONE_EXTRA_PRIVILEGED': 'True',
+    })
+  else:
+    privileged = False
+
+  if ubsan:
+    env['B2_UBSAN'] = '1'
+  if tsan:
+    env['B2_TSAN'] = '1'
+
+  # Set defaults for all sanitizers
+  if valgrind or asan or ubsan:
+    if variant == None:
+      variant = 'debug'
+    if defines == None:
+      defines = 'BOOST_NO_STRESS_TEST=1'
+
+  if variant != None:
+    env['B2_VARIANT'] = variant
+  if address_model != None:
+    env['B2_ADDRESS_MODEL'] = address_model
+  if stdlib != None:
+    env['B2_STDLIB'] = stdlib
+  if defines != None:
+    env['B2_DEFINES'] = defines
+  if cxxflags != None:
+    env['B2_CXXFLAGS'] = cxxflags
+  if linkflags != None:
+    env['B2_LINKFLAGS'] = linkflags
+  if testflags != None:
+    env['B2_TESTFLAGS'] = testflags
+
+# remove?
+# env.update(environment)
+
+  if buildtype == None:
+    buildtype = 'boost'
+  elif buildtype == 'codecov':
+    env.setdefault('CODECOV_TOKEN', {'from_secret': 'codecov_token'})
+
+  # Put common args of all *_cxx calls not modified below into kwargs to avoid duplicating them
+  kwargs['arch'] = arch
+  kwargs['buildtype'] = buildtype
+  kwargs['buildscript'] = buildscript
+  kwargs['environment'] = env
+
+  if os.startswith('ubuntu'):
+    if not image:
+      image = 'cppalliance/droneubuntu%s:1' % os.split('-')[1].replace('.', '')
+      if arch != 'amd64':
+        image = image[0:-1] + 'multiarch'
+    if add_llvm:
+      names = {
+        '1604': 'xenial',
+        '1804': 'bionic',
+        '2004': 'focal',
+        '2204': 'jammy',
+      }
+      kwargs['llvm_os'] = names[image.split('ubuntu')[-1].split(':')[0]] # get part between 'ubuntu' and ':'
+      kwargs['llvm_ver'] = compiler.split('-')[1]
+
+    return linux_cxx(name, cxx, packages=packages, image=image, privileged=privileged, **kwargs)
+  elif os.startswith('freebsd'):
+    # Deduce version if os is `freebsd-<version>`
+    parts = os.split('freebsd-')
+    if len(parts) == 2:
+      version = kwargs.setdefault('freebsd_version', parts[1])
+      if deduced_name:
+        name = '%s %s' % (kwargs['freebsd_version'], name)
+    return freebsd_cxx(name, cxx, **kwargs)
+  elif os.startswith('osx'):
+    # If format is `osx-xcode-<version>` deduce xcode_version, else assume it is passed directly
+    parts = os.split('osx-xcode-')
+    if len(parts) == 2:
+      version =  kwargs.setdefault('xcode_version', parts[1])
+      if deduced_name:
+        name = 'XCode %s: %s' % (version, name)
+    return osx_cxx(name, cxx, **kwargs)
+  elif os == 'windows':
+    if not image:
+      names = {
+        'msvc-14.0': 'dronevs2015',
+        'msvc-14.1': 'dronevs2017',
+        'msvc-14.2': 'dronevs2019:2',
+        'msvc-14.3': 'dronevs2022:1',
+      }
+      image = 'cppalliance/' + names[compiler]
+    kwargs.setdefault('cxx', '')
+    return windows_cxx(name, image=image, **kwargs)
+  else:
+    fail('Unknown OS:', os)
