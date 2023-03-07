@@ -24,8 +24,11 @@ IF NOT DEFINED B2_JOBS (SET B2_JOBS=3)
 
 REM clang-win requires to use the linker for the manifest
 IF "%B2_TOOLSET%" == "clang-win" (
-    IF NOT DEFINED B2_FLAGS (SET B2_FLAGS=embed-manifest-via=linker)
-    ELSE (SET B2_FLAGS=embed-manifest-via=linker %B2_FLAGS%)
+    IF NOT DEFINED B2_FLAGS (
+        SET B2_FLAGS=embed-manifest-via=linker
+    ) ELSE (
+        SET B2_FLAGS=embed-manifest-via=linker %B2_FLAGS%
+    )
 )
 
 cd %BOOST_ROOT%
