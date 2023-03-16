@@ -45,9 +45,19 @@ fi
 
 cd ..
 
-git clone -b $BOOST_BRANCH --depth 1 https://github.com/boostorg/boost.git boost-root
-cd boost-root
+if [ ! -d boost-root ]; then
+    git clone -b $BOOST_BRANCH --depth 1 https://github.com/boostorg/boost.git boost-root
+    cd boost-root
+else
+    cd boost-root
+    git checkout $BOOST_BRANCH
+    git pull
+fi
+
 git submodule update -q --init tools/boostdep
+if [ -d libs/$SELF ]; then
+    rm -rf libs/$SELF
+fi
 mkdir -p libs/$SELF
 cp -r $BOOST_CI_SRC_FOLDER/* libs/$SELF
 
@@ -155,7 +165,13 @@ function show_bootstrap_log
 
 if [[ "$B2_DONT_BOOTSTRAP" != "1" ]]; then
     trap show_bootstrap_log ERR
-    ${B2_WRAPPER} ./bootstrap.sh
+    if [ ! -f b2 ]; then
+        ${B2_WRAPPER} ./bootstrap.sh
+    else
+        # b2 already exists. This would (only) happen in a caching scenario. The purpose of caching is to save time by not recompiling everything.
+        # The user may clear cache or delete b2 beforehand if they wish to rebuild.
+        echo "b2 already exists."
+    fi
     trap - ERR
     ${B2_WRAPPER} ./b2 -d0 headers
 fi
