@@ -58,3 +58,4 @@ echo "B2_COMPILER=$B2_COMPILER" >> $GITHUB_ENV
 [ -z "$B2_TSAN" ] || echo "B2_TSAN=$B2_TSAN" >> $GITHUB_ENV
 [ -z "$B2_UBSAN" ] || echo "B2_UBSAN=$B2_UBSAN" >> $GITHUB_ENV
 [ -z "$B2_FLAGS" ] || echo "B2_FLAGS=$B2_FLAGS" >> $GITHUB_ENV
+[ -z "$B2_TARGETS" ] || echo "B2_TARGETS=$B2_TARGETS" >> $GITHUB_ENV
