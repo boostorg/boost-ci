@@ -92,6 +92,65 @@ def linux_cxx(
   if not buildscript:
     buildscript = buildtype
 
+  steps=[
+      {
+        "name": "Everything",
+        "image": image,
+        "pull": "if-not-exists",
+        "privileged" : privileged,
+        "environment": job_env,
+        # Installed in Docker:
+        # - ppa:git-core/ppa
+        # - tzdata sudo software-properties-common wget curl apt-transport-https git make cmake apt-file sudo unzip libssl-dev build-essential autotools-dev autoconf libc++-helpers automake g++ git
+        "commands": unix_common("linux-cxx-install.sh", buildscript)
+      }
+    ]
+
+  imagecachename=image.replace('/', '-').replace(':','-')
+  if "drone_cache_mount" in job_env:
+    mountpoints=[x.strip() for x in job_env["drone_cache_mount"].split(',')]
+    pre_step={
+      "name": "restore-cache",
+      "image": "meltwater/drone-cache",
+      "environment": {
+        "AWS_ACCESS_KEY_ID":
+          { "from_secret": "drone_cache_aws_access_key_id"},
+        "AWS_SECRET_ACCESS_KEY":
+          { "from_secret": "drone_cache_aws_secret_access_key"}
+       },
+      "pull": "if-not-exists",
+      "settings": {
+        "restore": "true",
+        "cache_key": "{{ .Repo.Namespace }}-{{ .Repo.Name }}-{{ .Commit.Branch }}-{{ arch }}-" + imagecachename,
+        "bucket": "cppalliance-drone-cache",
+        "region": "us-east-2",
+        "mount": mountpoints
+        }
+    }
+    steps=[ pre_step ] + steps
+
+  if ("drone_cache_mount" in job_env) and ("drone_cache_rebuild" in job_env and job_env['drone_cache_rebuild'] != "false" and job_env['drone_cache_rebuild'] != False):
+    mountpoints=[x.strip() for x in job_env["drone_cache_mount"].split(',')]
+    post_step={
+      "name": "rebuild-cache",
+      "image": "meltwater/drone-cache",
+      "environment": {
+        "AWS_ACCESS_KEY_ID":
+          { "from_secret": "drone_cache_aws_access_key_id"},
+        "AWS_SECRET_ACCESS_KEY":
+          { "from_secret": "drone_cache_aws_secret_access_key"}
+       },
+      "pull": "if-not-exists",
+      "settings": {
+        "rebuild": "true",
+        "cache_key": "{{ .Repo.Namespace }}-{{ .Repo.Name }}-{{ .Commit.Branch }}-{{ arch }}-" + imagecachename,
+        "bucket": "cppalliance-drone-cache",
+        "region": "us-east-2",
+        "mount": mountpoints
+        }
+    }
+    steps=steps + [ post_step ]
+
   return {
     "name": "Linux %s" % name,
     "kind": "pipeline",
@@ -105,19 +164,7 @@ def linux_cxx(
        "retries": 5
     },
     "node": node,
-    "steps": [
-      {
-        "name": "Everything",
-        "image": image,
-        "pull": "if-not-exists",
-        "privileged" : privileged,
-        "environment": job_env,
-        # Installed in Docker:
-        # - ppa:git-core/ppa
-        # - tzdata sudo software-properties-common wget curl apt-transport-https git make cmake apt-file sudo unzip libssl-dev build-essential autotools-dev autoconf libc++-helpers automake g++ git
-        "commands": unix_common("linux-cxx-install.sh", buildscript)
-      }
-    ]
+    "steps": steps
   }
 
 def windows_cxx(
@@ -396,9 +443,6 @@ def job_impl(
     env['B2_LINKFLAGS'] = linkflags
   if testflags != None:
     env['B2_TESTFLAGS'] = testflags
-
-# remove?
-# env.update(environment)
 
   if buildtype == None:
     buildtype = 'boost'
