@@ -99,9 +99,9 @@ jobs:
             [ ! -f "/etc/debian_version" ] || echo "DEBIAN_FRONTEND=noninteractive" >> $GITHUB_ENV
             git config --global pack.threads 0
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         if: '!matrix.coverage'
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         if: 'matrix.coverage'
         with: { fetch-depth: 0 }
 
