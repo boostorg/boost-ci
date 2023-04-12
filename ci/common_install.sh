@@ -51,7 +51,8 @@ if [ ! -d boost-root ]; then
 else
     cd boost-root
     git checkout $BOOST_BRANCH
-    git pull
+    git pull --no-recurse-submodules
+    git submodule update
 fi
 
 git submodule update -q --init tools/boostdep
