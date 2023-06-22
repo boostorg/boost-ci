@@ -53,9 +53,16 @@ elif [[ "$1" == "upload" ]]; then
     fi
 
     # install the latest lcov we know works
+    : ${LCOV_VERSION:=v1.15}
+
+    if [[ "$LCOV_VERSION" =~ ^v[2-9] ]]; then
+        LCOV_OPTIONS="${LCOV_OPTIONS} --ignore-errors unused"
+        LCOV_OPTIONS=$(echo ${LCOV_OPTIONS} | xargs echo)
+    fi
+
     rm -rf /tmp/lcov
     cd /tmp
-    git clone --depth 1 -b v1.15 https://github.com/linux-test-project/lcov.git
+    git clone --depth 1 -b ${LCOV_VERSION} https://github.com/linux-test-project/lcov.git
     export PATH=/tmp/lcov/bin:$PATH
     command -v lcov
     lcov --version
@@ -65,7 +72,7 @@ elif [[ "$1" == "upload" ]]; then
     : "${LCOV_BRANCH_COVERAGE:=1}" # Set default
 
     # coverage files are in ../../b2 from this location
-    lcov --rc lcov_branch_coverage=${LCOV_BRANCH_COVERAGE} --gcov-tool=$GCOV --directory "$BOOST_ROOT" --capture --output-file all.info
+    lcov ${LCOV_OPTIONS} --rc lcov_branch_coverage=${LCOV_BRANCH_COVERAGE} --gcov-tool=$GCOV --directory "$BOOST_ROOT" --capture --output-file all.info
     # dump a summary on the console
     lcov --rc lcov_branch_coverage=${LCOV_BRANCH_COVERAGE} --list all.info
 
