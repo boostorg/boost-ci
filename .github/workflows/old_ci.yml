@@ -87,6 +87,16 @@ jobs:
               B2_LINKFLAGS: linkflags=-fuse-ld=gold
             os: ubuntu-20.04
             install: g++-8
+          - name: Coverage LCOV v2.0
+            coverage: yes
+            os: ubuntu-22.04
+            install: 'libcapture-tiny-perl libdatetime-perl'
+            address-model: '32,64'
+            env:
+              B2_TOOLSET: gcc-12
+              B2_CXXSTD: 14,17
+              B2_DEFINES: define=BOOST_NO_STRESS_TEST=1
+              LCOV_VERSION: 'v2.0'
 
     name: ${{matrix.name}}
     timeout-minutes: 120
