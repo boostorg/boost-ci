@@ -139,10 +139,18 @@ if [ -n "$B2_COMPILER" ]; then
         echo "Error: Compiler $CXX was not installed properly"
         exit 1
     fi
+
     set +x
     echo "Compiler location: $(command -v $CXX)"
-    echo "Compiler version: $($CXX --version)"
+    if [[ "$CXX" == *"clang++"* ]] && [ -z "$GCC_TOOLCHAIN_ROOT" ]; then
+        # Show also information on selected GCC lib
+       version=$($CXX -v 2>&1 || $CXX --version)
+    else
+        version=$($CXX --version)
+    fi
+    echo "Compiler version: $version"
     set -x
+
     if [ "$B2_USE_CCACHE" == "1" ]; then
         CXX="ccache $CXX"
     fi
