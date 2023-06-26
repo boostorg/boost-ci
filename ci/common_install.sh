@@ -179,7 +179,18 @@ if [[ "$B2_DONT_BOOTSTRAP" != "1" ]]; then
     else
         # b2 already exists. This would (only) happen in a caching scenario. The purpose of caching is to save time by not recompiling everything.
         # The user may clear cache or delete b2 beforehand if they wish to rebuild.
-        echo "b2 already exists."
+
+        # b2 expects versions to match
+        engineversion=$(./b2 --version | tr -s ' ' | cut -d' ' -f2 | cut -d'-' -f1)
+        enginemajorversion=$(echo ${engineversion} | cut -d'.' -f1)
+        engineminorversion=$(echo ${engineversion} | cut -d'.' -f2)
+        coremajorversion=$(grep VERSION_MAJOR tools/build/src/engine/patchlevel.h | tr -s ' ' | cut -d' ' -f 3)
+        coreminorversion=$(grep VERSION_MINOR tools/build/src/engine/patchlevel.h | tr -s ' ' | cut -d' ' -f 3)
+        if [[ "${enginemajorversion}" == "${coremajorversion}" ]] && [[ "${engineminorversion}" == "${coreminorversion}" ]]; then
+            echo "b2 already exists and has the same version number"
+        else
+            ${B2_WRAPPER} ./bootstrap.sh
+        fi
     fi
     trap - ERR
     ${B2_WRAPPER} ./b2 -d0 headers
