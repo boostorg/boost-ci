@@ -161,17 +161,10 @@ jobs:
             SOURCES=(${{join(matrix.sources, ' ')}})
             # Add this by default
             SOURCES+=(ppa:ubuntu-toolchain-r/test)
-            for key in "${SOURCE_KEYS[@]}"; do
-                for i in {1..$NET_RETRY_COUNT}; do
-                    keyfilename=$(basename -s .key $key)
-                    curl -sSL --retry ${NET_RETRY_COUNT:-5} "$key" | sudo gpg --dearmor > /etc/apt/trusted.gpg.d/${keyfilename} && break || sleep 10
-                done
-            done
-            for source in "${SOURCES[@]}"; do
-                for i in {1..$NET_RETRY_COUNT}; do
-                    sudo add-apt-repository $source && break || sleep 10
-                done
-            done
+
+            ci/add-apt-keys.sh "${SOURCE_KEYS[@]}"
+            ci/add-apt-repositories.sh "${SOURCES[@]}"
+
             sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT update
             if [[ -z "${{matrix.install}}" ]]; then
                 pkgs="${{matrix.compiler}}"
