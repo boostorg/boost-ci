@@ -24,7 +24,7 @@ function add_repository_toolchain {
     echo "VERSION_CODENAME is ${VERSION_CODENAME}"
     echo "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu ${VERSION_CODENAME} main" > /etc/apt/sources.list.d/ubuntu-toolchain-r-ubuntu-test-${VERSION_CODENAME}.list
     echo "# deb-src http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu ${VERSION_CODENAME} main" >> /etc/apt/sources.list.d/ubuntu-toolchain-r-ubuntu-test-${VERSION_CODENAME}.list
-    curl -sSL --retry ${NET_RETRY_COUNT:-5} 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x1E9377A2BA9EF27F' | sudo gpg --dearmor > /etc/apt/trusted.gpg.d/toolchain-r.gpg
+    curl -sSL --retry ${NET_RETRY_COUNT:-5} 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x1E9377A2BA9EF27F' | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/toolchain-r.gpg
 }
 
 echo ">>>>> APT: REPOSITORIES..."
@@ -38,7 +38,7 @@ fi
 
 if [ -n "${LLVM_OS}" ]; then
     echo ">>>>> APT: INSTALL LLVM repo"
-    curl -sSL --retry 5 https://apt.llvm.org/llvm-snapshot.gpg.key | sudo gpg --dearmor > /etc/apt/trusted.gpg.d/llvm-snapshot.gpg
+    curl -sSL --retry 5 https://apt.llvm.org/llvm-snapshot.gpg.key | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/llvm-snapshot.gpg
     if [ -n "${LLVM_VER}" ]; then
         llvm_toolchain="llvm-toolchain-${LLVM_OS}-${LLVM_VER}"
     else
