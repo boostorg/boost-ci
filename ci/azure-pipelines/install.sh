@@ -58,6 +58,20 @@ if [ "$AGENT_OS" != "Darwin" ]; then
         sudo apt-get ${NET_RETRY_COUNT:+ -o Acquire::Retries=$NET_RETRY_COUNT} update
         sudo apt-get ${NET_RETRY_COUNT:+ -o Acquire::Retries=$NET_RETRY_COUNT} install -y ${PACKAGES}
     fi
+
+    if [[ -z "$GCC_TOOLCHAIN_ROOT" ]] && [[ -n "$GCC_TOOLCHAIN" ]]; then
+        GCC_TOOLCHAIN_ROOT="$HOME/gcc-toolchain"
+        echo "##vso[task.setvariable variable=GCC_TOOLCHAIN_ROOT]$GCC_TOOLCHAIN_ROOT"
+        if ! command -v dpkg-architecture; then
+            apt-get install -y dpkg-dev
+        fi
+        MULTIARCH_TRIPLET="$(dpkg-architecture -qDEB_HOST_MULTIARCH)"
+        mkdir -p "$GCC_TOOLCHAIN_ROOT"
+        ln -s /usr/include "$GCC_TOOLCHAIN_ROOT/include"
+        ln -s /usr/bin "$GCC_TOOLCHAIN_ROOT/bin"
+        mkdir -p "$GCC_TOOLCHAIN_ROOT/lib/gcc/$MULTIARCH_TRIPLET"
+        ln -s "/usr/lib/gcc/$MULTIARCH_TRIPLET/$GCC_TOOLCHAIN" "$GCC_TOOLCHAIN_ROOT/lib/gcc/$MULTIARCH_TRIPLET/$GCC_TOOLCHAIN"
+    fi
 fi
 
 old_B2_TOOLSET="$B2_TOOLSET"
