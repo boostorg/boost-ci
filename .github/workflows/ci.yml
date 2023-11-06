@@ -122,13 +122,14 @@ jobs:
                 for i in {1..${NET_RETRY_COUNT:-3}}; do sudo -E add-apt-repository -y ppa:git-core/ppa && break || sleep 10; done
                 apt-get -o Acquire::Retries=$NET_RETRY_COUNT update
                 osver=$(lsb_release -sr | cut -f1 -d.)
-                # Ubuntu 22+ has only Python3 in the repos
+                pkgs="g++ git"
+                # Ubuntu 22+ has only Python 3 in the repos
                 if [ -n "$osver" ] && [ "$osver" -ge "22" ]; then
-                  py_pkg=python3
+                  pkgs+=" python-is-python3 libpython3-dev"
                 else
-                  py_pkg=python
+                  pkgs+=" python libpython-dev"
                 fi
-                apt-get -o Acquire::Retries=$NET_RETRY_COUNT install -y g++ $py_pkg lib$py_pkg-dev git
+                apt-get -o Acquire::Retries=$NET_RETRY_COUNT install -y $pkgs
             fi
             # For jobs not compatible with ccache, use "ccache: no" in the matrix
             if [[ "${{ matrix.ccache }}" == "no" ]]; then
