@@ -81,8 +81,8 @@ jobs:
           - { compiler: clang-13,  cxxstd: '03,11,14,17,20', os: ubuntu-22.04, install: 'clang-13 g++-12', gcc_toolchain: 12 }
           - { compiler: clang-14,  cxxstd: '03,11,14,17,20', os: ubuntu-22.04, install: 'clang-14 g++-12', gcc_toolchain: 12 }
           - { compiler: clang-15,  cxxstd: '03,11,14,17,20', os: ubuntu-22.04, install: 'clang-15 g++-12', gcc_toolchain: 12 }
-          - { compiler: clang-16,  cxxstd: '03,11,14,17,20', os: ubuntu-latest, container: 'ubuntu:23.04' }
-          - { compiler: clang-17,  cxxstd: '03,11,14,17,20', os: ubuntu-latest, container: 'ubuntu:23.10' }
+          - { compiler: clang-16,  cxxstd: '11,14,17,20,2b', os: ubuntu-latest, container: 'ubuntu:23.04' }
+          - { compiler: clang-17,  cxxstd: '11,14,17,20,2b', os: ubuntu-latest, container: 'ubuntu:23.10' }
 
           # libc++
           - { compiler: clang-6.0, cxxstd: '03,11,14',       os: ubuntu-22.04, container: 'ubuntu:18.04', stdlib: libc++, install: 'clang-6.0 libc++-dev libc++abi-dev' }
