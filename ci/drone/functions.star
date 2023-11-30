@@ -259,7 +259,13 @@ def osx_cxx(
   if xcode_version:
     job_env["DEVELOPER_DIR"] = "/Applications/Xcode-" + xcode_version +  ".app/Contents/Developer"
     if not osx_version:
-        if xcode_version[0:2] in [ "14", "13"]:
+        if xcode_version[0:2] in [ "16", "15"]:
+            osx_version="sonoma"
+            arch="arm64"
+        elif xcode_version[0:4] in [ "14.2", "14.3"]:
+            osx_version="sonoma"
+            arch="arm64"
+        elif xcode_version[0:2] in [ "14", "13"]:
             osx_version="monterey"
             arch="arm64"
         elif xcode_version[0:4] in [ "12.5"]:
