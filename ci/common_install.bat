@@ -6,7 +6,10 @@ REM - BOOST_CI_SRC_FOLDER
 @ECHO ON
 
 if not DEFINED SELF (
-    for /F "delims=" %%i in ('python %~dp0\get_libname.py') do set SELF=%%i
+    for /F "delims=" %%i in ('python %~dp0\get_libname.py') do (
+        set SELF=%%i
+        call set SELF=%%SELF:/=\%%
+    )
 )
 echo SELF=%SELF%
 if "%SELF%" == "" EXIT /B 1
