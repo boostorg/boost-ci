@@ -221,6 +221,8 @@ jobs:
           echo "BDDE_EDITION=${{ matrix.edition }}" >> ${GITHUB_ENV}
           echo "BDDE_ARCH=${{ matrix.arch }}" >> ${GITHUB_ENV}
           echo "B2_WRAPPER=bdde" >> ${GITHUB_ENV}
+          # Avoid: /usr/bin/windres: Can't detect architecture.
+          echo "B2_DONT_EMBED_MANIFEST=1" >> ${GITHUB_ENV}
 
       - name: Setup Boost
         env:
