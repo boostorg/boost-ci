@@ -454,6 +454,9 @@ def job_impl(
     buildtype = 'boost'
   elif buildtype == 'codecov':
     env.setdefault('CODECOV_TOKEN', {'from_secret': 'codecov_token'})
+  elif buildtype == 'coverity':
+    env.setdefault('COVERITY_SCAN_NOTIFICATION_EMAIL', {'from_secret': 'coverity_scan_email'})
+    env.setdefault('COVERITY_SCAN_TOKEN', {'from_secret': 'coverity_scan_token'})
 
   # Put common args of all *_cxx calls not modified below into kwargs to avoid duplicating them
   kwargs['arch'] = arch
