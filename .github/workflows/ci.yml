@@ -95,6 +95,7 @@ jobs:
           - { compiler: clang,     cxxstd: '03,11,14,17,20',    os: macos-12 }
           - { name: MacOS w/ clang and sanitizers,
               compiler: clang,     cxxstd: '03,11,14,17,20,2b', os: macos-13, sanitize: yes }
+          - { compiler: clang,     cxxstd: '03,11,14,17,20,2b', os: macos-14 }
 
           # Coverity Scan
           # requires two github secrets in repo to activate; see ci/github/coverity.sh
