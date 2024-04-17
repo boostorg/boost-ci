@@ -108,7 +108,7 @@ elif [[ "$1" == "upload" ]]; then
         fi
 
         chmod +x codecov
-        ./codecov --verbose --nonZero ${CODECOV_NAME:+--name "$CODECOV_NAME"} -f coverage.info -X search
+        ./codecov --verbose --nonZero ${CODECOV_NAME:+--name "$CODECOV_NAME"} ${CODECOV_TOKEN:+--token "$CODECOV_TOKEN"} -f coverage.info -X search
         # end of [[ "$BOOST_CI_CODECOV_IO_UPLOAD" != "skip" ]] section
     fi
 else
