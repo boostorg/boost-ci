@@ -1,17 +1,16 @@
 #! /bin/bash
 #
 # Copyright 2017 - 2019 James E. King III
+# Copyright 2020 - 2024 Alexander Grund
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at
 #      http://www.boost.org/LICENSE_1_0.txt)
 #
-# Enforce B2 build variables understood by boost-ci scripts.
-#
+# Set & check B2 build variables understood by boost-ci scripts.
 
 set -e
 
-function get_python_executable
-{
+function get_python_executable {
     if command -v python &> /dev/null; then
         echo "python"
     elif command -v python3 &> /dev/null; then
@@ -24,8 +23,7 @@ function get_python_executable
     fi
 }
 
-function enforce_b2
-{
+function enforce_b2 {
     local old_varname=$1
     local new_varname=B2_${old_varname}
 
@@ -67,28 +65,12 @@ if [ -z "${B2_JOBS}" ]; then
     export B2_JOBS=$((cpus + 1))
 fi
 
-# Build cmdline arguments for B2 as an array to preserve quotes
-if [ -z "$B2_CI_VERSION" ]; then
-  # For old versions the prefix was included in (most) variables
-  B2_ARGS=(
-      toolset=$B2_TOOLSET
-      cxxstd=$B2_CXXSTD
-      $B2_CXXFLAGS
-      $B2_DEFINES
-      $B2_INCLUDE
-      $B2_LINKFLAGS
-      $B2_TESTFLAGS
-      $B2_ADDRESS_MODEL
-      $B2_LINK
-      $B2_THREADING
-      $B2_VARIANT
-      -j${B2_JOBS}
-  )
-else
-  # Generate multiple "option=value" entries from the value of an environment variable
-  # Handles correct splitting and quoting
-  function append_b2_args
-  {
+# Build cmdline arguments for B2 in the array B2_ARGS to preserve quotes
+
+if [ -n "$B2_CI_VERSION" ]; then # Set B2_CI_VERSION to opt in to new features
+  function append_b2_args {
+      # Generate multiple "option=value" entries from the value of an environment variable
+      # Handles correct splitting and quoting
       local var_name="$1"
       local option_name="$2"
       if [ -n "${!var_name}" ]; then
@@ -125,5 +107,22 @@ else
       ${B2_UBSAN:+undefined-sanitizer=norecover}
       -j${B2_JOBS}
       ${B2_FLAGS}
+  )
+else
+  # Legacy codepath for compatibility for for old versions of the .github/*.yml files:
+  # In (most) variables the prefix (such as "cxxflags=" for B2_CXXFLAGS) was included in the value, so it isn't added (again) here
+  B2_ARGS=(
+      toolset=$B2_TOOLSET
+      cxxstd=$B2_CXXSTD
+      $B2_CXXFLAGS
+      $B2_DEFINES
+      $B2_INCLUDE
+      $B2_LINKFLAGS
+      $B2_TESTFLAGS
+      $B2_ADDRESS_MODEL
+      $B2_LINK
+      $B2_THREADING
+      $B2_VARIANT
+      -j${B2_JOBS}
   )
 fi
