@@ -131,3 +131,5 @@ jobs:
       - name: Collect and upload coverage (old way)
         if: matrix.coverage
         run: ci/travis/codecov.sh
+        env:
+          CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
