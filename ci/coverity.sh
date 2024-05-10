@@ -1,6 +1,7 @@
 #! /bin/bash
 #
 # Copyright 2017 - 2019 James E. King III
+# Copyright 2022 - 2024 Alexander Grund
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at
 #      http://www.boost.org/LICENSE_1_0.txt)
@@ -23,12 +24,10 @@ set -eux
 
 CI_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
-sudo wget -nv https://entrust.com/root-certificates/entrust_l1k.cer -O /tmp/scanca.cer
-
 pushd /tmp
 if [[ "$1" != "--skipdownload" ]]; then
   rm -rf coverity_tool.tgz cov-analysis*
-  curl --cacert /tmp/scanca.cer -L -d "token=$COVERITY_SCAN_TOKEN&project=$BOOST_REPO" -X POST https://scan.coverity.com/download/cxx/linux64 -o coverity_tool.tgz
+  curl -L -d "token=$COVERITY_SCAN_TOKEN&project=$BOOST_REPO" -X POST https://scan.coverity.com/download/cxx/linux64 -o coverity_tool.tgz
   tar xzf coverity_tool.tgz
 fi
 COVBIN=$(echo $(pwd)/cov-analysis*/bin)
@@ -40,8 +39,7 @@ rm -rf cov-int/
 cov-build --dir cov-int "$CI_DIR"/build.sh
 tail -50 cov-int/build-log.txt 
 tar cJf cov-int.tar.xz cov-int/
-curl --cacert /tmp/scanca.cer \
-     --form token="$COVERITY_SCAN_TOKEN" \
+curl --form token="$COVERITY_SCAN_TOKEN" \
      --form email="$COVERITY_SCAN_NOTIFICATION_EMAIL" \
      --form file=@cov-int.tar.xz \
      --form version="$BOOST_BRANCH" \
