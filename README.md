@@ -45,12 +45,15 @@ Here are all the steps you need to take as a Boost repository maintainer to enab
 1. Observe that the CI services are running the build jobs.  Fix up any issues found.  Note this may uncover defects in your repository code.
 1. If you are the owner or an admin for your repository, add projects in Appveyor and Travis CI for the boostorg/<myrepositoryname> project (not your fork).  If you are just a contributor in the repository, create an [issue in Boost.Admin](https://github.com/boostorg/admin/issues) requesting Appveyor and Travis CI to be enabled for the repository.
 1. Commit the changes to develop.  This will kick off a build.
-1. Update the badge matrix in README.md with the correct links for your CI projects in use (e.g. Appveyor, Github Actions, Travis).
+1. Update the badge matrix in README.md with the correct links for your CI projects in use (e.g. Appveyor, Github Actions, Drone).
 1. Create a Coverity Scan account if you have not already done so.
 1. Create a new Coverity Scan github based project for your official boostorg repository.
-1. Update your Travis CI and/or Github Actions boostorg repository project settings and add the following environment variables using respective CI GUI:
-    * `COVERITY_SCAN_NOTIFICATION_EMAIL` can be public and set to your email account (or it can be private).
-    * `COVERITY_SCAN_TOKEN` should be kept private (aka. "secret") and set to the scan token you can find in the project settings in Coverity Scan.
+1. In the CI settings (Github Actions, Drone and/or Travis) for your boostorg repository project add the following as **secrets**:
+    * `CODECOV_TOKEN` is the "Repository Upload Token" from the project settings on [Codecov](https://codecov.io).
+    * `COVERITY_SCAN_NOTIFICATION_EMAIL` is your email account (doesn't need to be a secret, but can be an environment variable for the repo).
+    * `COVERITY_SCAN_TOKEN` is the scan token you can find in the project settings in Coverity Scan.
+    * For GHA this is "Settings" -> "Secrets and Variables" -> "Actions" -> "Repository secrets"
+    * In Drone it is "Settings" -> "Secrets" (**Different names:** `coverity_scan_email`, `coverity_scan_token`)
 1. Update the README.md to put the correct Coverity Scan badge project number into the badge URLs.
 1. This will kick off a build on the develop branch that will include Coverity Scan results.
 1. To activate Drone, visit https://drone.cpp.al. Authorize Drone: Click the "Authorize cppalliance-drone" button. Sync repositories: Click the "sync" button. A list of repositories will appear. For the relevant repo, click and then choose "Activate Repository". In the settings page, change Configuration from .drone.yml to .drone.star. "Save".
@@ -60,7 +63,8 @@ Here are all the steps you need to take as a Boost repository maintainer to enab
     * The `.drone/{before,after}-install.*` scripts are sourced around the common_install step (which e.g. bootstraps B2) of the [default build](.drone/drone.sh), if they exist. So you can remove them when not required.
     * "asan" jobs require elevated privileges. Contact an administrator or open an issue at [drone-ci](https://github.com/CPPAlliance/drone-ci) to set your drone repository to "Trusted".
     * If not using asan, simply remove the jobs.
-    * For Codecov you need to copy the "Repository Upload Token" from the settings page of your repo on [Codecov](https://codecov.io) and use it to create a new secret named `codecov_token` on the settings page of your repo on [Drone](https://drone.cpp.al).
+    * **Codecov:** Copy the "Repository Upload Token" from the settings page of your repo on [Codecov](https://codecov.io) to a secret named `codecov_token` on the settings page of your repo on [Drone](https://drone.cpp.al).
+    * **Coverity:** Copy the token from the repos settings page on [Coverity](https://scan.coverity.com/) and an E-Mail-Address to a secrets named `coverity_scan_token` and `coverity_scan_email` respectively on the settings page of your repo on [Drone](https://drone.cpp.al).
     * If you need a package installed on MacOS or FreeBSD, by the root user, please open an issue.
     * Further info available at https://github.com/CPPAlliance/drone-ci
 
