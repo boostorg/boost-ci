@@ -25,7 +25,7 @@ set -eux
 CI_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
 pushd /tmp
-if [[ "$1" != "--skipdownload" ]]; then
+if [[ "${1:-}" != "--skipdownload" ]]; then
   rm -rf coverity_tool.tgz cov-analysis*
   curl -L -d "token=$COVERITY_SCAN_TOKEN&project=$BOOST_REPO" -X POST https://scan.coverity.com/download/cxx/linux64 -o coverity_tool.tgz
   tar xzf coverity_tool.tgz
