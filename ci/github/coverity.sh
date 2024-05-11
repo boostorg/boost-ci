@@ -15,7 +15,7 @@
 
 set -ex
 
-# install.sh will call common_install.sh in a previous CI step and write CXX 
+# install.sh will call common_install.sh in a previous CI step and write CXX
 # out to a file but it isn't available in subsequent CI steps, so pick it up
 CXX=$(cat ~/user-config.jam | cut -d' ' -f5)
 

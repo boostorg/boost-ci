@@ -79,7 +79,7 @@ def linux_cxx(
       "DRONE_JOB_BUILDTYPE": buildtype,
       "BOOST_CI_URL": "https://github.com/boostorg/boost-ci/raw/master",
   }
-  
+
   add_if_set(job_env, "CXX", cxx)
   add_if_set(job_env, "CXXFLAGS", cxxflags)
   add_if_set(job_env, "PACKAGES", packages)
@@ -316,7 +316,7 @@ def freebsd_cxx(
       "DRONE_JOB_BUILDTYPE": buildtype,
       "BOOST_CI_URL": "https://github.com/boostorg/boost-ci/raw/master",
   }
-  
+
   add_if_set(job_env, "CXX", cxx)
   add_if_set(job_env, "CXXFLAGS", cxxflags)
   add_if_set(job_env, "PACKAGES", packages)

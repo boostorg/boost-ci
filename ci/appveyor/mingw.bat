@@ -49,7 +49,7 @@ echo fi
 c:\msys64\usr\bin\bash -l -c "/c/TEMP/updatepacman.sh" || EXIT /B 1
 
 :: Install packages needed to build boost
-:: Optional: comment out ones this library does not need, 
+:: Optional: comment out ones this library does not need,
 :: so people can copy this script to another library.
 
 FOR %%a IN ("gcc" "icu" "libiconv" "openssl" "xz" "zlib") DO (

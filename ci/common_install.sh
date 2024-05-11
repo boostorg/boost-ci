@@ -133,7 +133,7 @@ if [ -n "$B2_COMPILER" ]; then
     else
         CXX="${B2_COMPILER/gcc/g++}"
     fi
-    
+
 
     if ! command -v $CXX; then
         echo "Error: Compiler $CXX was not installed properly"

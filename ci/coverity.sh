@@ -37,7 +37,7 @@ popd
 "$CI_DIR"/build.sh clean
 rm -rf cov-int/
 cov-build --dir cov-int "$CI_DIR"/build.sh
-tail -50 cov-int/build-log.txt 
+tail -50 cov-int/build-log.txt
 tar cJf cov-int.tar.xz cov-int/
 curl --form token="$COVERITY_SCAN_TOKEN" \
      --form email="$COVERITY_SCAN_NOTIFICATION_EMAIL" \
