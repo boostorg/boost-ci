@@ -56,6 +56,7 @@ elif [[ "$1" == "upload" ]]; then
     : ${LCOV_VERSION:=v1.15}
 
     if [[ "$LCOV_VERSION" =~ ^v[2-9] ]]; then
+        sudo apt-get install -y libcapture-tiny-perl libdatetime-perl || true
         LCOV_OPTIONS="${LCOV_OPTIONS} --ignore-errors unused"
         LCOV_OPTIONS=$(echo ${LCOV_OPTIONS} | xargs echo)
     fi
@@ -81,7 +82,7 @@ elif [[ "$1" == "upload" ]]; then
     for f in `for f in include/boost/*; do echo $f; done | cut -f2- -d/`; do echo "*/$f*"; done > /tmp/interesting
     echo headers that matter:
     cat /tmp/interesting
-    xargs --verbose -L 999999 -a /tmp/interesting lcov --rc lcov_branch_coverage=${LCOV_BRANCH_COVERAGE} --extract all.info "*/libs/$SELF/*" --output-file coverage.info
+    xargs --verbose -L 999999 -a /tmp/interesting lcov ${LCOV_OPTIONS} --rc lcov_branch_coverage=${LCOV_BRANCH_COVERAGE} --extract all.info "*/libs/$SELF/*" --output-file coverage.info
 
     # dump a summary on the console - helps us identify problems in pathing
     # note this has test file coverage in it - if you do not want to count test
