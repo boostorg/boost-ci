@@ -105,7 +105,7 @@ jobs:
 
           # multiarch (bigendian testing) - does not support coverage yet
           - { name: Big-endian, multiarch: yes,
-              compiler: clang,     cxxstd: '17',             os: ubuntu-20.04, ccache: no, distro: fedora, edition: 34, arch: s390x }
+              compiler: clang,     cxxstd: '17',             os: ubuntu-22.04, ccache: no, distro: fedora, edition: 34, arch: s390x }
 
 
     timeout-minutes: 120
