@@ -21,6 +21,16 @@ export CODECOV_NAME=${CODECOV_NAME:-"Drone CI"}
 set +x
 echo '==================================> INSTALL'
 
+if [[ $(uname) == "Linux" ]]; then
+    # Temporarily allow failures changing those values as the job might not need them
+    set +e
+    # Avoid ASAN "DEADLYSIGNAL" errors
+    echo 0 | sudo tee /proc/sys/kernel/randomize_va_space
+    # Avoid TSAN "FATAL: ThreadSanitizer: unexpected memory mapping" errors
+    sudo sysctl vm.mmap_rnd_bits=28
+    set -e
+fi
+
 scripts=(
     "$BOOST_CI_SRC_FOLDER/.drone/before-install.sh"
     "$BOOST_CI_SRC_FOLDER/ci/common_install.sh"
