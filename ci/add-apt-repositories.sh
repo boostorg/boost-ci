@@ -14,9 +14,16 @@ set -eu
 function do_add_repository {
     name=$1
     echo -e "\tAdding repository $name"
-    for i in {1..${NET_RETRY_COUNT:-3}}; do
-        sudo -E apt-add-repository -y "$name" && return 0 || sleep 10;
+    for i in $(seq ${NET_RETRY_COUNT:-3}); do
+        if [[ $i -ne 1 ]]; then
+            sleep 10
+            echo -e "\tRetrying"
+        fi
+        if sudo -E apt-add-repository -y "$name"; then
+            return 0
+        fi
     done
+    echo "Failed adding $name"
     return 1 # Failed
 }
 

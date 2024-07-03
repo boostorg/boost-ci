@@ -23,11 +23,10 @@ function do_add_key
         keyfilename=$(basename -s .key "$key_url")
     fi
     echo -e "\tDownloading APT key from '$key_url' to '$keyfilename'"
-    for i in {1..${NET_RETRY_COUNT:-3}}; do
-        curl -sSL --retry ${NET_RETRY_COUNT:-5} "$key_url" | sudo gpg --dearmor -o "/etc/apt/trusted.gpg.d/${keyfilename}" && return 0 || sleep 10
-    done
-
-    return 1 # Failed
+    if ! curl -sSL --retry ${NET_RETRY_COUNT:-5} "$key_url" | sudo gpg --dearmor -o "/etc/apt/trusted.gpg.d/${keyfilename}"; then
+        echo "Failed downloading $keyfilename"
+        return 1
+    fi
 }
 
 for key_url in "$@"; do
