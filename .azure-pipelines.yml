@@ -72,16 +72,19 @@ parameters:
       - { name: Linux_clang_6_libcxx,
           compiler: clang-6.0, cxxstd: '11,14,17', os: ubuntu-20.04, container: 'ubuntu:18.04', install: 'clang-6.0 libc++-dev libc++abi-dev', env: {B2_STDLIB: libc++ } }
       # OSX
-      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-11, xcode: '11.7' }
-      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-11, xcode: '12.4' }
-      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-11, xcode: '12.5.1' }
-      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-11, xcode: '13.0' }
       - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-12, xcode: '13.1' }
       - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-12, xcode: '13.2.1' }
       - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-12, xcode: '13.3.1' }
       - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-12, xcode: '13.4' }
       - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-12, xcode: '13.4.1' }
       - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-12, xcode: '14.0.1' }
+      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-13, xcode: '14.1' }
+      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-13, xcode: '14.3.1' }
+      - { compiler: clang, cxxstd: '14,17,20',    os: macOS-13, xcode: '15.1' }
+      - { compiler: clang, cxxstd: '14,17,20',    os: macOS-13, xcode: '15.2' }
+      - { compiler: clang, cxxstd: '14,17,20',    os: macOS-14, xcode: '15.3' }
+      - { compiler: clang, cxxstd: '14,17,20',    os: macOS-14, xcode: '15.4' }
+      - { compiler: clang, cxxstd: '14,17,20,23', os: macOS-14, xcode: '16.0' }
 
 stages:
   - stage: Test
