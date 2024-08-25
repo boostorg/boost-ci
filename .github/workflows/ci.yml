@@ -56,6 +56,8 @@ jobs:
           - { compiler: gcc-10,    cxxstd: '03,11,14,17,20', os: ubuntu-20.04 }
           - { compiler: gcc-11,    cxxstd: '03,11,14,17,20', os: ubuntu-20.04 }
           - { compiler: gcc-12,    cxxstd: '03,11,14,17,20', os: ubuntu-22.04 }
+          - { compiler: gcc-13,    cxxstd: '11,14,17,20,2b', os: ubuntu-22.04 }
+          - { compiler: gcc-14,    cxxstd: '11,14,17,20,2b', os: ubuntu-latest, container: 'ubuntu:24.04' }
           - { name: GCC w/ sanitizers, sanitize: yes,
               compiler: gcc-12,    cxxstd: '03,11,14,17,20', os: ubuntu-22.04 }
           - { name: Collect coverage, coverage: yes,
@@ -83,6 +85,7 @@ jobs:
           - { compiler: clang-15,  cxxstd: '03,11,14,17,20', os: ubuntu-22.04, install: 'clang-15 g++-12', gcc_toolchain: 12 }
           - { compiler: clang-16,  cxxstd: '11,14,17,20,2b', os: ubuntu-latest, container: 'ubuntu:23.04' }
           - { compiler: clang-17,  cxxstd: '11,14,17,20,2b', os: ubuntu-latest, container: 'ubuntu:23.10' }
+          - { compiler: clang-18,  cxxstd: '11,14,17,20,2b', os: ubuntu-latest, container: 'ubuntu:24.04' }
 
           # libc++
           - { compiler: clang-6.0, cxxstd: '03,11,14',       os: ubuntu-latest, container: 'ubuntu:18.04', stdlib: libc++, install: 'clang-6.0 libc++-dev libc++abi-dev' }
