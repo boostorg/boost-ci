@@ -43,6 +43,8 @@ else
     export BOOST_BRANCH="develop"
 fi
 
+# CI cache might have restored the boost-root folder in the current directory
+[ ! -d boost-root ] || mv boost-root ..
 cd ..
 
 if [ ! -d boost-root ]; then
