@@ -174,16 +174,15 @@ function show_bootstrap_log
 
 if [[ "$B2_DONT_BOOTSTRAP" != "1" ]]; then
     trap show_bootstrap_log ERR
-    if [ ! -f b2 ]; then
+    # Check if b2 already exists. This would (only) happen in a caching scenario. The purpose of caching is to save time by not recompiling everything.
+    # The user may clear cache or delete b2 beforehand if they wish to rebuild.
+    if [ ! -f b2 ] || ! b2_version_output=$(./b2 --version); then
         ${B2_WRAPPER} ./bootstrap.sh
     else
-        # b2 already exists. This would (only) happen in a caching scenario. The purpose of caching is to save time by not recompiling everything.
-        # The user may clear cache or delete b2 beforehand if they wish to rebuild.
-
         # b2 expects versions to match
-        engineversion=$(./b2 --version | tr -s ' ' | cut -d' ' -f2 | cut -d'-' -f1)
-        enginemajorversion=$(echo ${engineversion} | cut -d'.' -f1)
-        engineminorversion=$(echo ${engineversion} | cut -d'.' -f2)
+        engineversion=$(echo "$b2_version_output" | tr -s ' ' | cut -d' ' -f2 | cut -d'-' -f1)
+        enginemajorversion=$(echo "${engineversion}" | cut -d'.' -f1)
+        engineminorversion=$(echo "${engineversion}" | cut -d'.' -f2)
         coremajorversion=$(grep VERSION_MAJOR tools/build/src/engine/patchlevel.h | tr -s ' ' | cut -d' ' -f 3)
         coreminorversion=$(grep VERSION_MINOR tools/build/src/engine/patchlevel.h | tr -s ' ' | cut -d' ' -f 3)
         if [[ "${enginemajorversion}" == "${coremajorversion}" ]] && [[ "${engineminorversion}" == "${coreminorversion}" ]]; then
