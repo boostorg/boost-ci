@@ -417,6 +417,13 @@ jobs:
           BDDE_EDITION: ${{matrix.edition}}
           BDDE_ARCH: ${{matrix.arch}}
 
+      - name: Cache Boost checkout
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: boost-root
+          key: boost-checkout-cache-${{matrix.os}}-${{matrix.container}}-${{github.sha}}
+          restore-keys: boost-checkout-cache-${{matrix.os}}-${{matrix.container}}-
+
       - name: Setup Boost
         run: source ci/github/install.sh
         env:
@@ -471,6 +478,11 @@ jobs:
         env:
           COVERITY_SCAN_NOTIFICATION_EMAIL: ${{ secrets.COVERITY_SCAN_NOTIFICATION_EMAIL }}
           COVERITY_SCAN_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
+
+      - name: Prepare for cache
+        if: ${{ env.BOOST_ROOT != '' }}
+        run: rm -rf boost-root; mv "${BOOST_ROOT}" boost-root
+        working-directory: ${{github.workspace}}
 
   generate-windows-matrix:
     runs-on: ubuntu-latest
