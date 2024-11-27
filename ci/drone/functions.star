@@ -414,15 +414,14 @@ def job_impl(
       testflags = 'testing.launcher=valgrind'
     env.setdefault('VALGRIND_OPTS', '--error-exitcode=1')
 
-  if asan:
+  if asan or tsan:
     kwargs['privileged'] = True
-    env.update({
-      'B2_ASAN': '1',
-      'DRONE_EXTRA_PRIVILEGED': 'True',
-    })
-  elif tsan:
-    kwargs.setdefault('privileged', True)
+  # Set env var if privileged is set by any means
+  if kwargs['privileged']:
+    env['DRONE_EXTRA_PRIVILEGED'] = 'True'
 
+  if absan:
+    env['B2_ASAN'] = '1'
   if ubsan:
     env['B2_UBSAN'] = '1'
   if tsan:
