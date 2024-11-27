@@ -43,6 +43,13 @@ jobs:
       matrix:
         include:
           # Linux, gcc
+          - { compiler: gcc-4.4,   cxxstd: '98,0x',          os: ubuntu-latest, container: 'ubuntu:16.04' }
+          - { compiler: gcc-4.6,   cxxstd: '03,0x',          os: ubuntu-latest, container: 'ubuntu:16.04' }
+          - { compiler: gcc-4.7,   cxxstd: '03,11',          os: ubuntu-latest, container: 'ubuntu:16.04' }
+          - { compiler: gcc-4.8,   cxxstd: '03,11',          os: ubuntu-latest, container: 'ubuntu:16.04' }
+          - { compiler: gcc-4.9,   cxxstd: '03,11',          os: ubuntu-latest, container: 'ubuntu:16.04' }
+          - { compiler: gcc-5,     cxxstd: '03,11,14,1z',    os: ubuntu-latest, container: 'ubuntu:18.04' }
+          - { compiler: gcc-6,     cxxstd: '03,11,14,17',    os: ubuntu-latest, container: 'ubuntu:18.04' }
           - { compiler: gcc-7,     cxxstd: '03,11,14,17',    os: ubuntu-20.04 }
           - { compiler: gcc-8,     cxxstd: '03,11,14,17,2a', os: ubuntu-20.04 }
           - { compiler: gcc-9,     cxxstd: '03,11,14,17,2a', os: ubuntu-20.04 }
@@ -57,6 +64,13 @@ jobs:
               compiler: gcc-13,    cxxstd: '03,2b',          os: ubuntu-24.04, install: 'g++-13-multilib', address-model: '32,64' }
 
           # Linux, clang
+          - { compiler: clang-3.5, cxxstd: '03,11',          os: ubuntu-latest, container: 'ubuntu:16.04' }
+          - { compiler: clang-3.6, cxxstd: '03,11,14',       os: ubuntu-latest, container: 'ubuntu:16.04' }
+          - { compiler: clang-3.7, cxxstd: '03,11,14',       os: ubuntu-latest, container: 'ubuntu:16.04' }
+          - { compiler: clang-3.8, cxxstd: '03,11,14',       os: ubuntu-latest, container: 'ubuntu:16.04' }
+          - { compiler: clang-3.9, cxxstd: '03,11,14',       os: ubuntu-latest, container: 'ubuntu:18.04' }
+          - { compiler: clang-4.0, cxxstd: '03,11,14',       os: ubuntu-latest, container: 'ubuntu:18.04' }
+          - { compiler: clang-5.0, cxxstd: '03,11,14,1z',    os: ubuntu-latest, container: 'ubuntu:18.04' }
           - { compiler: clang-6.0, cxxstd: '03,11,14,17',    os: ubuntu-20.04 }
           - { compiler: clang-7,   cxxstd: '03,11,14,17',    os: ubuntu-20.04 }
           # Note: clang-8 does not fully support C++20, so it is not compatible with some libstdc++ versions in this mode
@@ -75,6 +89,7 @@ jobs:
           - { compiler: clang-18,  cxxstd: '11,14,17,20,23,2c', os: ubuntu-24.04 }
 
           # libc++
+          - { compiler: clang-6.0, cxxstd: '03,11,14',       os: ubuntu-latest, container: 'ubuntu:18.04', stdlib: libc++, install: 'clang-6.0 libc++-dev libc++abi-dev' }
           - { compiler: clang-7,   cxxstd: '03,11,14,17',    os: ubuntu-20.04, stdlib: libc++, install: 'clang-7 libc++-7-dev libc++abi-7-dev' }
           - { name: Clang w/ sanitizers, sanitize: yes,
               compiler: clang-12,  cxxstd: '03,11,14,17,20', os: ubuntu-20.04, stdlib: libc++, install: 'clang-12 libc++-12-dev libc++abi-12-dev' }
@@ -129,22 +144,52 @@ jobs:
                 echo "B2_USE_CCACHE=0" >> $GITHUB_ENV
             fi
             git config --global pack.threads 0
+            if [[ "${{matrix.container}}" == "ubuntu:16.04" ]] || [[ "${{matrix.container}}" == "ubuntu:18.04" ]]; then
+              # Ubuntu 16/18 can't run Node 20, so stick to older actions: https://github.com/actions/checkout/issues/1590
+              echo "GHA_USE_NODE_20=false" >> $GITHUB_ENV
+              echo "ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true" >> $GITHUB_ENV
+            else
+              echo "GHA_USE_NODE_20=true" >> $GITHUB_ENV
+            fi
 
+      - uses: actions/checkout@v3
+        if: env.GHA_USE_NODE_20 == 'false'
+        with:
+          # For coverage builds fetch the whole history, else only 1 commit using a 'fake ternary'
+          fetch-depth: ${{ matrix.coverage && '0' || '1' }}
       - uses: actions/checkout@v4
+        if: env.GHA_USE_NODE_20 == 'true'
         with:
           # For coverage builds fetch the whole history, else only 1 commit using a 'fake ternary'
           fetch-depth: ${{ matrix.coverage && '0' || '1' }}
 
       - name: Cache ccache
+        uses: actions/cache@v3
+        if: env.B2_USE_CCACHE && env.GHA_USE_NODE_20 == 'false'
+        with:
+          path: ~/.ccache
+          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.compiler}}-${{github.sha}}
+          restore-keys: ${{matrix.os}}-${{matrix.container}}-${{matrix.compiler}}-
+
+      - name: Cache ccache
         uses: actions/cache@v4
-        if: env.B2_USE_CCACHE
+        if: env.B2_USE_CCACHE && env.GHA_USE_NODE_20 == 'true'
         with:
           path: ~/.ccache
           key: ${{matrix.os}}-${{matrix.container}}-${{matrix.compiler}}-${{github.sha}}
           restore-keys: ${{matrix.os}}-${{matrix.container}}-${{matrix.compiler}}-
 
       - name: Fetch Boost.CI
+        uses: actions/checkout@v3
+        if: env.GHA_USE_NODE_20 == 'false'
+        with:
+          repository: boostorg/boost-ci
+          ref: master
+          path: boost-ci-cloned
+
+      - name: Fetch Boost.CI
         uses: actions/checkout@v4
+        if: env.GHA_USE_NODE_20 == 'true'
         with:
           repository: boostorg/boost-ci
           ref: master
