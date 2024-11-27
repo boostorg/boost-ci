@@ -22,6 +22,7 @@ set +x
 echo '==================================> INSTALL'
 
 if [[ $(uname) == "Linux" ]]; then
+    echo "ASAN: $B2_ASAN TSAN: $B2_TSAN"
     error=0
     if ! { echo 0 | sudo tee /proc/sys/kernel/randomize_va_space > /dev/null; } && [[ -n ${B2_ASAN:-} ]]; then
         echo -e "\n\nWARNING: Failed to disable KASLR. ASAN might fail with 'DEADLYSIGNAL'."
