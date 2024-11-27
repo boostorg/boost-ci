@@ -43,6 +43,13 @@ jobs:
       matrix:
         include:
           # Linux, gcc
+          - { compiler: gcc-4.4,   cxxstd: '98,0x',          os: ubuntu-latest, container: 'ubuntu:16.04' }
+          - { compiler: gcc-4.6,   cxxstd: '03,0x',          os: ubuntu-latest, container: 'ubuntu:16.04' }
+          - { compiler: gcc-4.7,   cxxstd: '03,11',          os: ubuntu-latest, container: 'ubuntu:16.04' }
+          - { compiler: gcc-4.8,   cxxstd: '03,11',          os: ubuntu-latest, container: 'ubuntu:16.04' }
+          - { compiler: gcc-4.9,   cxxstd: '03,11',          os: ubuntu-latest, container: 'ubuntu:16.04' }
+          - { compiler: gcc-5,     cxxstd: '03,11,14,1z',    os: ubuntu-latest, container: 'ubuntu:18.04' }
+          - { compiler: gcc-6,     cxxstd: '03,11,14,17',    os: ubuntu-latest, container: 'ubuntu:18.04' }
           - { compiler: gcc-7,     cxxstd: '03,11,14,17',    os: ubuntu-20.04 }
           - { compiler: gcc-8,     cxxstd: '03,11,14,17,2a', os: ubuntu-20.04 }
           - { compiler: gcc-9,     cxxstd: '03,11,14,17,2a', os: ubuntu-20.04 }
@@ -57,6 +64,13 @@ jobs:
               compiler: gcc-13,    cxxstd: '03,2b',          os: ubuntu-24.04, install: 'g++-13-multilib', address-model: '32,64' }
 
           # Linux, clang
+          - { compiler: clang-3.5, cxxstd: '03,11',          os: ubuntu-latest, container: 'ubuntu:16.04' }
+          - { compiler: clang-3.6, cxxstd: '03,11,14',       os: ubuntu-latest, container: 'ubuntu:16.04' }
+          - { compiler: clang-3.7, cxxstd: '03,11,14',       os: ubuntu-latest, container: 'ubuntu:16.04' }
+          - { compiler: clang-3.8, cxxstd: '03,11,14',       os: ubuntu-latest, container: 'ubuntu:16.04' }
+          - { compiler: clang-3.9, cxxstd: '03,11,14',       os: ubuntu-latest, container: 'ubuntu:18.04' }
+          - { compiler: clang-4.0, cxxstd: '03,11,14',       os: ubuntu-latest, container: 'ubuntu:18.04' }
+          - { compiler: clang-5.0, cxxstd: '03,11,14,1z',    os: ubuntu-latest, container: 'ubuntu:18.04' }
           - { compiler: clang-6.0, cxxstd: '03,11,14,17',    os: ubuntu-20.04 }
           - { compiler: clang-7,   cxxstd: '03,11,14,17',    os: ubuntu-20.04 }
           # Note: clang-8 does not fully support C++20, so it is not compatible with some libstdc++ versions in this mode
@@ -75,6 +89,7 @@ jobs:
           - { compiler: clang-18,  cxxstd: '11,14,17,20,23,2c', os: ubuntu-24.04 }
 
           # libc++
+          - { compiler: clang-6.0, cxxstd: '03,11,14',       os: ubuntu-latest, container: 'ubuntu:18.04', stdlib: libc++, install: 'clang-6.0 libc++-dev libc++abi-dev' }
           - { compiler: clang-7,   cxxstd: '03,11,14,17',    os: ubuntu-20.04, stdlib: libc++, install: 'clang-7 libc++-7-dev libc++abi-7-dev' }
           - { name: Clang w/ sanitizers, sanitize: yes,
               compiler: clang-12,  cxxstd: '03,11,14,17,20', os: ubuntu-20.04, stdlib: libc++, install: 'clang-12 libc++-12-dev libc++abi-12-dev' }
@@ -97,7 +112,11 @@ jobs:
 
     timeout-minutes: 120
     runs-on: ${{matrix.os}}
-    container: ${{matrix.container}}
+    container:
+      image: ${{matrix.container}}
+      volumes:
+        - /node20217:/node20217:rw,rshared
+        - ${{ startsWith(matrix.container, 'ubuntu:1') && '/node20217:/__e/node20:ro,rshared' || ' ' }}
     env: {B2_USE_CCACHE: 1}
 
     steps:
@@ -129,6 +148,10 @@ jobs:
                 echo "B2_USE_CCACHE=0" >> $GITHUB_ENV
             fi
             git config --global pack.threads 0
+            if [[ "${{matrix.container}}" == "ubuntu:1"* ]]; then
+              # Node 20 doesn't work with Ubuntu 16/18  glibc: https://github.com/actions/checkout/issues/1590
+              curl -sL https://unofficial-builds.nodejs.org/download/release/v20.9.0/node-v20.9.0-linux-x64-glibc-217.tar.xz | tar -xJ --strip-components 1 -C /node20217
+            fi
 
       - uses: actions/checkout@v4
         with:
