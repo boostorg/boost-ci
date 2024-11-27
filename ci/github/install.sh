@@ -50,6 +50,11 @@ if [[ "${RUNNER_OS:-}" == "macOS" ]]; then
     set -x
 fi
 
+# Save the state before building anything to avoid caching build artefacts
+BOOST_ROOT_CACHE="${BOOST_ROOT}-for-cache"
+echo "BOOST_ROOT_CACHE=$BOOST_ROOT_CACHE" >> $GITHUB_ENV
+cp -r "$BOOST_ROOT" "$BOOST_ROOT_CACHE"
+
 # Persist the environment for all future steps
 
 # Set by common_install.sh
