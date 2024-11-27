@@ -415,13 +415,13 @@ def job_impl(
     env.setdefault('VALGRIND_OPTS', '--error-exitcode=1')
 
   if asan:
-    privileged = True
+    kwargs['privileged'] = True
     env.update({
       'B2_ASAN': '1',
       'DRONE_EXTRA_PRIVILEGED': 'True',
     })
-  else:
-    privileged = False
+  elif tsan:
+    kwargs.setdefault('privileged', True)
 
   if ubsan:
     env['B2_UBSAN'] = '1'
@@ -479,7 +479,7 @@ def job_impl(
       kwargs['llvm_os'] = names[image.split('ubuntu')[-1].split(':')[0]] # get part between 'ubuntu' and ':'
       kwargs['llvm_ver'] = compiler.split('-')[1]
 
-    return linux_cxx(name, cxx, packages=packages, image=image, privileged=privileged, **kwargs)
+    return linux_cxx(name, cxx, packages=packages, image=image, **kwargs)
   elif os.startswith('freebsd'):
     # Deduce version if os is `freebsd-<version>`
     parts = os.split('freebsd-')
