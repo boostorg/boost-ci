@@ -22,13 +22,19 @@ set +x
 echo '==================================> INSTALL'
 
 if [[ $(uname) == "Linux" ]]; then
-    # Temporarily allow failures changing those values as the job might not need them
-    set +e
-    # Avoid ASAN "DEADLYSIGNAL" errors
-    echo 0 | sudo tee /proc/sys/kernel/randomize_va_space
-    # Avoid TSAN "FATAL: ThreadSanitizer: unexpected memory mapping" errors
-    sudo sysctl vm.mmap_rnd_bits=28
-    set -e
+    error=0
+    if ! { echo 0 | sudo tee /proc/sys/kernel/randomize_va_space > /dev/null; } && [[ -n ${B2_ASAN:-} ]]; then
+        echo -e "\n\nWARNING: Failed to disable KASLR. ASAN might fail with 'DEADLYSIGNAL'."
+        error=1
+    fi
+    if ! sudo sysctl vm.mmap_rnd_bits=28  && [[ -n ${B2_TSAN:-} ]]; then
+        echo -e "\n\nWARNING: Failed to change KASLR. TSAN might fail with 'FATAL: ThreadSanitizer: unexpected memory mapping'."
+        error=1
+    fi
+    if ((error == 1)); then
+        [[ "${DRONE_EXTRA_PRIVILEGED:-0}" == "True" ]] || echo 'Try passing `privileged=True` to the job in .drone.star'
+        echo -e "\n"
+    fi
 fi
 
 scripts=(
