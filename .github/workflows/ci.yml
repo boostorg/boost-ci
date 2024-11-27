@@ -46,15 +46,15 @@ jobs:
           - { compiler: gcc-7,     cxxstd: '03,11,14,17',    os: ubuntu-20.04 }
           - { compiler: gcc-8,     cxxstd: '03,11,14,17,2a', os: ubuntu-20.04 }
           - { compiler: gcc-9,     cxxstd: '03,11,14,17,2a', os: ubuntu-20.04 }
-          - { compiler: gcc-10,    cxxstd: '03,11,14,17,20', os: ubuntu-20.04 }
-          - { compiler: gcc-11,    cxxstd: '03,11,14,17,20', os: ubuntu-20.04 }
+          - { compiler: gcc-10,    cxxstd: '03,11,14,17,20', os: ubuntu-22.04 }
+          - { compiler: gcc-11,    cxxstd: '03,11,14,17,20', os: ubuntu-22.04 }
           - { compiler: gcc-12,    cxxstd: '03,11,14,17,20', os: ubuntu-22.04 }
-          - { compiler: gcc-13,    cxxstd: '11,14,17,20,2b', os: ubuntu-22.04 }
-          - { compiler: gcc-14,    cxxstd: '11,14,17,20,2b', os: ubuntu-latest, container: 'ubuntu:24.04' }
+          - { compiler: gcc-13,    cxxstd: '11,14,17,20,2b', os: ubuntu-24.04 }
+          - { compiler: gcc-14,    cxxstd: '11,14,17,20,2b', os: ubuntu-24.04 }
           - { name: GCC w/ sanitizers, sanitize: yes,
-              compiler: gcc-12,    cxxstd: '03,11,14,17,20', os: ubuntu-22.04 }
+              compiler: gcc-13,    cxxstd: '03,11,14,17,20', os: ubuntu-24.04 }
           - { name: Collect coverage, coverage: yes,
-              compiler: gcc-8,     cxxstd: '03,11',          os: ubuntu-20.04, install: 'g++-8-multilib', address-model: '32,64' }
+              compiler: gcc-13,    cxxstd: '03,2b',          os: ubuntu-24.04, install: 'g++-13-multilib', address-model: '32,64' }
 
           # Linux, clang
           - { compiler: clang-6.0, cxxstd: '03,11,14,17',    os: ubuntu-20.04 }
@@ -69,25 +69,26 @@ jobs:
           - { compiler: clang-13,  cxxstd: '03,11,14,17,20', os: ubuntu-22.04, install: 'clang-13 g++-12', gcc_toolchain: 12 }
           - { compiler: clang-14,  cxxstd: '03,11,14,17,20', os: ubuntu-22.04, install: 'clang-14 g++-12', gcc_toolchain: 12 }
           - { compiler: clang-15,  cxxstd: '03,11,14,17,20', os: ubuntu-22.04, install: 'clang-15 g++-12', gcc_toolchain: 12 }
-          - { compiler: clang-16,  cxxstd: '11,14,17,20,2b', os: ubuntu-latest, container: 'ubuntu:24.04' }
-          - { compiler: clang-17,  cxxstd: '11,14,17,20,2b', os: ubuntu-latest, container: 'ubuntu:24.04' }
-          - { compiler: clang-18,  cxxstd: '11,14,17,20,2b', os: ubuntu-latest, container: 'ubuntu:24.04' }
+          - { compiler: clang-16,  cxxstd: '11,14,17,20,2b', os: ubuntu-24.04 }
+          # https://github.com/llvm/llvm-project/issues/59827: disabled 2b/23 for clang-17 with libstdc++13 in 24.04
+          - { compiler: clang-17,  cxxstd: '11,14,17,20',    os: ubuntu-24.04 }
+          - { compiler: clang-18,  cxxstd: '11,14,17,20,23,2c', os: ubuntu-24.04 }
 
           # libc++
-          - { compiler: clang-7,   cxxstd: '03,11,14',       os: ubuntu-20.04, stdlib: libc++, install: 'clang-7 libc++-7-dev libc++abi-7-dev' }
-          - { compiler: clang-12,  cxxstd: '03,11,14,17,20', os: ubuntu-20.04, stdlib: libc++, install: 'clang-12 libc++-12-dev libc++abi-12-dev' }
+          - { compiler: clang-7,   cxxstd: '03,11,14,17',    os: ubuntu-20.04, stdlib: libc++, install: 'clang-7 libc++-7-dev libc++abi-7-dev' }
           - { name: Clang w/ sanitizers, sanitize: yes,
               compiler: clang-12,  cxxstd: '03,11,14,17,20', os: ubuntu-20.04, stdlib: libc++, install: 'clang-12 libc++-12-dev libc++abi-12-dev' }
 
           - { name: MacOS w/ clang and sanitizers,
               compiler: clang,     cxxstd: '03,11,14,17,20,2b', os: macos-13, sanitize: yes }
           - { compiler: clang,     cxxstd: '03,11,14,17,20,2b', os: macos-14 }
+          - { compiler: clang,     cxxstd: '03,11,14,17,20,2b', os: macos-15 }
 
           # Coverity Scan
           # requires two github secrets in repo to activate; see ci/github/coverity.sh
           # does not run on pull requests, only on pushes into develop and master
           - { name: Coverity, coverity: yes,
-              compiler: clang-10,  cxxstd: '17',             os: ubuntu-20.04, ccache: no }
+              compiler: clang-12,  cxxstd: '03,20',          os: ubuntu-20.04, ccache: no }
 
           # multiarch (bigendian testing) - does not support coverage yet
           - { name: Big-endian, multiarch: yes,
