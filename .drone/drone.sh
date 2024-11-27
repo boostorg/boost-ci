@@ -58,14 +58,14 @@ case "$DRONE_JOB_BUILDTYPE" in
         $BOOST_CI_SRC_FOLDER/ci/travis/valgrind.sh
         ;;
     coverity)
-        if [ -z "$COVERITY_SCAN_NOTIFICATION_EMAIL" ] || [ -z "$COVERITY_SCAN_TOKEN" ]; then
-            echo "Coverity details not set up"
-            [ -n "$COVERITY_SCAN_NOTIFICATION_EMAIL" ] || echo 'Missing $COVERITY_SCAN_NOTIFICATION_EMAIL'
-            [ -n "$COVERITY_SCAN_TOKEN" ] || echo 'Missing $COVERITY_SCAN_TOKEN'
-            exit 1
-        fi
         echo "DRONE_BRANCH=$DRONE_BRANCH, DRONE_BUILD_EVENT=$DRONE_BUILD_EVENT, DRONE_REPO=$DRONE_REPO"
         if [[ "$DRONE_BRANCH" =~ ^(master|develop)$ ]] && [[ "$DRONE_BUILD_EVENT" =~ ^(push|cron)$ ]]; then
+            if [ -z "$COVERITY_SCAN_NOTIFICATION_EMAIL" ] || [ -z "$COVERITY_SCAN_TOKEN" ]; then
+                echo "Coverity details not set up"
+                [ -n "$COVERITY_SCAN_NOTIFICATION_EMAIL" ] || echo 'Missing $COVERITY_SCAN_NOTIFICATION_EMAIL'
+                [ -n "$COVERITY_SCAN_TOKEN" ] || echo 'Missing $COVERITY_SCAN_TOKEN'
+                exit 1
+            fi
             export BOOST_REPO="$DRONE_REPO"
 			export BOOST_BRANCH="$DRONE_BRANCH"
             $BOOST_CI_SRC_FOLDER/ci/coverity.sh
