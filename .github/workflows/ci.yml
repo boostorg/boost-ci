@@ -280,8 +280,8 @@ jobs:
           COVERITY_SCAN_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
 
       - name: Prepare for cache
-        if: ${{ env.BOOST_ROOT != '' }}
-        run: rm -rf boost-root; mv "${BOOST_ROOT}" boost-root
+        if: ${{ env.BOOST_ROOT_CACHE != '' }}
+        run: rm -rf boost-root; mv "${BOOST_ROOT_CACHE}" boost-root
         working-directory: ${{github.workspace}}
   windows:
     defaults:
