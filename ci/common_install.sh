@@ -313,6 +313,11 @@ if [[ "${B2_DONT_BOOTSTRAP:0}" != "1" ]]; then
         if [[ "${enginemajorversion}" == "${coremajorversion}" ]] && [[ "${engineminorversion}" == "${coreminorversion}" ]]; then
             echo "b2 already exists and has the same version number"
         else
+            if [[ "$engineversion" =~ ^[0-9]\.[0-9]\. ]]; then
+                echo "b2 binary version: $enginemajorversion:$engineminorversion vs source version $coremajorversion:$coreminorversion"
+            else
+                echo "Unable to extract B2 version from $b2_version_output"
+            fi
             ${B2_WRAPPER:-} ./bootstrap.sh
         fi
     fi
