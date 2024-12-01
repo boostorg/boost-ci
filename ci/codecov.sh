@@ -14,7 +14,7 @@
 # - BOOST_CI_SRC_FOLDER
 # - BOOST_ROOT
 # - SELF
-# Call with either "setup" or "upload" as parameter
+# Call with either "setup", "collect" or "upload" as parameter
 
 #
 # If you want to exclude content from the coverage report you must check in
@@ -27,7 +27,9 @@ set -ex
 
 . $(dirname "${BASH_SOURCE[0]}")/enforce.sh
 
-if [[ "$1" == "setup" ]]; then
+coverage_action=$1
+
+if [[ "$coverage_action" == "setup" ]]; then
     if [ -z "$B2_CI_VERSION" ]; then
         # Old CI version needs to use the prefixes
         export B2_VARIANT="variant=debug"
@@ -39,7 +41,7 @@ if [[ "$1" == "setup" ]]; then
         export B2_LINKFLAGS="${B2_LINKFLAGS:+$B2_LINKFLAGS }--coverage"
     fi
 
-elif [[ "$1" == "upload" ]]; then
+elif [[ "$coverage_action" == "collect" ]] || [[ "$coverage_action" == "upload" ]]; then
     if [ -z "$GCOV" ]; then
         ver=7 # default
         if [ "${B2_TOOLSET%%-*}" == "gcc" ]; then
@@ -91,7 +93,7 @@ elif [[ "$1" == "upload" ]]; then
     # pull request)
     lcov --rc lcov_branch_coverage=${LCOV_BRANCH_COVERAGE} --list coverage.info
 
-    if [[ "$BOOST_CI_CODECOV_IO_UPLOAD" != "skip" ]]; then
+    if [[ "$coverage_action" == "upload" ]] && [[ "$BOOST_CI_CODECOV_IO_UPLOAD" != "skip" ]]; then
         #
         # upload to codecov.io
         #
@@ -113,6 +115,6 @@ elif [[ "$1" == "upload" ]]; then
         # end of [[ "$BOOST_CI_CODECOV_IO_UPLOAD" != "skip" ]] section
     fi
 else
-    echo "Invalid parameter for codecov.sh: '$1'." >&2
+    echo "Invalid parameter for codecov.sh: '$coverage_action'." >&2
     false
 fi
