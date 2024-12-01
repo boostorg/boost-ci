@@ -251,9 +251,7 @@ jobs:
 
       - name: Collect coverage
         if: matrix.coverage
-        run: ci/codecov.sh "upload"
-        env:
-          BOOST_CI_CODECOV_IO_UPLOAD: skip
+        run: ci/codecov.sh "collect"
 
       - name: Upload coverage
         if: matrix.coverage
