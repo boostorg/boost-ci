@@ -417,7 +417,7 @@ def job_impl(
   if asan or tsan:
     kwargs['privileged'] = True
   # Set env var if privileged is set by any means
-  if kwargs['privileged']:
+  if kwargs.get('privileged'):
     env['DRONE_EXTRA_PRIVILEGED'] = 'True'
 
   if asan:
