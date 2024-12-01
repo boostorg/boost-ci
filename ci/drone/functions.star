@@ -420,7 +420,7 @@ def job_impl(
   if kwargs['privileged']:
     env['DRONE_EXTRA_PRIVILEGED'] = 'True'
 
-  if absan:
+  if asan:
     env['B2_ASAN'] = '1'
   if ubsan:
     env['B2_UBSAN'] = '1'
