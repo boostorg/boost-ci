@@ -12,5 +12,5 @@
     "category": [
         "CI"
     ],
-    "cxxstd": "03"
+    "cxxstd": "11"
 }
