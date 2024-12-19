@@ -5,7 +5,12 @@ set -e
 function add_repository {
     name="$1"
     echo -e "\tAdding repository $name"
-    for i in {1..3}; do sudo -E apt-add-repository -y "$name" && return 0 || sleep 10; done
+    for _i in {1..3}; do
+        if sudo -E apt-add-repository -y "$name"; then
+            return 0;
+        fi
+        sleep 10
+    done
     return 1 # Failed
 }
 

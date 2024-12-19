@@ -30,7 +30,7 @@ if [[ "${1:-}" != "--skipdownload" ]]; then
   curl -L -d "token=$COVERITY_SCAN_TOKEN&project=$BOOST_REPO" -X POST https://scan.coverity.com/download/cxx/linux64 -o coverity_tool.tgz
   tar xzf coverity_tool.tgz
 fi
-COVBIN=$(echo $(pwd)/cov-analysis*/bin)
+COVBIN=$(echo "$(pwd)"/cov-analysis*/bin)
 export PATH=$COVBIN:$PATH
 popd
 

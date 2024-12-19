@@ -10,7 +10,7 @@
 
 set -ex
 
-: ${B2_TARGETS:="libs/$SELF/test"}
+: "${B2_TARGETS:="libs/$SELF/test"}"
 
 . "$(dirname "${BASH_SOURCE[0]}")"/enforce.sh
 

@@ -25,7 +25,7 @@
 
 set -ex
 
-. $(dirname "${BASH_SOURCE[0]}")/enforce.sh
+. "$(dirname "${BASH_SOURCE[0]}")"/enforce.sh
 
 coverage_action=$1
 
@@ -55,7 +55,7 @@ elif [[ "$coverage_action" == "collect" ]] || [[ "$coverage_action" == "upload" 
     fi
 
     # install the latest lcov we know works
-    : ${LCOV_VERSION:=v1.15}
+    : "${LCOV_VERSION:=v1.15}"
 
     if [[ "$LCOV_VERSION" =~ ^v[2-9] ]]; then
         sudo apt-get install -y libcapture-tiny-perl libdatetime-perl || true
@@ -65,33 +65,33 @@ elif [[ "$coverage_action" == "collect" ]] || [[ "$coverage_action" == "upload" 
 
     rm -rf /tmp/lcov
     cd /tmp
-    git clone --depth 1 -b ${LCOV_VERSION} https://github.com/linux-test-project/lcov.git
+    git clone --depth 1 -b "${LCOV_VERSION}" https://github.com/linux-test-project/lcov.git
     export PATH=/tmp/lcov/bin:$PATH
     command -v lcov
     lcov --version
 
     # switch back to the original source code directory
-    cd $BOOST_CI_SRC_FOLDER
+    cd "$BOOST_CI_SRC_FOLDER"
     : "${LCOV_BRANCH_COVERAGE:=1}" # Set default
 
     # coverage files are in ../../b2 from this location
-    lcov ${LCOV_OPTIONS} --rc lcov_branch_coverage=${LCOV_BRANCH_COVERAGE} --gcov-tool=$GCOV --directory "$BOOST_ROOT" --capture --output-file all.info
+    lcov ${LCOV_OPTIONS} --rc lcov_branch_coverage="${LCOV_BRANCH_COVERAGE}" --gcov-tool="$GCOV" --directory "$BOOST_ROOT" --capture --output-file all.info
     # dump a summary on the console
-    lcov --rc lcov_branch_coverage=${LCOV_BRANCH_COVERAGE} --list all.info
+    lcov --rc lcov_branch_coverage="${LCOV_BRANCH_COVERAGE}" --list all.info
 
     # all.info contains all the coverage info for all projects - limit to ours
     # first we extract the interesting headers for our project then we use that list to extract the right things
-    for f in `for f in include/boost/*; do echo $f; done | cut -f2- -d/`; do echo "*/$f*"; done > /tmp/interesting
+    for f in $(for h in include/boost/*; do echo "$h"; done | cut -f2- -d/); do echo "*/$f*"; done > /tmp/interesting
     echo headers that matter:
     cat /tmp/interesting
-    xargs --verbose -L 999999 -a /tmp/interesting lcov ${LCOV_OPTIONS} --rc lcov_branch_coverage=${LCOV_BRANCH_COVERAGE} --extract all.info "*/libs/$SELF/*" --output-file coverage.info
+    xargs --verbose -L 999999 -a /tmp/interesting lcov ${LCOV_OPTIONS} --rc lcov_branch_coverage="${LCOV_BRANCH_COVERAGE}" --extract all.info "*/libs/$SELF/*" --output-file coverage.info
 
     # dump a summary on the console - helps us identify problems in pathing
     # note this has test file coverage in it - if you do not want to count test
     # files against your coverage numbers then use a .codecov.yml file which
     # must be checked into the default branch (it is not read or used from a
     # pull request)
-    lcov --rc lcov_branch_coverage=${LCOV_BRANCH_COVERAGE} --list coverage.info
+    lcov --rc lcov_branch_coverage="${LCOV_BRANCH_COVERAGE}" --list coverage.info
 
     if [[ "$coverage_action" == "upload" ]] && [[ "$BOOST_CI_CODECOV_IO_UPLOAD" != "skip" ]]; then
         #

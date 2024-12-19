@@ -14,7 +14,7 @@ set -eu
 function do_add_repository {
     name=$1
     echo -e "\tAdding repository $name"
-    for i in $(seq ${NET_RETRY_COUNT:-3}); do
+    for i in $(seq "${NET_RETRY_COUNT:-3}"); do
         if [[ $i -ne 1 ]]; then
             sleep 10
             echo -e "\tRetrying"
