@@ -44,11 +44,11 @@ function add_repository_toolchain {
 
 echo ">>>>> APT: REPOSITORIES..."
 
-if [ "$UBUNTU_TOOLCHAIN_DISABLE" != "true" ]; then
+if [ "${ADD_UBUNTU_TOOLCHAIN_PPA:-}" == "true" ]; then
     # add_repository "ppa:ubuntu-toolchain-r/test"
     add_repository_toolchain "ppa:ubuntu-toolchain-r/test"
 else
-    echo "UBUNTU_TOOLCHAIN_DISABLE is 'true'. Not installing ppa:ubuntu-toolchain-r/test"
+    echo "UBUNTU_TOOLCHAIN_ENABLE is not 'true'. Not installing ppa:ubuntu-toolchain-r/test"
 fi
 
 if [ -n "${LLVM_OS}" ]; then
