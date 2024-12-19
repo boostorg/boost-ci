@@ -1,4 +1,10 @@
 #!/bin/bash
+#
+# Copyright 2020-2022 Sam Darwin
+# Copyright 2021-2024 Alexander Grund
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at
+#      http://www.boost.org/LICENSE_1_0.txt)
 
 set -e
 
@@ -50,7 +56,7 @@ if [ -n "${LLVM_OS}" ]; then
         # Snapshot (i.e. trunk) build
         llvm_toolchain="llvm-toolchain-${LLVM_OS}"
     fi
-    add_repository "deb http://apt.llvm.org/${LLVM_OS}/ ${llvm_toolchain} main"
+    add_repository "deb https://apt.llvm.org/${LLVM_OS}/ ${llvm_toolchain} main"
 fi
 
 if [ -n "${SOURCES}" ]; then
@@ -61,7 +67,7 @@ if [ -n "${SOURCES}" ]; then
 fi
 
 echo ">>>>> APT: UPDATE..."
-sudo -E apt-get -o Acquire::Retries=3 update
+sudo -E apt-get -o Acquire::Retries="${NET_RETRY_COUNT:-3}" update
 
 echo ">>>>> APT: INSTALL ${PACKAGES}..."
-sudo -E DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Retries=3 -y --no-install-suggests --no-install-recommends install ${PACKAGES}
+sudo -E DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Retries="${NET_RETRY_COUNT:-3}" -y -q --no-install-suggests --no-install-recommends install ${PACKAGES}

@@ -1,7 +1,7 @@
 ---
 # Copyright 2015-2019 Rene Rivera.
 # Copyright 2019 Mateusz Loskot <mateusz at loskot dot net>
-# Copyright 2020-2021 Alexander Grund
+# Copyright 2020-2024 Alexander Grund
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at http://boost.org/LICENSE_1_0.txt)
 
@@ -127,7 +127,7 @@ stages:
                   # Need (newer) git
                   sudo add-apt-repository ppa:git-core/ppa
                   sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT update
-                  sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT install -y g++ python libpython-dev git
+                  sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT -y -q --no-install-suggests --no-install-recommends install g++ python libpython-dev git
                 displayName: 'Install required sw for containers'
             - task: Cache@2
               condition: eq(variables.B2_USE_CCACHE, '1')
