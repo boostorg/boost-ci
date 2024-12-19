@@ -16,6 +16,22 @@ function add_repository {
 
 echo ">>>>> APT: REPOSITORIES..."
 
+if [ "$ADD_UBUNTU_TOOLCHAIN_PPA" = "true" ]; then
+    echo ">>>>> APT: INSTALL Ubuntu Toolchain PPA"
+    # an alternative method, if apt-add-repository seems to be unresponsive
+    VERSION_CODENAME=$(grep -ioP '^VERSION_CODENAME=\K.+' /etc/os-release || true)
+    if [ -z "$VERSION_CODENAME" ]; then
+        if grep -i trusty /etc/os-release; then
+            VERSION_CODENAME=trusty
+        elif grep -i precise /etc/os-release; then
+            VERSION_CODENAME=precise
+        fi
+    fi
+    echo "VERSION_CODENAME is ${VERSION_CODENAME}"
+    echo "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu ${VERSION_CODENAME} main" > "/etc/apt/sources.list.d/ubuntu-toolchain-r-ubuntu-test-${VERSION_CODENAME}.list"
+    curl -sSL --retry "${NET_RETRY_COUNT:-5}" 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x1E9377A2BA9EF27F' | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/toolchain-r.gpg
+fi
+
 if [ -n "${LLVM_OS}" ]; then
     echo ">>>>> APT: INSTALL LLVM repo"
     curl -sSL --retry 5 https://apt.llvm.org/llvm-snapshot.gpg.key | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/llvm-snapshot.gpg
