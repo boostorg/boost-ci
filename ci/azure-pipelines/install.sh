@@ -46,9 +46,6 @@ if [ "$AGENT_OS" != "Darwin" ]; then
     fi
 
     if [ -n "$PACKAGES" ]; then
-        for i in {1..${NET_RETRY_COUNT:-3}}; do
-            sudo -E apt-add-repository -y "ppa:ubuntu-toolchain-r/test" && break || sleep 10
-        done
         if [ -n "${LLVM_REPO}" ]; then
             curl -sSL --retry ${NET_RETRY_COUNT:-5} https://apt.llvm.org/llvm-snapshot.gpg.key | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/llvm-snapshot.gpg
             for i in {1..${NET_RETRY_COUNT:-3}}; do
