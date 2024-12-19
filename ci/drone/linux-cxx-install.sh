@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Copyright 2020-2022 Sam Darwin
-# Copyright 2021-2024 Alexander Grund
+# Copyright 2021-2026 Alexander Grund
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at
 #      http://www.boost.org/LICENSE_1_0.txt)
@@ -51,11 +51,10 @@ function add_repository_toolchain {
 
 echo ">>>>> APT: REPOSITORIES..."
 
-if [ "$UBUNTU_TOOLCHAIN_DISABLE" != "true" ]; then
-    # add_repository "ppa:ubuntu-toolchain-r/test"
+if [[ "${ADD_UBUNTU_TOOLCHAIN_PPA:-}" == "true" ]]; then
     add_repository_toolchain "ppa:ubuntu-toolchain-r/test"
 else
-    echo "UBUNTU_TOOLCHAIN_DISABLE is 'true'. Not installing ppa:ubuntu-toolchain-r/test"
+    echo "ADD_UBUNTU_TOOLCHAIN_PPA is not 'true'. Not installing ppa:ubuntu-toolchain-r/test"
 fi
 
 if [ -n "${LLVM_OS}" ]; then
