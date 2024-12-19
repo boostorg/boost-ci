@@ -43,8 +43,8 @@ jobs:
       matrix:
         include:
           # Linux, gcc
-          - { compiler: gcc-4.4,   cxxstd: '98,0x',          os: ubuntu-latest, container: 'ubuntu:16.04' }
-          - { compiler: gcc-4.6,   cxxstd: '0x',             os: ubuntu-latest, container: 'ubuntu:16.04' }
+          - { compiler: gcc-4.4,   cxxstd: '98,0x',          os: ubuntu-latest, container: 'ubuntu:16.04', source_keys: '0x1E9377A2BA9EF27F', sources: 'ppa:ubuntu-toolchain-r/test' }
+          - { compiler: gcc-4.6,   cxxstd: '0x',             os: ubuntu-latest, container: 'ubuntu:16.04', source_keys: '0x1E9377A2BA9EF27F', sources: 'ppa:ubuntu-toolchain-r/test' }
           - { compiler: gcc-4.7,   cxxstd: '11',             os: ubuntu-latest, container: 'ubuntu:16.04' }
           - { compiler: gcc-4.8,   cxxstd: '11',             os: ubuntu-latest, container: 'ubuntu:16.04' }
           - { compiler: gcc-4.9,   cxxstd: '11',             os: ubuntu-latest, container: 'ubuntu:16.04' }
@@ -61,7 +61,7 @@ jobs:
           - { name: GCC w/ sanitizers, sanitize: yes,
               compiler: gcc-13,    cxxstd: '11,14,17,20',    os: ubuntu-24.04 }
           - { name: Collect coverage, coverage: yes,
-              compiler: gcc-13,    cxxstd: '2b',             os: ubuntu-24.04, install: 'g++-13-multilib', address-model: '32,64' }
+              compiler: gcc-13,    cxxstd: '2b',             os: ubuntu-24.04, install: 'g++-13-multilib gcc-multilib', address-model: '32,64' }
 
           # Linux, clang
           - { compiler: clang-3.5, cxxstd: '11',             os: ubuntu-latest, container: 'ubuntu:16.04' }
