@@ -1,6 +1,7 @@
 #!/bin/bash
 #
-# Copyright 2023 Alexander Grund, Sam Darwin
+# Copyright 2023 Sam Darwin
+# Copyright 2023-2024 Alexander Grund
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at
 #      http://www.boost.org/LICENSE_1_0.txt)
@@ -28,5 +29,6 @@ function do_add_repository {
 }
 
 for repo_name in "$@"; do
+    [[ -n $repo_name ]] || continue
     do_add_repository "$repo_name"
 done
