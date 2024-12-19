@@ -2,7 +2,7 @@
 #
 # Copyright 2017 - 2019 James E. King III
 # Copyright 2019 Mateusz Loskot <mateusz at loskot dot net>
-# Copyright 2021 Alexander Grund
+# Copyright 2021-2024 Alexander Grund
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at
 #      http://www.boost.org/LICENSE_1_0.txt)
@@ -55,15 +55,15 @@ if [ "$AGENT_OS" != "Darwin" ]; then
                 sudo -E apt-add-repository "deb http://apt.llvm.org/${LLVM_OS:-xenial}/ ${LLVM_REPO} main" && break || sleep 10
             done
         fi
-        sudo apt-get ${NET_RETRY_COUNT:+ -o Acquire::Retries=$NET_RETRY_COUNT} update
-        sudo apt-get ${NET_RETRY_COUNT:+ -o Acquire::Retries=$NET_RETRY_COUNT} install -y ${PACKAGES}
+        sudo apt-get -o Acquire::Retries="${NET_RETRY_COUNT:-3}" update
+        sudo apt-get -o Acquire::Retries="${NET_RETRY_COUNT:-3}" -y -q --no-install-suggests --no-install-recommends install ${PACKAGES}
     fi
 
     if [[ -z "$GCC_TOOLCHAIN_ROOT" ]] && [[ -n "$GCC_TOOLCHAIN" ]]; then
         GCC_TOOLCHAIN_ROOT="$HOME/gcc-toolchain"
         echo "##vso[task.setvariable variable=GCC_TOOLCHAIN_ROOT]$GCC_TOOLCHAIN_ROOT"
         if ! command -v dpkg-architecture; then
-            apt-get install -y dpkg-dev
+            apt-get -o Acquire::Retries="${NET_RETRY_COUNT:-3}" -y -q --no-install-suggests --no-install-recommends install dpkg-dev
         fi
         MULTIARCH_TRIPLET="$(dpkg-architecture -qDEB_HOST_MULTIARCH)"
         mkdir -p "$GCC_TOOLCHAIN_ROOT"

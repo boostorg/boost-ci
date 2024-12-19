@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # Copyright 2017 - 2022 James E. King III
-# Copyright 2021 Alexander Grund
+# Copyright 2021-2024 Alexander Grund
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at
 #      http://www.boost.org/LICENSE_1_0.txt)
@@ -58,7 +58,7 @@ elif [[ "$coverage_action" == "collect" ]] || [[ "$coverage_action" == "upload" 
     : "${LCOV_VERSION:=v1.15}"
 
     if [[ "$LCOV_VERSION" =~ ^v[2-9] ]]; then
-        sudo apt-get install -y libcapture-tiny-perl libdatetime-perl || true
+        sudo apt-get -o Acquire::Retries="${NET_RETRY_COUNT:-3}" -y -q --no-install-suggests --no-install-recommends install libcapture-tiny-perl libdatetime-perl || true
         LCOV_OPTIONS="${LCOV_OPTIONS} --ignore-errors unused"
         LCOV_OPTIONS=$(echo ${LCOV_OPTIONS} | xargs echo)
     fi

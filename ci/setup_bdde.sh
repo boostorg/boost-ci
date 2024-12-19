@@ -19,7 +19,7 @@
 set -ex
 
 if [ -f "/etc/debian_version" ]; then
-    sudo apt-get install --no-install-recommends -y binfmt-support qemu-user-static
+    sudo apt-get -o Acquire::Retries="${NET_RETRY_COUNT:-3}" -y -q --no-install-suggests --no-install-recommends install binfmt-support qemu-user-static
 fi
 
 # this prepares the VM for multiarch docker
