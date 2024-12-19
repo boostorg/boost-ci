@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 #
 # Copyright 2017 - 2022 James E. King III
 # Copyright 2022 - 2024 Alexander Grund

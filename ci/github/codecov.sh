@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 #
 # Copyright 2021 Alexander Grund
 # Distributed under the Boost Software License, Version 1.0.
