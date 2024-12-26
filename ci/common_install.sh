@@ -2,7 +2,7 @@
 #
 # Copyright 2017 - 2019 James E. King III
 # Copyright 2019 Mateusz Loskot <mateusz at loskot dot net>
-# Copyright 2020 Alexander Grund
+# Copyright 2020-2024 Alexander Grund
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at
 #      http://www.boost.org/LICENSE_1_0.txt)
@@ -122,7 +122,19 @@ fi
 
 # Setup ccache
 if [ "$B2_USE_CCACHE" == "1" ]; then
-    "$CI_DIR"/setup_ccache.sh
+    if ! "$CI_DIR"/setup_ccache.sh 2>&1; then
+        set +x
+        echo
+        printf '=%.0s' {1..120}
+        echo
+        echo "Failed to install & setup ccache!"
+        echo "Will NOT use CCache for building."
+        printf '=%.0s' {1..120}
+        echo
+        echo
+        B2_USE_CCACHE=0
+        set -x
+    fi
 fi
 
 # Set up user-config to actually use B2_COMPILER if set
