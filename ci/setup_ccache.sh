@@ -7,10 +7,15 @@
 #
 # Installs and sets up ccache
 
+{ set +x; } &> /dev/null
 set -eu
-set +x
+
+function print_on_gha {
+    [[ "${GITHUB_ACTIONS:-false}" != "true" ]] || echo "$@"
+}
 
 if ! command -v ccache &> /dev/null; then
+  print_on_gha "::group::Installing CCache"
   if [ -f "/etc/debian_version" ]; then
     sudo apt-get install ${NET_RETRY_COUNT:+ -o Acquire::Retries=$NET_RETRY_COUNT} -y ccache
   elif command -v brew &> /dev/null; then
@@ -26,16 +31,17 @@ if ! command -v ccache &> /dev/null; then
         brew install ccache 2>&1
     fi
   fi
+  print_on_gha "::endgroup::"
 fi
 
-# Sanity check that CCache is installed, executable and works at all
+print_on_gha "::group::Configuring CCache"
 ccache --version
 
 # This also sets the default values
 echo "Using cache directory of size ${B2_CCACHE_SIZE:=500M} at '${B2_CCACHE_DIR:=$HOME/.ccache}'"
 
-
 ccache --set-config=cache_dir="$B2_CCACHE_DIR"
 ccache --set-config=max_size="$B2_CCACHE_SIZE"
 ccache -z
 echo "CCache config: $(ccache -p)"
+print_on_gha "::endgroup::"
