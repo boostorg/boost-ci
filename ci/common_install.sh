@@ -144,6 +144,7 @@ if [ "$B2_USE_CCACHE" == "1" ]; then
         echo
         echo
         B2_USE_CCACHE=0
+        print_on_gha "::error title=CCache::CCache disabled due to an error!"
         set -x
     fi
 fi

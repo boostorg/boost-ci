@@ -42,6 +42,12 @@ ccache --version
 # This also sets the default values
 echo "Using cache directory of size ${B2_CCACHE_SIZE:=500M} at '${B2_CCACHE_DIR:=$HOME/.ccache}'"
 
+if ! ccache -z &> /dev/null; then
+  print_on_gha "::warning title=CCache::Possible cache corruption detected!"
+  # Might happen if the cache got corrupted
+  echo "Clearing possibly corrupted CCache directory"
+  rm -rf "$B2_CCACHE_DIR" "$HOME/.ccache"
+fi
 
 ccache --set-config=cache_dir="$B2_CCACHE_DIR"
 ccache --set-config=max_size="$B2_CCACHE_SIZE"
