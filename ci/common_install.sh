@@ -38,6 +38,10 @@ print_on_gha "::group::Setup B2 variables"
 . "$CI_DIR"/enforce.sh
 print_on_gha "::endgroup::"
 
+            echo "::group::My title"
+            echo "Inside group"
+            echo "::endgroup::"
+
 print_on_gha "::group::Checkout and setup Boost build tree"
 pythonexecutable=$(get_python_executable)
 
