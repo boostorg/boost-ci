@@ -28,8 +28,17 @@ set -ex
 
 CI_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 
-. "$CI_DIR"/enforce.sh
+function print_on_gha {
+    if [[ "${GITHUB_ACTIONS:-false}" == "true" ]]; then
+        echo "$@"
+    fi
+} 2> /dev/null
 
+print_on_gha "::group::Setup B2 variables"
+. "$CI_DIR"/enforce.sh
+print_on_gha "::endgroup::"
+
+print_on_gha "::group::Checkout and setup Boost build tree"
 pythonexecutable=$(get_python_executable)
 
 if [ -z "$SELF" ]; then
@@ -71,6 +80,7 @@ if [[ -n "$GIT_FETCH_JOBS" ]]; then
 fi
 
 $pythonexecutable tools/boostdep/depinst/depinst.py --include benchmark --include example --include examples --include tools "${DEPINST_ARGS[@]}" $DEPINST $SELF
+print_on_gha "::endgroup::"
 
 # Deduce B2_TOOLSET if unset from B2_COMPILER
 if [ -z "$B2_TOOLSET" ] && [ -n "$B2_COMPILER" ]; then
@@ -121,6 +131,7 @@ if [[ "$B2_TOOLSET" == clang* ]]; then
 fi
 
 # Setup ccache
+print_on_gha "::group::Setup CCache"
 if [ "$B2_USE_CCACHE" == "1" ]; then
     if ! "$CI_DIR"/setup_ccache.sh 2>&1; then
         set +x
@@ -136,6 +147,7 @@ if [ "$B2_USE_CCACHE" == "1" ]; then
         set -x
     fi
 fi
+print_on_gha "::endgroup::"
 
 # Set up user-config to actually use B2_COMPILER if set
 if [ -n "$B2_COMPILER" ]; then

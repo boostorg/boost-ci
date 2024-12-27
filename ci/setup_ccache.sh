@@ -10,7 +10,14 @@
 set -eu
 set +x
 
+function print_on_gha {
+    if [[ "${GITHUB_ACTIONS:-false}" == "true" ]]; then
+        echo "$@"
+    fi
+} 2> /dev/null
+
 if ! command -v ccache &> /dev/null; then
+  print_on_gha "::group::Installing CCache"
   if [ -f "/etc/debian_version" ]; then
     sudo apt-get install ${NET_RETRY_COUNT:+ -o Acquire::Retries=$NET_RETRY_COUNT} -y ccache
   elif command -v brew &> /dev/null; then
@@ -26,6 +33,7 @@ if ! command -v ccache &> /dev/null; then
         brew install ccache 2>&1
     fi
   fi
+  print_on_gha "::endgroup::"
 fi
 
 # Sanity check that CCache is installed, executable and works at all
