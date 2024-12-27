@@ -28,8 +28,35 @@ set -ex
 
 CI_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)"
 
-. "$CI_DIR"/enforce.sh
+function print_on_gha {
+    { set +x; } &> /dev/null
+    [[ "${GITHUB_ACTIONS:-false}" != "true" ]] || echo "$@"
+    set -x
+}
 
+# Setup ccache
+if [ "$B2_USE_CCACHE" == "1" ]; then
+    if ! "$CI_DIR"/setup_ccache.sh 2>&1; then
+        { set +x; } &> /dev/null
+        echo
+        printf '=%.0s' {1..120}
+        echo
+        echo "Failed to install & setup ccache!"
+        echo "Will NOT use CCache for building."
+        printf '=%.0s' {1..120}
+        echo
+        echo
+        B2_USE_CCACHE=0
+        print_on_gha "::error title=CCache::CCache disabled due to an error!"
+        set -x
+    fi
+fi
+
+print_on_gha "::group::Setup B2 variables"
+. "$CI_DIR"/enforce.sh 2>&1
+print_on_gha "::endgroup::"
+
+print_on_gha "::group::Checkout and setup Boost build tree"
 pythonexecutable=$(get_python_executable)
 
 if [ -z "$SELF" ]; then
@@ -71,7 +98,9 @@ if [[ -n "$GIT_FETCH_JOBS" ]]; then
 fi
 
 $pythonexecutable tools/boostdep/depinst/depinst.py --include benchmark --include example --include examples --include tools "${DEPINST_ARGS[@]}" $DEPINST $SELF
+print_on_gha "::endgroup::"
 
+print_on_gha "::group::Setup B2"
 # Deduce B2_TOOLSET if unset from B2_COMPILER
 if [ -z "$B2_TOOLSET" ] && [ -n "$B2_COMPILER" ]; then
     if [[ "$B2_COMPILER" =~ clang ]]; then
@@ -120,23 +149,6 @@ if [[ "$B2_TOOLSET" == clang* ]]; then
     fi
 fi
 
-# Setup ccache
-if [ "$B2_USE_CCACHE" == "1" ]; then
-    if ! "$CI_DIR"/setup_ccache.sh 2>&1; then
-        set +x
-        echo
-        printf '=%.0s' {1..120}
-        echo
-        echo "Failed to install & setup ccache!"
-        echo "Will NOT use CCache for building."
-        printf '=%.0s' {1..120}
-        echo
-        echo
-        B2_USE_CCACHE=0
-        set -x
-    fi
-fi
-
 # Set up user-config to actually use B2_COMPILER if set
 if [ -n "$B2_COMPILER" ]; then
     # Get C++ compiler
@@ -152,7 +164,7 @@ if [ -n "$B2_COMPILER" ]; then
         exit 1
     fi
 
-    set +x
+    { set +x; } &> /dev/null
     echo "Compiler location: $(command -v $CXX)"
     if [[ "$CXX" == *"clang++"* ]] && [ -z "$GCC_TOOLCHAIN_ROOT" ]; then
         # Show also information on selected GCC lib
@@ -183,8 +195,10 @@ function show_bootstrap_log
 {
     cat bootstrap.log
 }
+print_on_gha "::endgroup::"
 
 if [[ "$B2_DONT_BOOTSTRAP" != "1" ]]; then
+    print_on_gha "::group::Bootstrap B2"
     trap show_bootstrap_log ERR
     # Check if b2 already exists. This would (only) happen in a caching scenario. The purpose of caching is to save time by not recompiling everything.
     # The user may clear cache or delete b2 beforehand if they wish to rebuild.
@@ -205,4 +219,5 @@ if [[ "$B2_DONT_BOOTSTRAP" != "1" ]]; then
     fi
     trap - ERR
     ${B2_WRAPPER} ./b2 -d0 headers
+    print_on_gha "::endgroup::"
 fi

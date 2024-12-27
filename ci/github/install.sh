@@ -36,26 +36,30 @@ fi
 # Persist the environment for all future steps
 
 # Set by common_install.sh
-echo "SELF=$SELF" >> $GITHUB_ENV
-echo "BOOST_ROOT=$BOOST_ROOT" >> $GITHUB_ENV
-echo "B2_TOOLSET=$B2_TOOLSET" >> $GITHUB_ENV
-echo "B2_COMPILER=$B2_COMPILER" >> $GITHUB_ENV
-# Usually set by the env-key of the "Setup Boost" step
-[ -z "$B2_CXXSTD" ] || echo "B2_CXXSTD=$B2_CXXSTD" >> $GITHUB_ENV
-[ -z "$B2_JOBS" ] || echo "B2_JOBS=$B2_JOBS" >> $GITHUB_ENV
-[ -z "$B2_CXXFLAGS" ] || echo "B2_CXXFLAGS=$B2_CXXFLAGS" >> $GITHUB_ENV
-[ -z "$B2_DEFINES" ] || echo "B2_DEFINES=$B2_DEFINES" >> $GITHUB_ENV
-[ -z "$B2_INCLUDE" ] || echo "B2_INCLUDE=$B2_INCLUDE" >> $GITHUB_ENV
-[ -z "$B2_LINKFLAGS" ] || echo "B2_LINKFLAGS=$B2_LINKFLAGS" >> $GITHUB_ENV
-[ -z "$B2_TESTFLAGS" ] || echo "B2_TESTFLAGS=$B2_TESTFLAGS" >> $GITHUB_ENV
-[ -z "$B2_ADDRESS_MODEL" ] || echo "B2_ADDRESS_MODEL=$B2_ADDRESS_MODEL" >> $GITHUB_ENV
-[ -z "$B2_LINK" ] || echo "B2_LINK=$B2_LINK" >> $GITHUB_ENV
-[ -z "$B2_VISIBILITY" ] || echo "B2_VISIBILITY=$B2_VISIBILITY" >> $GITHUB_ENV
-[ -z "$B2_STDLIB" ] || echo "B2_STDLIB=$B2_STDLIB" >> $GITHUB_ENV
-[ -z "$B2_THREADING" ] || echo "B2_THREADING=$B2_THREADING" >> $GITHUB_ENV
-[ -z "$B2_VARIANT" ] || echo "B2_VARIANT=$B2_VARIANT" >> $GITHUB_ENV
-[ -z "$B2_ASAN" ] || echo "B2_ASAN=$B2_ASAN" >> $GITHUB_ENV
-[ -z "$B2_TSAN" ] || echo "B2_TSAN=$B2_TSAN" >> $GITHUB_ENV
-[ -z "$B2_UBSAN" ] || echo "B2_UBSAN=$B2_UBSAN" >> $GITHUB_ENV
-[ -z "$B2_FLAGS" ] || echo "B2_FLAGS=$B2_FLAGS" >> $GITHUB_ENV
-[ -z "$B2_TARGETS" ] || echo "B2_TARGETS=$B2_TARGETS" >> $GITHUB_ENV
+{
+  echo "SELF=$SELF"
+  echo "BOOST_ROOT=$BOOST_ROOT"
+  echo "B2_TOOLSET=$B2_TOOLSET"
+  echo "B2_COMPILER=$B2_COMPILER"
+  # Usually set by the env-key of the "Setup Boost" step
+  [ -z "$B2_CXXSTD" ] || echo "B2_CXXSTD=$B2_CXXSTD"
+  [ -z "$B2_JOBS" ] || echo "B2_JOBS=$B2_JOBS"
+  [ -z "$B2_CXXFLAGS" ] || echo "B2_CXXFLAGS=$B2_CXXFLAGS"
+  [ -z "$B2_DEFINES" ] || echo "B2_DEFINES=$B2_DEFINES"
+  [ -z "$B2_INCLUDE" ] || echo "B2_INCLUDE=$B2_INCLUDE"
+  [ -z "$B2_LINKFLAGS" ] || echo "B2_LINKFLAGS=$B2_LINKFLAGS"
+  [ -z "$B2_TESTFLAGS" ] || echo "B2_TESTFLAGS=$B2_TESTFLAGS"
+  [ -z "$B2_ADDRESS_MODEL" ] || echo "B2_ADDRESS_MODEL=$B2_ADDRESS_MODEL"
+  [ -z "$B2_LINK" ] || echo "B2_LINK=$B2_LINK"
+  [ -z "$B2_VISIBILITY" ] || echo "B2_VISIBILITY=$B2_VISIBILITY"
+  [ -z "$B2_STDLIB" ] || echo "B2_STDLIB=$B2_STDLIB"
+  [ -z "$B2_THREADING" ] || echo "B2_THREADING=$B2_THREADING"
+  [ -z "$B2_VARIANT" ] || echo "B2_VARIANT=$B2_VARIANT"
+  [ -z "$B2_ASAN" ] || echo "B2_ASAN=$B2_ASAN"
+  [ -z "$B2_TSAN" ] || echo "B2_TSAN=$B2_TSAN"
+  [ -z "$B2_UBSAN" ] || echo "B2_UBSAN=$B2_UBSAN"
+  [ -z "$B2_FLAGS" ] || echo "B2_FLAGS=$B2_FLAGS"
+  [ -z "$B2_TARGETS" ] || echo "B2_TARGETS=$B2_TARGETS"
+ # Filter out (only) the conditions from set -x
+ # Write the stdout to the GitHub env file
+} 2> >(grep -vF ' -z ' >&2) >> $GITHUB_ENV
