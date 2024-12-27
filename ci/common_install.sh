@@ -34,6 +34,24 @@ function print_on_gha {
     set -x
 }
 
+# Setup ccache
+if [ "$B2_USE_CCACHE" == "1" ]; then
+    if ! "$CI_DIR"/setup_ccache.sh 2>&1; then
+        { set +x; } &> /dev/null
+        echo
+        printf '=%.0s' {1..120}
+        echo
+        echo "Failed to install & setup ccache!"
+        echo "Will NOT use CCache for building."
+        printf '=%.0s' {1..120}
+        echo
+        echo
+        B2_USE_CCACHE=0
+        print_on_gha "::error title=CCache::CCache disabled due to an error!"
+        set -x
+    fi
+fi
+
 print_on_gha "::group::Setup B2 variables"
 . "$CI_DIR"/enforce.sh 2>&1
 print_on_gha "::endgroup::"
@@ -82,6 +100,7 @@ fi
 $pythonexecutable tools/boostdep/depinst/depinst.py --include benchmark --include example --include examples --include tools "${DEPINST_ARGS[@]}" $DEPINST $SELF
 print_on_gha "::endgroup::"
 
+print_on_gha "::group::Setup B2"
 # Deduce B2_TOOLSET if unset from B2_COMPILER
 if [ -z "$B2_TOOLSET" ] && [ -n "$B2_COMPILER" ]; then
     if [[ "$B2_COMPILER" =~ clang ]]; then
@@ -130,28 +149,6 @@ if [[ "$B2_TOOLSET" == clang* ]]; then
     fi
 fi
 
-# Setup ccache
-print_on_gha "::group::Setup CCache"
-if [ "$B2_USE_CCACHE" == "1" ]; then
-    if ! "$CI_DIR"/setup_ccache.sh 2>&1; then
-        { set +x; } &> /dev/null
-        echo
-        printf '=%.0s' {1..120}
-        echo
-        echo "Failed to install & setup ccache!"
-        echo "Will NOT use CCache for building."
-        printf '=%.0s' {1..120}
-        echo
-        echo
-        B2_USE_CCACHE=0
-        print_on_gha "::error title=CCache::CCache disabled due to an error!"
-        set -x
-    fi
-    print_on_gha "::error title=CCache::CCache22 disabled due to an error!"
-fi
-print_on_gha "::endgroup::"
-
-print_on_gha "::group::Setup B2"
 # Set up user-config to actually use B2_COMPILER if set
 if [ -n "$B2_COMPILER" ]; then
     # Get C++ compiler
