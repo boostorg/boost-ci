@@ -9,18 +9,19 @@ This repository contains scripts that enable continuous integration (CI) with
 [Coverity Scan](https://scan.coverity.com/),
 [GitHub Actions](https://github.com/features/actions),
 [Drone](https://drone.io/),
-and [Travis CI](https://travis-ci.org/).
+and [Travis CI](https://travis-ci.com/).
 These scripts are intended to be downloaded and used during boost repository builds to improve project quality.
 In most cases the scripts are self-configuring.
 Some integrations require additional setup actions to complete.
 
-Boost.CI also allows you to run a big-endian build on Travis CI and Github Actions.
+Boost.CI also allows you to run a big-endian build on Github Actions.
 
 ### Build Status
 
-GH Actions | Appveyor | Azure Pipelines | Drone | codecov.io |
----------- | -------- | --------------- | ----- | ---------- |
-[![Build status](https://github.com/boostorg/boost-ci/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/boostorg/boost-ci/actions/workflows/ci.yml) | [![Build status](https://ci.appveyor.com/api/projects/status/ynnd2l3gu4oiyium/branch/master?svg=true)](https://ci.appveyor.com/project/Flamefire/boost-ci/branch/master) | [![Build Status](https://dev.azure.com/boostorg/boost-ci/_apis/build/status/boostorg.boost-ci?branchName=master)](https://dev.azure.com/boostorg/boost-ci/_build/latest?definitionId=8&branchName=master) | [![Build Status](https://drone.cpp.al/api/badges/boostorg/boost-ci/status.svg)](https://drone.cpp.al/boostorg/boost-ci) |  [![codecov](https://codecov.io/gh/boostorg/boost-ci/branch/master/graph/badge.svg)](https://codecov.io/gh/boostorg/boost-ci/branch/master) | 
+<!-- boost-ci/tools/makebadges.sh --repo boost-ci --appveyorbadge ynnd2l3gu4oiyium --appveyororg Flamefire --codecovbadge mncfhR5Zjv -p -d -n -->
+| Branch          | GHA CI | Appveyor | Azure Pipelines | Drone | codecov.io |
+| :-------------: | ------ | -------- | --------------- | ----- | ---------- |
+| [`master`](https://github.com/boostorg/boost-ci/tree/master) | [![Build Status](https://github.com/boostorg/boost-ci/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/boostorg/boost-ci/actions?query=branch:master) | [![Build status](https://ci.appveyor.com/api/projects/status/ynnd2l3gu4oiyium/branch/master?svg=true)](https://ci.appveyor.com/project/Flamefire/boost-ci/branch/master) | [![Build Status](https://dev.azure.com/boostorg/boost-ci/_apis/build/status/boostorg.boost-ci?branchName=master)](https://dev.azure.com/boostorg/boost-ci/_build/latest?definitionId=8&branchName=master) | [![Build Status](https://drone.cpp.al/api/badges/boostorg/boost-ci/status.svg?ref=refs/heads/master)](https://drone.cpp.al/boostorg/boost-ci) | [![codecov](https://codecov.io/gh/boostorg/boost-ci/branch/master/graph/badge.svg?token=mncfhR5Zjv)](https://codecov.io/gh/boostorg/boost-ci/tree/master) |
 
 ## Summary (TL;DR)
 
@@ -90,7 +91,7 @@ See the [CodeCov documentation](https://docs.codecov.com/docs/codecov-yaml) for 
 
 ## Repositories using Boost.CI
 
-The [CMT Stale Repo Tracker](https://travis-ci.org/jeking3/boost-merge-reminder) identifies many repositories using Boost.CI and
+The [CMT Stale Repo Tracker](https://github.com/jeking3/boost-merge-reminder/actions) identifies many repositories using Boost.CI and
 the [CMT Status Spreadsheet](https://docs.google.com/spreadsheets/d/1aFdTMdJmmD9L5IyvJx-nj3BrMVztmlNo8QwyEzLD2io/edit?usp=sharing) shows the current state of each.
 There may be additional repositories using Boost.CI that are not listed.  Boost.CI does not track usage internally.
 
@@ -122,83 +123,9 @@ This can be done easily via the GitHub website (check the "branches" link at the
 
 ## Defaults, Builds and Services
 
-By default the builds target multiple different C++ versions (from C++11 to C++20), and this can be customized.
+By default the builds target multiple different C++ versions (from C++98 to C++23), and this can be customized.
 To see what kind of coverage these builds provide, see some build results as follows or click the badges above:
 
 - AppVeyor : https://ci.appveyor.com/project/Flamefire/boost-ci/branch/master
 - Github Actions : https://github.com/boostorg/boost-ci/actions/workflows/ci.yml
 - Azure Pipelines : https://dev.azure.com/boostorg/boost-ci/_build/latest?definitionId=8&branchName=master
-- Travis CI : https://travis-ci.org/boostorg/uuid/builds/449557162
-
-Without any customization the scripts can provide the following services (example only, see the actual CI scripts for current configurations):
-
-| CI        | description             | toolset     | cxxflags/std               | address-model | variant         |
-| :-------- | :---------------------- | :---------- | :--------------------------| :------------ | :-------------- |
-| Appveyor  | MSVC 2019 C++2a Strict  | `msvc-14.2` | `2a`, `-permissive-`       | `64`          | `release`       |
-| Appveyor  | MSVC 2017 C++2a Strict  | `msvc-14.1` | `2a`, `-permissive-`       | `64`          | `release`       |
-| Appveyor  | MSVC 2017 C++17         | `msvc-14.1` | `17`                       | `64`          | `debug`         |
-| Appveyor  | MSVC 2017 C++17         | `clang-win` | `11`                       | `64`          | `release`       |
-| Appveyor  | MSVC 2017 C++14 Default | `msvc-14.1` | default (14)               | `32,64`       | `release`       |
-| Appveyor  | MSVC 2015 C++14 Default | `msvc-14.0` | default (14)               | `32,64`       | `debug`         |
-| Appveyor  | MSVC 2013               | `msvc-12.0` | default (most of 11)       | default       | `release`       |
-| Appveyor  | MSVC 2012               | `msvc-11.0` | default (some of 11)       | default       | `release`       |
-| Appveyor  | MSVC 2010               | `msvc-10.0` | default (some of 0x)       | default       | `release`       |
-| Appveyor  | cygwin                  | `gcc`       | `11`                       | `32`          | `debug`         |
-| Appveyor  | cygwin64                | `gcc`       | `11,17`                    | `64`          | `release`       |
-| Appveyor  | mingw                   | `gcc`       | `11`                       | `32`          | `debug`         |
-| Appveyor  | mingw64                 | `gcc`       | `11,17`                    | `64`          | `release`       |
-| Azure P.  | gcc 4.8                 | `gcc-4.8`   | `11`                       | default       | `debug,release` |
-| Azure P.  | gcc 4.9                 | `gcc-4.9`   | `11`                       | default       | `debug,release` |
-| Azure P.  | gcc 5                   | `gcc-5`     | `11`                       | default       | `debug,release` |
-| Azure P.  | gcc 6                   | `gcc-6`     | `11,14`                    | default       | `debug,release` |
-| Azure P.  | gcc 7                   | `gcc-7`     | `11,14,17`                 | default       | `debug,release` |
-| Azure P.  | gcc 8                   | `gcc-8`     | `14,17,2a`                 | default       | `debug,release` |
-| Azure P.  | clang-3.5               | `clang-3.5` | `11`                       | default       | `debug,release` |
-| Azure P.  | clang-3.6               | `clang-3.6` | `11`                       | default       | `debug,release` |
-| Azure P.  | clang-3.7               | `clang-3.7` | `11`                       | default       | `debug,release` |
-| Azure P.  | clang-3.8               | `clang-3.8` | `11,14`                    | default       | `debug,release` |
-| Azure P.  | clang-3.9               | `clang-3.8` | `11,14`                    | default       | `debug,release` |
-| Azure P.  | clang-4.0               | `clang-4.0` | `11,14,17`                 | default       | `debug,release` |
-| Azure P.  | clang-5.0               | `clang-5.0` | `11,14,17`                 | default       | `debug,release` |
-| Azure P.  | clang-6.0               | `clang-6.0` | `14,17,2a`                 | default       | `debug,release` |
-| Azure P.  | clang-6.0-libc++        | `clang-6.0` | `11,14,17,2a`, `libc++`    | default       | `debug,release` |
-| Azure P.  | clang-7                 | `clang-7`   | `14,17,2a`                 | default       | `debug,release` |
-| Azure P.  | clang-8                 | `clang-8`   | `14,17,2a`                 | default       | `debug,release` |
-| Azure P.  | MSVC 2019 C++2a Strict  | `msvc-14.2` | `2a`, `-permissive-`       | `64`          | `debug,release` |
-| Azure P.  | MSVC 2017 C++2a Strict  | `msvc-14.1` | `2a`, `-permissive-`       | `64`          | `debug,release` |
-| Azure P.  | MSVC 2017 C++17         | `msvc-14.1` | `17`                       | `32,64`       | `debug,release` |
-| Azure P.  | MSVC 2017 C++14 Default | `msvc-14.1` | default (14)               | `32,64`       | `debug,release` |
-| Azure P.  | MSVC 2015 C++14 Default | `msvc-14.0` | default (14)               | `32,64`       | `debug,release` |
-| Azure P.  | Xcode 10.1              | `clang`     | `14,17,2a`                 | default       | `debug,release` |
-| Azure P.  | Xcode 10.0              | `clang`     | `14,17,2a`                 | default       | `debug,release` |
-| Azure P.  | Xcode 9.4.1             | `clang`     | `11,14,17`                 | default       | `debug,release` |
-| Azure P.  | Xcode 9.4               | `clang`     | `11,14,17`                 | default       | `debug,release` |
-| Azure P.  | Xcode 9.3.1             | `clang`     | `11,14`                    | default       | `debug,release` |
-| Azure P.  | Xcode 9.3               | `clang`     | `11,14`                    | default       | `debug,release` |
-| Azure P.  | Xcode 9.2               | `clang`     | `11,14`                    | default       | `debug,release` |
-| Azure P.  | Xcode 9.1               | `clang`     | `11`                       | default       | `debug,release` |
-| Azure P.  | Xcode 9.0.1             | `clang`     | `11`                       | default       | `debug,release` |
-| Azure P.  | Xcode 9.0               | `clang`     | `11`                       | default       | `debug,release` |
-| Azure P.  | Xcode 8.3.3             | `clang`     | `11`                       | default       | `debug,release` |
-| Travis CI | gcc 4.8                 | `gcc-4.8`   | `11`                       | default       | `release`       |
-| Travis CI | gcc 4.9                 | `gcc-4.9`   | `11`                       | default       | `release`       |
-| Travis CI | gcc 5                   | `gcc-5`     | `11`                       | default       | `release`       |
-| Travis CI | gcc 6                   | `gcc-6`     | `11,14`                    | default       | `release`       |
-| Travis CI | gcc 7                   | `gcc-7`     | `14,17`                    | default       | `release`       |
-| Travis CI | gcc 8                   | `gcc-8`     | `17,2a`                    | default       | `release`       |
-| Travis CI | gcc 9                   | `gcc-9`     | `17,2a`                    | default       | `release`       |
-| Travis CI | clang-3.8               | `clang-3.8` | `11`                       | default       | `release`       |
-| Travis CI | clang-4.0               | `clang-4.0` | `11,14`                    | default       | `release`       |
-| Travis CI | clang-5.0               | `clang-5.0` | `11,14`                    | default       | `release`       |
-| Travis CI | clang-6.0               | `clang-6.0` | `14,17`                    | default       | `release`       |
-| Travis CI | clang-6.0-libc++        | `clang-6.0` | `11,14`, `libc++`          | default       | `release`       |
-| Travis CI | clang-7                 | `clang-7`   | `17,2a`                    | default       | `release`       |
-| Travis CI | clang-8                 | `clang-8`   | `17,2a`                    | default       | `release`       |
-| Travis CI | osx (clang)             | `clang`     | `11,17`                    | default       | `release`       |
-| Travis CI | big-endian              | `gcc`       | default                    | default       | `debug`         |
-| Travis CI | codecov.io              | `gcc-8`     | default                    | default       | `debug`         |
-| Travis CI | covscan                 | `clang`     | default                    | default       | `debug`         |
-| Travis CI | asan                    | `gcc-8`     | `11,14`                    | default       | `debug`         |
-| Travis CI | tsan                    | `gcc-8`     | `11,14`                    | default       | `debug`         |
-| Travis CI | ubsan                   | `gcc-8`     | `11,14`                    | default       | `debug`         |
-| Travis CI | valgrind                | `clang-6.0` | `11,14`                    | default       | `debug`         |
