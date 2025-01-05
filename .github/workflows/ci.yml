@@ -83,9 +83,10 @@ jobs:
           - { compiler: clang-10,  cxxstd: '11,14,17,20',    os: ubuntu-20.04 }
           - { compiler: clang-11,  cxxstd: '11,14,17,20',    os: ubuntu-20.04 }
           - { compiler: clang-12,  cxxstd: '11,14,17,20',    os: ubuntu-20.04 }
-          # Clang isn't compatible with libstdc++-13, so use the slightly older one
-          - { compiler: clang-13,  cxxstd: '11,14,17,20',    os: ubuntu-22.04, gcc_toolchain: 12 }
-          - { compiler: clang-14,  cxxstd: '11,14,17,20',    os: ubuntu-22.04, gcc_toolchain: 12 }
+          # Clang 13/14 isn't compatible with libstdc++-12
+          - { compiler: clang-13,  cxxstd: '11,14,17,20',    os: ubuntu-22.04, gcc_toolchain: 11 }
+          - { compiler: clang-14,  cxxstd: '11,14,17,20',    os: ubuntu-22.04, gcc_toolchain: 11 }
+          # Clang 15 isn't compatible with libstdc++-13
           - { compiler: clang-15,  cxxstd: '11,14,17,20',    os: ubuntu-22.04, gcc_toolchain: 12 }
           - { compiler: clang-16,  cxxstd: '11,14,17,20,2b', os: ubuntu-24.04 }
           # https://github.com/llvm/llvm-project/issues/59827: disabled 2b/23 for clang-17 with libstdc++13 in 24.04
