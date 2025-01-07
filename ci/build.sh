@@ -18,6 +18,20 @@ export UBSAN_OPTIONS=print_stacktrace=1,report_error_type=1,${UBSAN_OPTIONS}
 
 cd "$BOOST_ROOT"
 
+# Save previous config if present. Append to that after finish
+b2_config="$BOOST_ROOT/bin.v2/config.log"
+if [[ -f "$b2_config" ]]; then
+  prev_config=$(mktemp)
+  mv "$b2_config" "$prev_config"
+  function prepend_config {
+    [[ -f "$b2_config" ]] || return
+    echo "=========================== END PREVIOUS CONFIG ======================" >> "$prev_config"
+    cat "$b2_config" >> "$prev_config"
+    mv "$prev_config" "$b2_config"
+  }
+  trap prepend_config EXIT
+fi
+
 ${B2_WRAPPER} ./b2 ${B2_TARGETS} "${B2_ARGS[@]}" "$@"
 
 if [ "$B2_USE_CCACHE" == "1" ] && command -v ccache &> /dev/null; then
