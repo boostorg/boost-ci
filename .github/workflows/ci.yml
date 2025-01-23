@@ -18,6 +18,10 @@ on:
       - feature/**
       - fix/**
       - pr/**
+    paths-ignore:
+      - LICENSE
+      - meta/**
+      - README.md
 
 concurrency:
   group: ${{format('{0}:{1}', github.repository, github.ref)}}
@@ -146,6 +150,9 @@ jobs:
             # For jobs not compatible with ccache, use "ccache: no" in the matrix
             if [[ "${{ matrix.ccache }}" == "no" ]]; then
                 echo "B2_USE_CCACHE=0" >> $GITHUB_ENV
+            fi
+            if [[ "${{ matrix.sanitize }}" == "yes" ]]; then
+                echo "LSAN_OPTIONS=suppressions=${GITHUB_WORKSPACE}/test/suppressions.txt" >> $GITHUB_ENV
             fi
             git config --global pack.threads 0
             if [[ "${{matrix.container}}" == "ubuntu:1"* ]]; then
@@ -326,7 +333,7 @@ jobs:
 
       - name: Upload coverage
         if: matrix.coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           disable_search: true
           file: __out/cobertura.xml
