@@ -1,6 +1,6 @@
 # Copyright 2020-2021 Peter Dimov
 # Copyright 2021 Andrey Semashev
-# Copyright 2021 Alexander Grund
+# Copyright 2021-2024 Alexander Grund
 # Copyright 2022 James E. King III
 #
 # Distributed under the Boost Software License, Version 1.0.
@@ -65,7 +65,7 @@ jobs:
           - { name: GCC w/ sanitizers, sanitize: yes,
               compiler: gcc-13,    cxxstd: '11,14,17,20',    os: ubuntu-24.04 }
           - { name: Collect coverage, coverage: yes,
-              compiler: gcc-13,    cxxstd: '2b',             os: ubuntu-24.04, install: 'g++-13-multilib', address-model: '32,64' }
+              compiler: gcc-13,    cxxstd: '2b',             os: ubuntu-24.04, install: 'g++-13-multilib gcc-multilib', address-model: '32,64' }
 
           # Linux, clang
           - { compiler: clang-3.5, cxxstd: '11',             os: ubuntu-latest, container: 'ubuntu:16.04' }
@@ -132,7 +132,7 @@ jobs:
             fi
             if [ -n "${{matrix.container}}" ] && [ -f "/etc/debian_version" ]; then
                 apt-get -o Acquire::Retries=$NET_RETRY_COUNT update
-                apt-get -o Acquire::Retries=$NET_RETRY_COUNT install -y sudo software-properties-common curl
+                apt-get -o Acquire::Retries=$NET_RETRY_COUNT -y -q --no-install-suggests --no-install-recommends install sudo software-properties-common curl
                 # Need (newer) git, and the older Ubuntu container may require requesting the key manually using port 80
                 curl -sSL --retry ${NET_RETRY_COUNT:-5} 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xE1DD270288B4E6030699E45FA1715D88E1DF1F24' | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/git-core_ubuntu_ppa.gpg
                 for i in {1..${NET_RETRY_COUNT:-3}}; do sudo -E add-apt-repository -y ppa:git-core/ppa && break || sleep 10; done
@@ -145,7 +145,7 @@ jobs:
                 else
                   pkgs+=" python libpython-dev"
                 fi
-                apt-get -o Acquire::Retries=$NET_RETRY_COUNT install -y $pkgs
+                apt-get -o Acquire::Retries=$NET_RETRY_COUNT -y -q --no-install-suggests --no-install-recommends install $pkgs
             fi
             # For jobs not compatible with ccache, use "ccache: no" in the matrix
             if [[ "${{ matrix.ccache }}" == "no" ]]; then
@@ -207,7 +207,7 @@ jobs:
             else
                 pkgs="${{matrix.install}}"
             fi
-            sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT install -y $pkgs
+            sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT -y -q --no-install-suggests --no-install-recommends install $pkgs
 
       - name: Setup GCC Toolchain
         if: matrix.gcc_toolchain
@@ -215,7 +215,7 @@ jobs:
             GCC_TOOLCHAIN_ROOT="$HOME/gcc-toolchain"
             echo "GCC_TOOLCHAIN_ROOT=$GCC_TOOLCHAIN_ROOT" >> $GITHUB_ENV
             if ! command -v dpkg-architecture; then
-                apt-get install -y dpkg-dev
+                apt-get -o Acquire::Retries=$NET_RETRY_COUNT -y -q --no-install-suggests --no-install-recommends install dpkg-dev
             fi
             MULTIARCH_TRIPLET="$(dpkg-architecture -qDEB_HOST_MULTIARCH)"
             mkdir -p "$GCC_TOOLCHAIN_ROOT"

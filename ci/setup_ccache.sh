@@ -17,7 +17,7 @@ function print_on_gha {
 if ! command -v ccache &> /dev/null; then
   print_on_gha "::group::Installing CCache"
   if [ -f "/etc/debian_version" ]; then
-    sudo apt-get install ${NET_RETRY_COUNT:+ -o Acquire::Retries=$NET_RETRY_COUNT} -y ccache
+    sudo apt-get -o Acquire::Retries="${NET_RETRY_COUNT:-3}" -y -q --no-install-suggests --no-install-recommends install ccache
   elif command -v brew &> /dev/null; then
     brew update > /dev/null
     if ! brew install ccache 2>&1; then
@@ -42,6 +42,7 @@ echo "Using cache directory of size ${B2_CCACHE_SIZE:=500M} at '${B2_CCACHE_DIR:
 
 ccache --set-config=cache_dir="$B2_CCACHE_DIR"
 ccache --set-config=max_size="$B2_CCACHE_SIZE"
+
 ccache -z
 echo "CCache config: $(ccache -p)"
 print_on_gha "::endgroup::"
