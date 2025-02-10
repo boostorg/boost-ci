@@ -151,7 +151,10 @@ if [[ "$B2_TOOLSET" == clang* ]]; then
 fi
 
 # Set up user-config to actually use B2_COMPILER if set
+userConfigPath=$HOME/user-config.jam
 if [ -n "$B2_COMPILER" ]; then
+    echo '$B2_COMPILER set. Configuring user-config'
+
     # Get C++ compiler
     if [[ "$B2_COMPILER" == clang* ]] && [[ "$B2_COMPILER" != clang++* ]]; then
         CXX="${B2_COMPILER/clang/clang++}"
@@ -174,22 +177,33 @@ if [ -n "$B2_COMPILER" ]; then
         version=$($CXX --version)
     fi
     echo "Compiler version: $version"
-    set -x
 
     if [ "$B2_USE_CCACHE" == "1" ]; then
         CXX="ccache $CXX"
     fi
     export CXX
 
-    echo -n "using $B2_TOOLSET : : $CXX" > ~/user-config.jam
+    echo -n "using $B2_TOOLSET : : $CXX" > "$userConfigPath"
     # On MSYS B2 needs the .exe suffix to find the compiler
     if [ "$OSTYPE" == "msys" ]; then
-      echo -n ".exe" >> ~/user-config.jam
+      echo -n ".exe" >> "$userConfigPath"
     fi
     if [ -n "$GCC_TOOLCHAIN_ROOT" ]; then
-        echo -n " : <compileflags>\"--gcc-toolchain=$GCC_TOOLCHAIN_ROOT\" <linkflags>\"--gcc-toolchain=$GCC_TOOLCHAIN_ROOT\"" >> ~/user-config.jam
+        echo -n " : <compileflags>\"--gcc-toolchain=$GCC_TOOLCHAIN_ROOT\" <linkflags>\"--gcc-toolchain=$GCC_TOOLCHAIN_ROOT\"" >> "$userConfigPath"
     fi
-    echo " ;" >> ~/user-config.jam
+    echo " ;" >> "$userConfigPath"
+
+    echo "Final user-config ($userConfigPath):"
+    cat "$userConfigPath"
+
+    set -x
+elif [ -f "$userConfigPath" ]; then
+    { set +x; } &> /dev/null
+    echo "Existing user-config ($userConfigPath):"
+    cat "$userConfigPath"
+    set -x
+else
+    echo "$userConfigPath does not exist. Will use defaults"
 fi
 
 function show_bootstrap_log
