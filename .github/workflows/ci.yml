@@ -62,6 +62,7 @@ jobs:
           - { compiler: gcc-12,    cxxstd: '11,14,17,20',    os: ubuntu-22.04 }
           - { compiler: gcc-13,    cxxstd: '11,14,17,20,2b', os: ubuntu-24.04 }
           - { compiler: gcc-14,    cxxstd: '11,14,17,20,2b', os: ubuntu-24.04 }
+
           - { name: GCC w/ sanitizers, sanitize: yes,
               compiler: gcc-13,    cxxstd: '11,14,17,20',    os: ubuntu-24.04 }
           - { name: Collect coverage, coverage: yes,
@@ -418,8 +419,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: ubuntu-20.04, build_shared: ON,  build_type: Debug, generator: 'Unix Makefiles' }
-          - { os: ubuntu-20.04, build_shared: OFF, build_type: Debug, generator: 'Unix Makefiles' }
+          - { os: ubuntu-latest, build_shared: ON,  build_type: Debug, generator: 'Unix Makefiles' }
+          - { os: ubuntu-latest, build_shared: OFF, build_type: Debug, generator: 'Unix Makefiles' }
           - { os: windows-2019, build_shared: ON,  build_type: Debug, generator: 'Visual Studio 16 2019' }
           - { os: windows-2019, build_shared: OFF, build_type: Debug, generator: 'Visual Studio 16 2019' }
 
