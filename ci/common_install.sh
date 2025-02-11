@@ -184,8 +184,8 @@ if [ -n "$B2_COMPILER" ]; then
     export CXX
 
     echo -n "using $B2_TOOLSET : : $CXX" > "$userConfigPath"
-    # On MSYS B2 needs the .exe suffix to find the compiler
-    if [ "$OSTYPE" == "msys" ]; then
+    # On MSYS/Cygwin B2 needs the .exe suffix to find the compiler
+    if [[ $OSTYPE == "msys" || $OSTYPE == "cygwin" ]]; then
       echo -n ".exe" >> "$userConfigPath"
     fi
     if [ -n "$GCC_TOOLCHAIN_ROOT" ]; then
