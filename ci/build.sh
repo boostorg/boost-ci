@@ -32,6 +32,7 @@ if [[ -f "$b2_config" ]]; then
   trap prepend_config EXIT
 fi
 
+# shellcheck disable=SC2086
 ${B2_WRAPPER} ./b2 ${B2_TARGETS} "${B2_ARGS[@]}" "$@"
 
 if [ "$B2_USE_CCACHE" == "1" ] && command -v ccache &> /dev/null; then

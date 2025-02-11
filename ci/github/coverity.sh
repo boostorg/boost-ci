@@ -17,7 +17,7 @@ set -ex
 
 # install.sh will call common_install.sh in a previous CI step and write CXX
 # out to a file but it isn't available in subsequent CI steps, so pick it up
-CXX=$(cat ~/user-config.jam | cut -d' ' -f5)
+CXX=$(grep -F using ~/user-config.jam | head -1 | cut -d' ' -f5)
 
 if [[ "${CXX}" != "clang"* ]]; then
   echo "GHA CI Coverity jobs only support clang toolsets right now."
@@ -33,7 +33,7 @@ pushd /tmp
 rm -rf coverity_tool.tgz cov-analysis*
 curl -L -d "token=${COVERITY_SCAN_TOKEN}&project=${GITHUB_REPOSITORY}" -X POST https://scan.coverity.com/download/cxx/linux64 -o coverity_tool.tgz
 tar xzf coverity_tool.tgz
-COVBIN=$(echo $(pwd)/cov-analysis*/bin)
+COVBIN=$(echo "$(pwd)"/cov-analysis*/bin)
 export PATH=${COVBIN}:${PATH}
 popd
 

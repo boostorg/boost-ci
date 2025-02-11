@@ -83,11 +83,11 @@ else
 fi
 
 git submodule update -q --init tools/boostdep
-if [ -d libs/$SELF ]; then
-    rm -rf libs/$SELF
+if [ -d "libs/$SELF" ]; then
+    rm -rf "libs/$SELF"
 fi
-mkdir -p libs/$SELF
-cp -r $BOOST_CI_SRC_FOLDER/* libs/$SELF
+mkdir -p "libs/$SELF"
+cp -r "$BOOST_CI_SRC_FOLDER"/* "libs/$SELF"
 
 export BOOST_ROOT="$(pwd)"
 export PATH="$(pwd):$PATH"
@@ -97,7 +97,8 @@ if [[ -n "$GIT_FETCH_JOBS" ]]; then
     DEPINST_ARGS+=("--git_args" "--jobs $GIT_FETCH_JOBS")
 fi
 
-$pythonexecutable tools/boostdep/depinst/depinst.py --include benchmark --include example --include examples --include tools "${DEPINST_ARGS[@]}" $DEPINST $SELF
+# shellcheck disable=SC2086
+$pythonexecutable tools/boostdep/depinst/depinst.py --include benchmark --include example --include examples --include tools "${DEPINST_ARGS[@]}" $DEPINST "$SELF"
 print_on_gha "::endgroup::"
 
 print_on_gha "::group::Setup B2"
@@ -122,7 +123,7 @@ if [[ "$B2_TOOLSET" == clang* ]]; then
             ver="${B2_TOOLSET#*-}"
         elif [[ "$B2_COMPILER" == clang-* ]] || [[ "$B2_COMPILER" == clang++-* ]]; then
             # Don't change path if we do find the versioned compiler
-            if ! command -v $B2_COMPILER; then
+            if ! command -v "$B2_COMPILER"; then
                 ver="${B2_COMPILER#*-}"
             fi
         else
@@ -130,11 +131,11 @@ if [[ "$B2_TOOLSET" == clang* ]]; then
         fi
         if [[ -n "$ver" ]]; then
             export PATH="/usr/lib/llvm-${ver}/bin:$PATH"
-            ls -ls /usr/lib/llvm-${ver}/bin || true
+            ls -ls "/usr/lib/llvm-${ver}/bin" || true
             hash -r || true
         fi
     elif [ -n "${XCODE_APP}" ]; then
-        sudo xcode-select -switch ${XCODE_APP}
+        sudo xcode-select -switch "${XCODE_APP}"
     fi
     command -v clang || true
     command -v clang++ || true
@@ -159,13 +160,13 @@ if [ -n "$B2_COMPILER" ]; then
     fi
 
 
-    if ! command -v $CXX; then
+    if ! command -v "$CXX"; then
         echo "Error: Compiler $CXX was not installed properly"
         exit 1
     fi
 
     { set +x; } &> /dev/null
-    echo "Compiler location: $(command -v $CXX)"
+    echo "Compiler location: $(command -v "$CXX")"
     if [[ "$CXX" == *"clang++"* ]] && [ -z "$GCC_TOOLCHAIN_ROOT" ]; then
         # Show also information on selected GCC lib
        version=$($CXX -v 2>&1 || $CXX --version)
