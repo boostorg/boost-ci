@@ -10,10 +10,12 @@
 
 set -ex
 
-source $(dirname "${BASH_SOURCE[0]}")/../codecov.sh "$1"
+source "$(dirname "${BASH_SOURCE[0]}")"/../codecov.sh "$1"
 
 if [[ "$1" == "setup" ]]; then
-    echo "B2_VARIANT=$B2_VARIANT" >> "$GITHUB_ENV"
-    echo "B2_CXXFLAGS=$B2_CXXFLAGS" >> "$GITHUB_ENV"
-    echo "B2_LINKFLAGS=$B2_LINKFLAGS" >> "$GITHUB_ENV"
+    {
+        echo "B2_VARIANT=$B2_VARIANT"
+        echo "B2_CXXFLAGS=$B2_CXXFLAGS"
+        echo "B2_LINKFLAGS=$B2_LINKFLAGS"
+    } >> "$GITHUB_ENV"
 fi

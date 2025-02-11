@@ -31,7 +31,7 @@ function enforce_b2 {
         if [ -n "${!old_varname}" ]; then
             if [ "$TRAVIS" = "true" ]; then
                 local ci_script=".travis.yml"
-            elif [ ! -z "${GITHUB_WORKFLOW}" ]; then
+            elif [ -n "${GITHUB_WORKFLOW}" ]; then
                 local ci_script="${GITHUB_WORKFLOW} workflow"
             elif [ -n "$AGENT_OS" ]; then
                 local ci_script=".azure-pipelines.yml or azure-pipelines.yml"
@@ -40,8 +40,8 @@ function enforce_b2 {
             echo "WARNING: Your ${ci_script} file needs to be updated:"
             echo "         use ${new_varname} instead of ${old_varname}"
             echo
-            export ${new_varname}="${!old_varname}"
-            unset ${old_varname}
+            export "${new_varname}"="${!old_varname}"
+            unset "${old_varname}"
         fi
     fi
 }
@@ -92,6 +92,7 @@ if [ -n "$B2_CI_VERSION" ]; then # Set B2_CI_VERSION to opt in to new features
   )
   append_b2_args B2_DEFINES define
   append_b2_args B2_INCLUDE include
+  # shellcheck disable=SC2206
   B2_ARGS=(
       "${B2_ARGS[@]}"
       ${B2_LINKFLAGS:+"linkflags=$B2_LINKFLAGS"}
@@ -105,15 +106,16 @@ if [ -n "$B2_CI_VERSION" ]; then # Set B2_CI_VERSION to opt in to new features
       ${B2_ASAN:+address-sanitizer=norecover}
       ${B2_TSAN:+thread-sanitizer=norecover}
       ${B2_UBSAN:+undefined-sanitizer=norecover}
-      -j${B2_JOBS}
+      -j"${B2_JOBS}"
       ${B2_FLAGS}
   )
 else
   # Legacy codepath for compatibility for for old versions of the .github/*.yml files:
   # In (most) variables the prefix (such as "cxxflags=" for B2_CXXFLAGS) was included in the value, so it isn't added (again) here
+  # shellcheck disable=SC2206
   B2_ARGS=(
-      toolset=$B2_TOOLSET
-      cxxstd=$B2_CXXSTD
+      toolset="$B2_TOOLSET"
+      cxxstd="$B2_CXXSTD"
       $B2_CXXFLAGS
       $B2_DEFINES
       $B2_INCLUDE
@@ -123,6 +125,6 @@ else
       $B2_LINK
       $B2_THREADING
       $B2_VARIANT
-      -j${B2_JOBS}
+      -j"${B2_JOBS}"
   )
 fi

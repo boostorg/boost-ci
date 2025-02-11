@@ -17,8 +17,10 @@ BOOST_CI_TARGET_BRANCH="${GITHUB_BASE_REF:-$GITHUB_REF}"
 export BOOST_CI_TARGET_BRANCH="${BOOST_CI_TARGET_BRANCH##*/}" # Extract branch name
 export BOOST_CI_SRC_FOLDER="${GITHUB_WORKSPACE//\\//}"
 
-echo "BOOST_CI_TARGET_BRANCH=$BOOST_CI_TARGET_BRANCH" >> $GITHUB_ENV
-echo "BOOST_CI_SRC_FOLDER=$BOOST_CI_SRC_FOLDER" >> $GITHUB_ENV
+{
+  echo "BOOST_CI_TARGET_BRANCH=$BOOST_CI_TARGET_BRANCH"
+  echo "BOOST_CI_SRC_FOLDER=$BOOST_CI_SRC_FOLDER"
+} >> "$GITHUB_ENV"
 
 if [[ "$B2_SANITIZE" == "yes" ]]; then
   B2_ASAN=1
@@ -31,7 +33,7 @@ if [[ "$B2_SANITIZE" == "yes" ]]; then
   fi
 fi
 
-. $(dirname "${BASH_SOURCE[0]}")/../common_install.sh
+. "$(dirname "${BASH_SOURCE[0]}")"/../common_install.sh
 
 # Persist the environment for all future steps
 
@@ -62,4 +64,4 @@ fi
   [ -z "$B2_TARGETS" ] || echo "B2_TARGETS=$B2_TARGETS"
  # Filter out (only) the conditions from set -x
  # Write the stdout to the GitHub env file
-} 2> >(grep -vF ' -z ' >&2) >> $GITHUB_ENV
+} 2> >(grep -vF ' -z ' >&2) >> "$GITHUB_ENV"
