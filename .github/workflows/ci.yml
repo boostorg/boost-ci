@@ -204,9 +204,13 @@ jobs:
 
             sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT update
             if [[ -z "${{matrix.install}}" ]]; then
-                pkgs="${{matrix.compiler}}"
-                pkgs="${pkgs/gcc-/g++-}"
+                compiler="${{matrix.compiler}}"
+                pkgs="${compiler/gcc-/g++-}"
                 [[ -z "${{matrix.gcc_toolchain}}" ]] || pkgs+=" g++-${{matrix.gcc_toolchain}}"
+                if [[ "${{matrix.stdlib}}" == "libc++" && $compiler == "clang-"* ]]; then
+                    ver=${compiler#*-}
+                    pkgs+=" libc++-${ver}-dev libc++abi-${ver}-dev"
+                fi
             else
                 pkgs="${{matrix.install}}"
             fi
