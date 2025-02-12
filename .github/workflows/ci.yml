@@ -79,19 +79,16 @@ jobs:
           - { compiler: clang-6.0, cxxstd: '11,14,17',       os: ubuntu-latest, container: 'ubuntu:20.04' }
           - { compiler: clang-7,   cxxstd: '11,14,17',       os: ubuntu-latest, container: 'ubuntu:20.04' }
           # Note: clang-8 does not fully support C++20, so it is not compatible with some libstdc++ versions in this mode
-          - { compiler: clang-8,   cxxstd: '11,14,17,2a',    os: ubuntu-latest, container: 'ubuntu:20.04' , gcc_toolchain: 7 }
+          - { compiler: clang-8,   cxxstd: '11,14,17',       os: ubuntu-latest, container: 'ubuntu:20.04' }
           - { compiler: clang-9,   cxxstd: '11,14,17,2a',    os: ubuntu-latest, container: 'ubuntu:20.04' }
           - { compiler: clang-10,  cxxstd: '11,14,17,20',    os: ubuntu-latest, container: 'ubuntu:20.04' }
-          - { compiler: clang-11,  cxxstd: '11,14,17,20',    os: ubuntu-22.04 }
-          - { compiler: clang-12,  cxxstd: '11,14,17,20',    os: ubuntu-22.04 }
-          # Clang 13/14 isn't compatible with libstdc++-12
-          - { compiler: clang-13,  cxxstd: '11,14,17,20',    os: ubuntu-22.04, gcc_toolchain: 11 }
-          - { compiler: clang-14,  cxxstd: '11,14,17,20',    os: ubuntu-22.04, gcc_toolchain: 11 }
-          # Clang 15 isn't compatible with libstdc++-13
-          - { compiler: clang-15,  cxxstd: '11,14,17,20',    os: ubuntu-22.04, gcc_toolchain: 12 }
+          - { compiler: clang-11,  cxxstd: '11,14,17,20',    os: ubuntu-latest, container: 'ubuntu:20.04' }
+          - { compiler: clang-12,  cxxstd: '11,14,17,20',    os: ubuntu-latest, container: 'ubuntu:20.04' }
+          - { compiler: clang-13,  cxxstd: '11,14,17,20',    os: ubuntu-latest, container: 'ubuntu:22.04' }
+          - { compiler: clang-14,  cxxstd: '11,14,17,20',    os: ubuntu-latest, container: 'ubuntu:22.04' }
+          - { compiler: clang-15,  cxxstd: '11,14,17,20',    os: ubuntu-latest, container: 'ubuntu:22.04' }
           - { compiler: clang-16,  cxxstd: '11,14,17,20,2b', os: ubuntu-24.04 }
-          # https://github.com/llvm/llvm-project/issues/59827: disabled 2b/23 for clang-17 with libstdc++13 in 24.04
-          - { compiler: clang-17,  cxxstd: '11,14,17,20',    os: ubuntu-24.04 }
+          - { compiler: clang-17,  cxxstd: '11,14,17,20,23', os: ubuntu-latest, container: 'ubuntu:24.04' }
           - { compiler: clang-18,  cxxstd: '11,14,17,20,23,2c', os: ubuntu-24.04 }
 
           # libc++
@@ -100,6 +97,7 @@ jobs:
           - { name: Clang w/ sanitizers, sanitize: yes,
               compiler: clang-12,  cxxstd: '11,14,17,20',    os: ubuntu-latest, container: 'ubuntu:22.04', stdlib: libc++ }
 
+          # OSX, clang
           - { name: MacOS w/ clang and sanitizers,
               compiler: clang,     cxxstd: '11,14,17,20,2b', os: macos-13, sanitize: yes }
           - { compiler: clang,     cxxstd: '11,14,17,20,2b', os: macos-14 }
