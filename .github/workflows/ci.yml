@@ -96,9 +96,9 @@ jobs:
 
           # libc++
           - { compiler: clang-6.0, cxxstd: '11,14',          os: ubuntu-latest, container: 'ubuntu:18.04', stdlib: libc++, install: 'clang-6.0 libc++-dev libc++abi-dev' }
-          - { compiler: clang-7,   cxxstd: '11,14,17',       os: ubuntu-latest, container: 'ubuntu:20.04', stdlib: libc++, install: 'clang-7 libc++-7-dev libc++abi-7-dev' }
+          - { compiler: clang-7,   cxxstd: '11,14,17',       os: ubuntu-latest, container: 'ubuntu:20.04', stdlib: libc++ }
           - { name: Clang w/ sanitizers, sanitize: yes,
-              compiler: clang-12,  cxxstd: '11,14,17,20',    os: ubuntu-latest, container: 'ubuntu:20.04', stdlib: libc++, install: 'clang-12 libc++-12-dev libc++abi-12-dev' }
+              compiler: clang-12,  cxxstd: '11,14,17,20',    os: ubuntu-latest, container: 'ubuntu:22.04', stdlib: libc++ }
 
           - { name: MacOS w/ clang and sanitizers,
               compiler: clang,     cxxstd: '11,14,17,20,2b', os: macos-13, sanitize: yes }
@@ -204,9 +204,13 @@ jobs:
 
             sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT update
             if [[ -z "${{matrix.install}}" ]]; then
-                pkgs="${{matrix.compiler}}"
-                pkgs="${pkgs/gcc-/g++-}"
+                compiler="${{matrix.compiler}}"
+                pkgs="${compiler/gcc-/g++-}"
                 [[ -z "${{matrix.gcc_toolchain}}" ]] || pkgs+=" g++-${{matrix.gcc_toolchain}}"
+                if [[ "${{matrix.stdlib}}" == "libc++" && $compiler == "clang-"* ]]; then
+                    ver=${compiler#*-}
+                    pkgs+=" libc++-${ver}-dev libc++abi-${ver}-dev"
+                fi
             else
                 pkgs="${{matrix.install}}"
             fi
