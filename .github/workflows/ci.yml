@@ -95,7 +95,7 @@ jobs:
           - { compiler: clang-6.0, cxxstd: '11,14',          os: ubuntu-latest, container: 'ubuntu:18.04', stdlib: libc++, install: 'clang-6.0 libc++-dev libc++abi-dev' }
           - { compiler: clang-7,   cxxstd: '11,14,17',       os: ubuntu-latest, container: 'ubuntu:20.04', stdlib: libc++ }
           - { name: Clang w/ sanitizers, sanitize: yes,
-              compiler: clang-12,  cxxstd: '11,14,17,20',    os: ubuntu-latest, container: 'ubuntu:22.04', stdlib: libc++ }
+              compiler: clang-17,  cxxstd: '11,14,17,20',    os: ubuntu-latest, container: 'ubuntu:24.04', stdlib: libc++ }
 
           # OSX, clang
           - { name: MacOS w/ clang and sanitizers,
