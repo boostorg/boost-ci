@@ -276,7 +276,6 @@ jobs:
           name: ${{env.CODECOV_NAME}}
           token: ${{secrets.CODECOV_TOKEN}}
           verbose: true
-          working-directory: ${{github.workspace}}
 
       - name: Run coverity
         if: matrix.coverity && github.event_name == 'push' && (github.ref_name == 'develop' || github.ref_name == 'master')
@@ -353,7 +352,6 @@ jobs:
           name: ${{env.CODECOV_NAME}} (Windows)
           token: ${{secrets.CODECOV_TOKEN}}
           verbose: true
-          working-directory: ${{github.workspace}}
 
   MSYS2:
     defaults:

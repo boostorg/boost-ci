@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright 2021 Alexander Grund
+# Copyright 2021-2025 Alexander Grund
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at
 #      http://www.boost.org/LICENSE_1_0.txt)
@@ -12,6 +12,10 @@
 # 	- B2_SANITIZE
 
 set -ex
+
+# Required because inside a container the owner is root so git commands would fail.
+# Note that $GITHUB_WORKSPACE != ${{github.workspace}} (in the CI yml) inside containers.
+git config --global --add safe.directory "$GITHUB_WORKSPACE" || echo "Failed to set Git safe.directory" # Don't fail, just warn
 
 BOOST_CI_TARGET_BRANCH="${GITHUB_BASE_REF:-$GITHUB_REF}"
 export BOOST_CI_TARGET_BRANCH="${BOOST_CI_TARGET_BRANCH##*/}" # Extract branch name
