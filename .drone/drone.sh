@@ -55,6 +55,9 @@ echo "B2 config: $(env | grep B2_ || true)"
 echo "==================================> SCRIPT ($DRONE_JOB_BUILDTYPE)"
 
 case "$DRONE_JOB_BUILDTYPE" in
+    lcov-report)
+        $BOOST_CI_SRC_FOLDER/.drone/lcov-report.sh
+        ;;
     boost)
         $BOOST_CI_SRC_FOLDER/ci/build.sh
         ;;

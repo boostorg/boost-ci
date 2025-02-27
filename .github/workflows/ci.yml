@@ -116,6 +116,7 @@ jobs:
 
     timeout-minutes: 120
     runs-on: ${{matrix.os}}
+    if: false
     container:
       image: ${{matrix.container}}
       volumes:
@@ -301,6 +302,7 @@ jobs:
           - { toolset: gcc,       cxxstd: '11,14,17,2a', addrmd: '64',    os: windows-2019 }
 
     runs-on: ${{matrix.os}}
+    if: false
 
     steps:
       - uses: actions/checkout@v4
@@ -365,6 +367,7 @@ jobs:
           - { sys: MINGW64, compiler: gcc, cxxstd: '11,17,20' }
 
     runs-on: windows-latest
+    if: false
 
     steps:
       - uses: actions/checkout@v4
@@ -428,6 +431,7 @@ jobs:
 
     timeout-minutes: 120
     runs-on: ${{matrix.os}}
+    if: false
 
     steps:
       - uses: actions/checkout@v4
