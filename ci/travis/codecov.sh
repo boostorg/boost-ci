@@ -9,7 +9,7 @@
 # Bash script to run in travis to perform codecov.io integration
 #
 
-set -ex
+set -eux
 
 CI_DIR="$(dirname "${BASH_SOURCE[0]}")/.."
 

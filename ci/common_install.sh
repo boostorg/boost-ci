@@ -35,7 +35,7 @@ function print_on_gha {
 }
 
 # Setup ccache
-if [ "$B2_USE_CCACHE" == "1" ]; then
+if [ "${B2_USE_CCACHE:-}" == "1" ]; then
     if ! "$CI_DIR"/setup_ccache.sh 2>&1; then
         { set +x; } &> /dev/null
         echo
@@ -59,7 +59,7 @@ print_on_gha "::endgroup::"
 print_on_gha "::group::Checkout and setup Boost build tree"
 pythonexecutable=$(get_python_executable)
 
-if [ -z "$SELF" ]; then
+if [ -z "${SELF:-}" ]; then
     export SELF=$($pythonexecutable "$CI_DIR/get_libname.py")
 fi
 
@@ -92,6 +92,7 @@ cp -r "$BOOST_CI_SRC_FOLDER"/* "libs/$SELF"
 export BOOST_ROOT="$(pwd)"
 export PATH="$(pwd):$PATH"
 
+git --version
 DEPINST_ARGS=()
 if [[ -n "$GIT_FETCH_JOBS" ]]; then
     DEPINST_ARGS+=("--git_args" "--jobs $GIT_FETCH_JOBS")
@@ -103,7 +104,7 @@ print_on_gha "::endgroup::"
 
 print_on_gha "::group::Setup B2"
 # Deduce B2_TOOLSET if unset from B2_COMPILER
-if [ -z "$B2_TOOLSET" ] && [ -n "$B2_COMPILER" ]; then
+if [ -z "${B2_TOOLSET:-}" ] && [ -n "${B2_COMPILER:-}" ]; then
     if [[ "$B2_COMPILER" =~ clang ]]; then
         export B2_TOOLSET=clang
     elif [[ "$B2_COMPILER" =~ gcc|g\+\+ ]]; then
@@ -114,7 +115,7 @@ if [ -z "$B2_TOOLSET" ] && [ -n "$B2_COMPILER" ]; then
     fi
 fi
 
-if [[ "$B2_TOOLSET" == clang* ]]; then
+if [[ "${B2_TOOLSET:-}" == clang* ]]; then
     # If clang was installed from LLVM APT it will not have a /usr/bin/clang++
     # so we need to add the correctly versioned llvm bin path to the PATH
     if [ -f "/etc/debian_version" ]; then
@@ -134,7 +135,7 @@ if [[ "$B2_TOOLSET" == clang* ]]; then
             ls -ls "/usr/lib/llvm-${ver}/bin" || true
             hash -r || true
         fi
-    elif [ -n "${XCODE_APP}" ]; then
+    elif [ -n "${XCODE_APP:-}" ]; then
         sudo xcode-select -switch "${XCODE_APP}"
     fi
     command -v clang || true
@@ -152,7 +153,7 @@ fi
 
 # Set up user-config to actually use B2_COMPILER if set
 userConfigPath=$HOME/user-config.jam
-if [ -n "$B2_COMPILER" ]; then
+if [ -n "${B2_COMPILER:-}" ]; then
     echo '$B2_COMPILER set. Configuring user-config'
 
     # Get C++ compiler
@@ -212,13 +213,13 @@ function show_bootstrap_log
 }
 print_on_gha "::endgroup::"
 
-if [[ "$B2_DONT_BOOTSTRAP" != "1" ]]; then
+if [[ "${B2_DONT_BOOTSTRAP:0}" != "1" ]]; then
     print_on_gha "::group::Bootstrap B2"
     trap show_bootstrap_log ERR
     # Check if b2 already exists. This would (only) happen in a caching scenario. The purpose of caching is to save time by not recompiling everything.
     # The user may clear cache or delete b2 beforehand if they wish to rebuild.
     if [ ! -f b2 ] || ! b2_version_output=$(./b2 --version); then
-        ${B2_WRAPPER} ./bootstrap.sh
+        ${B2_WRAPPER:-} ./bootstrap.sh
     else
         # b2 expects versions to match
         engineversion=$(echo "$b2_version_output" | tr -s ' ' | cut -d' ' -f2 | cut -d'-' -f1)
@@ -229,10 +230,10 @@ if [[ "$B2_DONT_BOOTSTRAP" != "1" ]]; then
         if [[ "${enginemajorversion}" == "${coremajorversion}" ]] && [[ "${engineminorversion}" == "${coreminorversion}" ]]; then
             echo "b2 already exists and has the same version number"
         else
-            ${B2_WRAPPER} ./bootstrap.sh
+            ${B2_WRAPPER:-} ./bootstrap.sh
         fi
     fi
     trap - ERR
-    ${B2_WRAPPER} ./b2 -d0 headers
+    ${B2_WRAPPER:-} ./b2 -d0 headers
     print_on_gha "::endgroup::"
 fi

@@ -1,6 +1,7 @@
 #!/bin/bash
 #
 # Copyright 2017 - 2022 James E. King III
+# Copyright 2020 - 2025 Alexander Grund
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at
 #      http://www.boost.org/LICENSE_1_0.txt)
@@ -8,13 +9,13 @@
 # Bash script to perform a bjam build
 #
 
-set -ex
+set -eux
 
 : "${B2_TARGETS:="libs/$SELF/test"}"
 
 . "$(dirname "${BASH_SOURCE[0]}")"/enforce.sh
 
-export UBSAN_OPTIONS=print_stacktrace=1,report_error_type=1,${UBSAN_OPTIONS}
+export UBSAN_OPTIONS=print_stacktrace=1,report_error_type=1,${UBSAN_OPTIONS:-}
 
 cd "$BOOST_ROOT"
 
@@ -33,9 +34,9 @@ if [[ -f "$b2_config" ]]; then
 fi
 
 # shellcheck disable=SC2086
-${B2_WRAPPER} ./b2 ${B2_TARGETS} "${B2_ARGS[@]}" "$@"
+${B2_WRAPPER:-} ./b2 ${B2_TARGETS} "${B2_ARGS[@]}" "$@"
 
-if [ "$B2_USE_CCACHE" == "1" ] && command -v ccache &> /dev/null; then
+if [ "${B2_USE_CCACHE:-0}" == "1" ] && command -v ccache &> /dev/null; then
   echo "CCache summary"
   ccache -s
 fi
