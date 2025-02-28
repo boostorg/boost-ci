@@ -23,14 +23,14 @@
 # a pull request.
 #
 
-set -ex
+set -eux
 
 . "$(dirname "${BASH_SOURCE[0]}")"/enforce.sh
 
-coverage_action=$1
+coverage_action=${1:-'<unset>'}
 
 if [[ "$coverage_action" == "setup" ]]; then
-    if [ -z "$B2_CI_VERSION" ]; then
+    if [ -z "${B2_CI_VERSION:-}" ]; then
         # Old CI version needs to use the prefixes
         export B2_VARIANT="variant=debug"
         export B2_CXXFLAGS="${B2_CXXFLAGS:+$B2_CXXFLAGS }cxxflags=-fkeep-static-functions cxxflags=--coverage"
@@ -42,7 +42,7 @@ if [[ "$coverage_action" == "setup" ]]; then
     fi
 
 elif [[ "$coverage_action" == "collect" ]] || [[ "$coverage_action" == "upload" ]]; then
-    if [ -z "$GCOV" ]; then
+    if [ -z "${GCOV:-}" ]; then
         ver=7 # default
         if [ "${B2_TOOLSET%%-*}" == "gcc" ]; then
             if [[ "$B2_TOOLSET" =~ gcc- ]]; then
@@ -55,6 +55,7 @@ elif [[ "$coverage_action" == "collect" ]] || [[ "$coverage_action" == "upload" 
     fi
 
     : "${LCOV_VERSION:=v2.3}" # Set default lcov version to install
+    : "${LCOV_OPTIONS:=}"
 
     : "${LCOV_BRANCH_COVERAGE:=1}" # Set default for branch coverage
 
@@ -136,7 +137,7 @@ elif [[ "$coverage_action" == "collect" ]] || [[ "$coverage_action" == "upload" 
     # pull request)
     lcov ${LCOV_OPTIONS} --list coverage.info
 
-    if [[ "$coverage_action" == "upload" ]] && [[ "$BOOST_CI_CODECOV_IO_UPLOAD" != "skip" ]]; then
+    if [[ "$coverage_action" == "upload" ]] && [[ "${BOOST_CI_CODECOV_IO_UPLOAD:-}" != "skip" ]]; then
         #
         # upload to codecov.io
         #
