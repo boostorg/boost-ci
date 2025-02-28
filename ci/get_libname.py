@@ -17,4 +17,8 @@ with open(os.path.join(os.environ['BOOST_CI_SRC_FOLDER'], 'meta', 'libraries.jso
       else:
         sys.stderr.write('Unwrapping list with single entry in meta/libraries.json.\n')
       lib_data = lib_data[0]
-    print(lib_data['key'])
+# Special cases where the full library key and name/folder do not match
+name_fixups = { 'logic/tribool': 'logic' }
+
+key = lib_data['key']
+print(name_fixups.get(key, key))
