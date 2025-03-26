@@ -22,9 +22,12 @@ if [ -f "/etc/debian_version" ]; then
     sudo apt-get -o Acquire::Retries="${NET_RETRY_COUNT:-3}" -y -q --no-install-suggests --no-install-recommends install binfmt-support qemu-user-static
 fi
 
-# this prepares the VM for multiarch docker
-sudo docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-
 git clone --depth=1 https://github.com/jeking3/bdde.git
 
-export PATH="$(pwd)/bdde/bin/linux:$PATH"
+BDDE_SCRIPTS=$(pwd)/bdde/bin/linux
+
+# this prepares the VM for multiarch docker
+sudo ${BDDE_SCRIPTS}/bdde-multiarch
+sudo ${BDDE_SCRIPTS}/bdde-multiarch --version
+
+export PATH="${BDDE_SCRIPTS}:${PATH}"
