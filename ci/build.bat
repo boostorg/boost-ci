@@ -1,8 +1,12 @@
 @ECHO OFF
 setlocal enabledelayedexpansion
 
-IF NOT DEFINED B2_CI_VERSION (
-    echo You need to set B2_CI_VERSION in your CI script
+set res=F
+IF NOT DEFINED B2_CI_VERSION set res=T
+IF "%B2_CI_VERSION%"=="" set res=T
+IF "%B2_CI_VERSION%"=="0" set res=T
+if "%res%"=="T" (
+    echo You need to set B2_CI_VERSION to 1 in your CI script
     exit /B 1
 )
 

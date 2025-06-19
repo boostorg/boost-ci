@@ -10,6 +10,21 @@
 
 set -e
 
+# Validate B2_CI_VERSION
+# Any of 0, unset, or empty, will count as the old method. 1 is the new method.
+# All boostorg libraries follow this pattern.
+# Beyond the following validation check, "1" is not being strictly enforced. Perhaps in the future it will be.
+# Currently all boost-ci logic compares B2_CI_VERSION against [0, unset, empty].
+
+if [ -z "${B2_CI_VERSION:-}" ] || [ "${B2_CI_VERSION:-}" = "0" ] || [ "${B2_CI_VERSION:-}" = "1" ]; then
+    # Those are all accepted values of B2_CI_VERSION. Proceeding.
+    true
+else
+    echo "B2_CI_VERSION must be 0, 1, unset, or empty."
+    echo "Please correct this. Exiting."
+    exit 1
+fi
+
 function get_python_executable {
     if command -v python &> /dev/null; then
         echo "python"
@@ -67,7 +82,7 @@ fi
 
 # Build cmdline arguments for B2 in the array B2_ARGS to preserve quotes
 
-if [ -n "${B2_CI_VERSION:-}" ]; then # Set B2_CI_VERSION to opt in to new features
+if [ -n "${B2_CI_VERSION:-}" ] && [ ! "${B2_CI_VERSION:-}" = "0" ]; then # Set B2_CI_VERSION to opt in to new features
   function append_b2_args {
       # Generate multiple "option=value" entries from the value of an environment variable
       # Handles correct splitting and quoting

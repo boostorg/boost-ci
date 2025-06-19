@@ -67,7 +67,12 @@ c:\msys64\usr\bin\env MSYSTEM=%UPPERFLAVOR% c:\msys64\usr\bin\bash -l -c ^
 ::
 :: Fix older build script definitions
 ::
-if NOT DEFINED B2_CI_VERSION (
+
+set res=F
+IF NOT DEFINED B2_CI_VERSION set res=T
+IF "%B2_CI_VERSION%"=="" set res=T
+IF "%B2_CI_VERSION%"=="0" set res=T
+if "%res%"=="T" (
   IF DEFINED CXXSTD (SET B2_CXXSTD=%CXXSTD%)
   IF DEFINED CXXSTD (SET CXXSTD=)
   :: Those 2 were broken

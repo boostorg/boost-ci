@@ -1,7 +1,11 @@
 @ECHO ON
 
 REM Handle old appveyor configs
-IF NOT DEFINED B2_CI_VERSION (
+set res=F
+IF NOT DEFINED B2_CI_VERSION set res=T
+IF "%B2_CI_VERSION%"=="" set res=T
+IF "%B2_CI_VERSION%"=="0" set res=T
+if "%res%"=="T" (
 	IF DEFINED CXXFLAGS (
 	  SET B2_CXXFLAGS=%CXXFLAGS%
 	  SET CXXFLAGS=

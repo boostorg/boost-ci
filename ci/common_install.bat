@@ -65,8 +65,10 @@ b2 -d0 headers
 ENDLOCAL
 
 if DEFINED B2_CI_VERSION (
+    if NOT "%B2_CI_VERSION%"=="0" (
 	REM Go back to lib folder to allow ci\build.bat to work
 	cd libs\%SELF%
+    )
 )
 
 EXIT /B %ERRORLEVEL%
