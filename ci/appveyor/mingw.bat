@@ -8,6 +8,16 @@
 @ECHO ON
 SETLOCAL EnableDelayedExpansion
 
+if NOT DEFINED B2_CI_VERSION (
+    echo
+    echo =========================== WARNING ======================
+    echo B2_CI_VERSION is not set, assuming this is an old CI version and setting it to '0'.
+    echo Please update your CI configuration and set B2_CI_VERSION.
+    echo =========================== WARNING ======================
+    echo
+    set B2_CI_VERSION=0
+)
+
 :: Set up the toolset
 echo using gcc : %FLAVOR% : %ARCH%-w64-mingw32-g++.exe ; > %USERPROFILE%\user-config.jam
 SET UPPERFLAVOR=%FLAVOR%
@@ -67,7 +77,7 @@ c:\msys64\usr\bin\env MSYSTEM=%UPPERFLAVOR% c:\msys64\usr\bin\bash -l -c ^
 ::
 :: Fix older build script definitions
 ::
-if NOT DEFINED B2_CI_VERSION (
+if %B2_CI_VERSION% LSS 1 (
   IF DEFINED CXXSTD (SET B2_CXXSTD=%CXXSTD%)
   IF DEFINED CXXSTD (SET CXXSTD=)
   :: Those 2 were broken

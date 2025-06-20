@@ -6,6 +6,12 @@ REM - BOOST_CI_SRC_FOLDER
 @ECHO ON
 
 if NOT DEFINED B2_CI_VERSION (
+    echo
+    echo =========================== WARNING ======================
+    echo B2_CI_VERSION is not set, assuming this is an old CI version and setting it to '0'.
+    echo Please update your CI configuration and set B2_CI_VERSION.
+    echo =========================== WARNING ======================
+    echo
     set B2_CI_VERSION=0
 )
 
