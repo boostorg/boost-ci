@@ -30,7 +30,7 @@ set -eux
 coverage_action=${1:-'<unset>'}
 
 if [[ "$coverage_action" == "setup" ]]; then
-    if [ -z "${B2_CI_VERSION:-}" ]; then
+    if [[ ${B2_CI_VERSION:-0} -gt 0 ]]; then
         # Old CI version needs to use the prefixes
         export B2_VARIANT="variant=debug"
         export B2_CXXFLAGS="${B2_CXXFLAGS:+$B2_CXXFLAGS }cxxflags=-fkeep-static-functions cxxflags=--coverage"
