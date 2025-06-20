@@ -78,8 +78,10 @@ c:\msys64\usr\bin\env MSYSTEM=%UPPERFLAVOR% c:\msys64\usr\bin\bash -l -c ^
 :: Fix older build script definitions
 ::
 if %B2_CI_VERSION% LSS 1 (
-  IF DEFINED CXXSTD (SET B2_CXXSTD=%CXXSTD%)
-  IF DEFINED CXXSTD (SET CXXSTD=)
+  IF DEFINED CXXSTD (
+    SET B2_CXXSTD=%CXXSTD%
+    SET CXXSTD=
+  )
   :: Those 2 were broken
   IF DEFINED CXXFLAGS (EXIT /B 1)
   IF DEFINED DEFINES (EXIT /B 1)
