@@ -73,6 +73,10 @@ if [ -z "${B2_CI_VERSION:-}" ]; then
   echo "=========================== WARNING ======================"
   echo
   B2_CI_VERSION=0
+elif [[ ! $B2_CI_VERSION =~ ^[0-9]$ ]] || ((B2_CI_VERSION > 1)); then
+    echo "B2_CI_VERSION must be a numeric value <= 1, unset or empty. Found: '$B2_CI_VERSION'"
+    echo "Please correct this. Exiting."
+    exit 1
 fi
 
 # Build cmdline arguments for B2 in the array B2_ARGS to preserve quotes
