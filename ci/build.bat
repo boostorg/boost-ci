@@ -1,3 +1,10 @@
+REM Generic build script for Windows
+REM Should usually be run after common_install.bat (or the specific install.bat scripts)
+REM and requires the following env variables:
+REM - SELF
+REM - B2_CI_VERSION
+REM - B2_TOOLSET
+
 @ECHO OFF
 setlocal enabledelayedexpansion
 
