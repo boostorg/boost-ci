@@ -12,6 +12,10 @@ IF NOT DEFINED B2_CI_VERSION (
     echo You need to set B2_CI_VERSION in your CI script
     exit /B 1
 )
+IF %B2_CI_VERSION% LSS 1 (
+    echo "Only B2_CI_VERSION >= 1 is supported, got %B2_CI_VERSION%"
+    exit /B 1
+)
 
 IF DEFINED ADDPATH (SET "PATH=%ADDPATH%%PATH%")
 
