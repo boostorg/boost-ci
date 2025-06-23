@@ -5,6 +5,16 @@ REM - BOOST_CI_SRC_FOLDER
 
 @ECHO ON
 
+if NOT DEFINED B2_CI_VERSION (
+    echo
+    echo =========================== WARNING ======================
+    echo B2_CI_VERSION is not set, assuming this is an old CI version and setting it to '0'.
+    echo Please update your CI configuration and set B2_CI_VERSION.
+    echo =========================== WARNING ======================
+    echo
+    set B2_CI_VERSION=0
+)
+
 if not DEFINED SELF (
     for /F "delims=" %%i in ('python %~dp0\get_libname.py') do (
         set SELF=%%i
@@ -64,7 +74,7 @@ IF NOT %ERRORLEVEL% == 0 (
 b2 -d0 headers
 ENDLOCAL
 
-if DEFINED B2_CI_VERSION (
+if %B2_CI_VERSION% GTR 0 (
 	REM Go back to lib folder to allow ci\build.bat to work
 	cd libs\%SELF%
 )

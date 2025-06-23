@@ -65,9 +65,22 @@ if [ -z "${B2_JOBS:-}" ]; then
     export B2_JOBS=$((cpus + 1))
 fi
 
-# Build cmdline arguments for B2 in the array B2_ARGS to preserve quotes
+if [ -z "${B2_CI_VERSION:-}" ]; then
+  echo
+  echo "=========================== WARNING ======================"
+  echo "B2_CI_VERSION is not set, assuming this is an old CI version and setting it to '0'."
+  echo "Please update your CI configuration and set B2_CI_VERSION."
+  echo "=========================== WARNING ======================"
+  echo
+  B2_CI_VERSION=0
+elif [[ ! $B2_CI_VERSION =~ ^[0-9]$ ]] || ((B2_CI_VERSION > 1)); then
+    echo "B2_CI_VERSION must be a numeric value <= 1, unset or empty. Found: '$B2_CI_VERSION'"
+    echo "Please correct this. Exiting."
+    exit 1
+fi
 
-if [ -n "${B2_CI_VERSION:-}" ]; then # Set B2_CI_VERSION to opt in to new features
+# Build cmdline arguments for B2 in the array B2_ARGS to preserve quotes
+if ((B2_CI_VERSION > 0)); then
   function append_b2_args {
       # Generate multiple "option=value" entries from the value of an environment variable
       # Handles correct splitting and quoting
