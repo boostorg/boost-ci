@@ -1,0 +1,43 @@
+#
+# Copyright 2020-2021 Peter Dimov
+# Copyright 2021 Andrey Semashev
+# Copyright 2021-2024 Alexander Grund
+# Copyright 2022-2025 James E. King III
+#
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at http://boost.org/LICENSE_1_0.txt)
+#
+# This workflow uses the Boost.CI reusable workflow but it tests the reverse of all
+# the default options to make sure handling of the options is correct.  The major
+# job categories are all enabled so the full matrix of options is tested.
+# 
+---
+name: Test.Opposite.CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - develop
+      - bugfix/**
+      - feature/**
+      - fix/**
+      - pr/**
+    paths-ignore:
+      - LICENSE
+      - meta/**
+      - README.md
+
+jobs:
+  call-neutered-boost-ci:
+    name: Run Boost.CI
+    uses: boostorg/boost-ci/.github/workflows/reusable.yml@feature/reusable
+    with:  # negates the defaults for options that do not disable entire job categories
+      branch_coverage: false
+      enable_32bit: false
+      enable_multiarch: false
+      enable_sanitizers: false
+      exclude_compiler: 'gcc-10,clang-10,msvc-14.2'
+      exclude_cxxstd: '98,03,0x,0y,14,2a,20,2b,23,2c,26'  # only do C++11 and C++17 jobs
+    # no secrets defined which disables coverage and coverity scan
