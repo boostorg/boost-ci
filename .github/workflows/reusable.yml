@@ -1,0 +1,701 @@
+#
+# Copyright 2020-2021 Peter Dimov
+# Copyright 2021 Andrey Semashev
+# Copyright 2021-2024 Alexander Grund
+# Copyright 2022-2025 James E. King III
+#
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at http://boost.org/LICENSE_1_0.txt)
+#
+# This reusable workflow is called from ci.yml, if you want to use it you should do the
+# same.  See the README for more detauls.
+#
+---
+name: Boost.CI
+
+on:
+  workflow_call:
+    inputs:
+      branch_coverage:
+        description: "Collect branch coverage instead of line coverage. By default, branch coverage is collected."
+        required: false
+        type: boolean
+        default: true
+      enable_32bit:
+        description: "When enabled, 32-bit jobs will be added. By default, 32-bit jobs are enabled."
+        required: false
+        type: boolean
+        default: true
+      enable_cmake:
+        description: "When enabled, CMake jobs will be added. By default, CMake jobs are enabled."
+        required: false
+        type: boolean
+        default: true
+      enable_mingw:
+        description: "When enabled, MinGW jobs will be added using MSYS2.By default, MinGW jobs are enabled."
+        required: false
+        type: boolean
+        default: true
+      enable_multiarch:
+        description: "When enabled, a s390x big-endian job will be added. By default, multiarch jobs are enabled."
+        required: false
+        type: boolean
+        default: true
+      enable_posix:
+        description: "When enabled, POSIX jobs will be added (includes macos). By default, POSIX jobs are enabled."
+        required: false
+        type: boolean
+        default: true
+      enable_sanitizers:
+        description: "When enabled, sanitizer (ASAN, UBSAN) jobs will be added. By default, sanitizer jobs are enabled."
+        required: false
+        type: boolean
+        default: true
+      enable_windows:
+        description: "When enabled, Windows jobs will be added. By default, Windows jobs are enabled."
+        required: false
+        type: boolean
+        default: true
+      exclude_compiler:
+        description: "Comma-separated list of compilers to disable. By default, all compilers are enabled."
+        required: false
+        type: string
+        # gcc-4.7 gxx11 is not fully compliant with C++11, so we disable it by default
+        default: 'gcc-4.7'
+      exclude_cxxstd:
+        description: "Comma-separated list of C++ standards to disable. By default, only C++11 and later standards are enabled."
+        required: false
+        type: string
+        default: '98,03,0x'
+    secrets:
+      CODECOV_TOKEN:
+        description: "The token for covecov.io; if defined then coverage will be collected."
+        required: false
+      COVERITY_SCAN_NOTIFICATION_EMAIL:
+        description: "The email address for coverity scan notifications"
+        required: false
+      COVERITY_SCAN_TOKEN:
+        description: "The project token for coverity scan; if defined then coverity scan will run."
+        required: false
+
+concurrency:
+  group: ${{format('{0}:{1}:{2}', github.repository, github.ref, github.workflow_ref)}}
+  cancel-in-progress: true
+
+env:
+  GIT_FETCH_JOBS: 8
+  NET_RETRY_COUNT: 5
+  B2_CI_VERSION: 1
+  B2_VARIANT: debug,release
+  B2_LINK: shared,static
+  LCOV_BRANCH_COVERAGE: ${{ inputs.branch_coverage && '1' || '0' }}
+  CODECOV_NAME: Github Actions
+
+jobs:
+  generate-posix-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - id: set-matrix
+        run: |
+          import json, os
+
+          # The original matrix (copied from the posix job below)
+          original = [
+            # libstdc++ (by default: disabled, tests are pre-C++11 standard; gcc-4.7 is not fully compliant)
+              {"compiler": "gcc-4.4",   "cxxstd": "98,03",             "os": "ubuntu-latest", "container": "ubuntu:16.04"},
+              {"compiler": "gcc-4.6",   "cxxstd": "03,0x",             "os": "ubuntu-latest", "container": "ubuntu:16.04"},
+              {"compiler": "gcc-4.7",   "cxxstd": "03,11",             "os": "ubuntu-latest", "container": "ubuntu:16.04"},
+            # libstdc++
+              {"compiler": "gcc-4.7",   "cxxstd": "11",                "os": "ubuntu-latest", "container": "ubuntu:16.04"},
+              {"compiler": "gcc-4.8",   "cxxstd": "11",                "os": "ubuntu-latest", "container": "ubuntu:16.04"},
+              {"compiler": "gcc-4.9",   "cxxstd": "11",                "os": "ubuntu-latest", "container": "ubuntu:16.04"},
+              {"compiler": "gcc-5",     "cxxstd": "11,14,1z",          "os": "ubuntu-latest", "container": "ubuntu:18.04"},
+              {"compiler": "gcc-6",     "cxxstd": "11,14,17",          "os": "ubuntu-latest", "container": "ubuntu:18.04"},
+              {"compiler": "gcc-7",     "cxxstd": "11,14,17",          "os": "ubuntu-latest", "container": "ubuntu:20.04"},
+              {"compiler": "gcc-8",     "cxxstd": "11,14,17,2a",       "os": "ubuntu-latest", "container": "ubuntu:20.04"},
+              {"compiler": "gcc-9",     "cxxstd": "11,14,17,2a",       "os": "ubuntu-22.04"},
+              {"compiler": "gcc-10",    "cxxstd": "11,14,17,20",       "os": "ubuntu-22.04"},
+              {"compiler": "gcc-11",    "cxxstd": "11,14,17,20",       "os": "ubuntu-22.04"},
+              {"compiler": "gcc-12",    "cxxstd": "11,14,17,20",       "os": "ubuntu-22.04"},
+              {"compiler": "gcc-13",    "cxxstd": "11,14,17,20,2b",    "os": "ubuntu-24.04"},
+              {"name": "coverage-gcc-linux", "coverage": "yes", 
+               "compiler": "gcc-13",    "cxxstd": "2b",                "os": "ubuntu-24.04", "install": "g++-13-multilib gcc-multilib", "address-model": "32,64" },
+              {"name": "sanitize-gcc-linux", "sanitize": "yes",
+               "compiler": "gcc-13",    "cxxstd": "11,14,17,20",       "os": "ubuntu-24.04"},
+              {"compiler": "gcc-14",    "cxxstd": "11,14,17,20,2b",    "os": "ubuntu-24.04"},
+              {"compiler": "clang-3.5", "cxxstd": "11",                "os": "ubuntu-latest", "container": "ubuntu:16.04"},
+              {"compiler": "clang-3.6", "cxxstd": "11,14",             "os": "ubuntu-latest", "container": "ubuntu:16.04"},
+              {"compiler": "clang-3.7", "cxxstd": "11,14",             "os": "ubuntu-latest", "container": "ubuntu:16.04"},
+              {"compiler": "clang-3.8", "cxxstd": "11,14",             "os": "ubuntu-latest", "container": "ubuntu:16.04"},
+              {"compiler": "clang-3.9", "cxxstd": "11,14",             "os": "ubuntu-latest", "container": "ubuntu:18.04"},
+              {"compiler": "clang-4.0", "cxxstd": "11,14",             "os": "ubuntu-latest", "container": "ubuntu:18.04"},
+              {"compiler": "clang-5.0", "cxxstd": "11,14,1z",          "os": "ubuntu-latest", "container": "ubuntu:18.04"},
+              {"compiler": "clang-6.0", "cxxstd": "11,14,17",          "os": "ubuntu-latest", "container": "ubuntu:20.04"},
+              {"compiler": "clang-7",   "cxxstd": "11,14,17",          "os": "ubuntu-latest", "container": "ubuntu:20.04"},
+              {"compiler": "clang-8",   "cxxstd": "11,14,17",          "os": "ubuntu-latest", "container": "ubuntu:20.04"},
+              {"compiler": "clang-9",   "cxxstd": "11,14,17,2a",       "os": "ubuntu-latest", "container": "ubuntu:20.04"},
+              {"compiler": "clang-10",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:20.04"},
+              {"compiler": "clang-11",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:20.04"},
+              {"compiler": "clang-12",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:20.04"},
+              {"compiler": "clang-13",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:22.04"},
+              {"compiler": "clang-14",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:22.04"},
+              {"compiler": "clang-15",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:22.04"},
+              {"compiler": "clang-16",  "cxxstd": "11,14,17,20,2b",    "os": "ubuntu-24.04"},
+              {"compiler": "clang-17",  "cxxstd": "11,14,17,20,23",    "os": "ubuntu-latest", "container": "ubuntu:24.04"},
+              {"compiler": "clang-18",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-24.04"},
+            # libc++
+              {"stdlib": "libc++",
+               "compiler": "clang-6.0", "cxxstd": "11,14",             "os": "ubuntu-latest", "container": "ubuntu:18.04", "install": "clang-6.0 libc++-dev libc++abi-dev"},
+              {"stdlib": "libc++",
+               "compiler": "clang-7",   "cxxstd": "11,14,17",          "os": "ubuntu-latest", "container": "ubuntu:20.04"},
+              {"stdlib": "libc++",
+               "compiler": "clang-12",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:20.04", "sanitize": "yes", "name": "Clang w/ sanitizers"},
+            # MacOS
+              {"compiler": "clang",     "cxxstd": "11,14,17,20,2b",    "os": "macos-13"},
+              {"compiler": "clang",     "cxxstd": "11,14,17,20,2b",    "os": "macos-14", "sanitize": "yes", "name": "sanitize-clang-macos"},
+              {"compiler": "clang",     "cxxstd": "11,14,17,20,2b",    "os": "macos-15"},
+            # Coverity
+              {"name": "coverage-clang-linux", "coverity": "yes",
+               "compiler": "clang-12",  "cxxstd": "20",                "os": "ubuntu-22.04", "ccache": "no"},
+            # Big-Endian
+              {"name": "bigendian-s390x", "multiarch": "yes",
+               "compiler": "clang",     "cxxstd": "17",                "os": "ubuntu-22.04", "ccache": "no", "distro": "fedora", "edition": "34", "arch": "s390x"}
+          ]
+
+          exclude_cxxstd = os.environ.get('EXCLUDE_CXXSTD', '')
+          exclude_cxxstd = [x.strip() for x in exclude_cxxstd.split(',') if x.strip()]
+          def filter_cxxstd(entry):
+              cxxstds = [x.strip() for x in entry.get("cxxstd", "").split(',') if x.strip()]
+              filtered = [x for x in cxxstds if x not in exclude_cxxstd]
+              if not filtered and "cxxstd" in entry:
+                  return None
+              entry = entry.copy()
+              if "cxxstd" in entry:
+                  entry["cxxstd"] = ",".join(filtered)
+              return entry
+          filtered = [e for e in (filter_cxxstd(x) for x in original) if e]
+
+          exclude_compiler = os.environ.get('EXCLUDE_COMPILER', '')
+          exclude_compiler = [x.strip() for x in exclude_compiler.split(',') if x.strip()]
+          def filter_compiler(entry):
+              compiler = entry.get("compiler", "")
+              if compiler in exclude_compiler:
+                  return None
+              return entry
+          filtered = [e for e in (filter_compiler(x) for x in filtered) if e]
+          
+          enable_32bit = os.environ.get('ENABLE_32BIT', 'false').lower() == 'true'
+          if not enable_32bit:
+            for entry in filtered:
+              if "address-model" in entry:
+                addrmds = [x.strip() for x in entry["address-model"].split(',') if x.strip()]
+                addrmds = [x for x in addrmds if x != "32"]
+                entry["address-model"] = ",".join(addrmds)
+            # Only exclude entries where address-model exists and is now empty
+            filtered = [e for e in filtered if ("address-model" not in e) or e.get("address-model")]
+
+          enable_multiarch = os.environ.get('ENABLE_MULTIARCH', 'true').lower() == 'true'
+          if not enable_multiarch:
+              filtered = [e for e in filtered if not e.get("multiarch") == "yes"]
+
+          enable_sanitizers = os.environ.get('ENABLE_SANITIZERS', 'true').lower() == 'true'
+          if not enable_sanitizers:
+              filtered = [e for e in filtered if not e.get("sanitize") == "yes"]
+
+          codecov_token = os.environ.get('CODECOV_TOKEN', '')
+          if not codecov_token:
+              filtered = [e for e in filtered if not e.get("coverage") == "yes"]
+
+          coverity_scan_token = os.environ.get('COVERITY_SCAN_TOKEN', '')
+          if not coverity_scan_token:
+              filtered = [e for e in filtered if not e.get("coverity") == "yes"]
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+              print(f"matrix={json.dumps({'include': filtered})}", file=fh)
+        shell: python
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          COVERITY_SCAN_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
+          ENABLE_32BIT: ${{ inputs.enable_32bit }}
+          ENABLE_MULTIARCH: ${{ inputs.enable_multiarch }}
+          ENABLE_SANITIZERS: ${{ inputs.enable_sanitizers }}
+          EXCLUDE_COMPILER: ${{ inputs.exclude_compiler }}
+          EXCLUDE_CXXSTD: ${{ inputs.exclude_cxxstd }}
+
+  posix:
+    if: ${{ inputs.enable_posix }}
+    needs: generate-posix-matrix
+    runs-on: ${{matrix.os}}
+    timeout-minutes: 120
+
+    defaults:
+      run:
+        shell: bash
+
+    strategy:
+      fail-fast: false
+      matrix: ${{fromJson(needs.generate-posix-matrix.outputs.matrix)}}
+
+    container:
+      image: ${{matrix.container}}
+      volumes:
+        - /node20217:/node20217:rw,rshared
+        - ${{ startsWith(matrix.container, 'ubuntu:1') && '/node20217:/__e/node20:ro,rshared' || ' ' }}
+
+    env: {B2_USE_CCACHE: 1}
+
+    steps:
+      - name: Setup environment
+        run: |
+            if [ -f "/etc/debian_version" ]; then
+                echo "DEBIAN_FRONTEND=noninteractive" >> $GITHUB_ENV
+                export DEBIAN_FRONTEND=noninteractive
+            fi
+            if [ -n "${{matrix.container}}" ] && [ -f "/etc/debian_version" ]; then
+                apt-get -o Acquire::Retries=$NET_RETRY_COUNT update
+                apt-get -o Acquire::Retries=$NET_RETRY_COUNT -y -q --no-install-suggests --no-install-recommends install sudo software-properties-common curl
+                # Need (newer) git, and the older Ubuntu container may require requesting the key manually using port 80
+                curl -sSL --retry ${NET_RETRY_COUNT:-5} 'http://keyserver.ubuntu.com/pks/lookup?op=get&search=0xE1DD270288B4E6030699E45FA1715D88E1DF1F24' | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/git-core_ubuntu_ppa.gpg
+                for i in {1..${NET_RETRY_COUNT:-3}}; do sudo -E add-apt-repository -y ppa:git-core/ppa && break || sleep 10; done
+                apt-get -o Acquire::Retries=$NET_RETRY_COUNT update
+                osver=$(lsb_release -sr | cut -f1 -d.)
+                pkgs="g++ git xz-utils"
+                # Ubuntu 22+ has only Python 3 in the repos
+                if [ -n "$osver" ] && [ "$osver" -ge "20" ]; then
+                  pkgs+=" python-is-python3 libpython3-dev"
+                else
+                  pkgs+=" python libpython-dev"
+                fi
+                apt-get -o Acquire::Retries=$NET_RETRY_COUNT -y -q --no-install-suggests --no-install-recommends install $pkgs
+            fi
+            # For jobs not compatible with ccache, use "ccache: no" in the matrix
+            if [[ "${{ matrix.ccache }}" == "no" ]]; then
+                echo "B2_USE_CCACHE=0" >> $GITHUB_ENV
+            fi
+            if [[ "${{ matrix.sanitize }}" == "yes" ]]; then
+                echo "LSAN_OPTIONS=suppressions=${GITHUB_WORKSPACE}/test/suppressions.txt" >> $GITHUB_ENV
+            fi
+            git config --global pack.threads 0
+            if [[ "${{matrix.container}}" == "ubuntu:1"* ]]; then
+              # Node 20 doesn't work with Ubuntu 16/18  glibc: https://github.com/actions/checkout/issues/1590
+              curl -sL https://archives.boost.io/misc/node/node-v20.9.0-linux-x64-glibc-217.tar.xz | tar -xJ --strip-components 1 -C /node20217
+            fi
+
+      - uses: actions/checkout@v4
+        with:
+          # For coverage builds fetch the whole history, else only 1 commit using a 'fake ternary'
+          fetch-depth: ${{ matrix.coverage && '0' || '1' }}
+
+      - name: Cache ccache
+        uses: actions/cache@v4
+        if: env.B2_USE_CCACHE
+        with:
+          path: ~/.ccache
+          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.compiler}}-${{github.sha}}
+          restore-keys: ${{matrix.os}}-${{matrix.container}}-${{matrix.compiler}}-
+
+      - name: Fetch Boost.CI
+        uses: actions/checkout@v4
+        with:
+          repository: boostorg/boost-ci
+          ref: master
+          path: boost-ci-cloned
+
+      - name: Get CI scripts folder
+        run: |
+            # Copy ci folder if not testing Boost.CI
+            [[ "$GITHUB_REPOSITORY" =~ "boost-ci" ]] || cp -r boost-ci-cloned/ci .
+            rm -rf boost-ci-cloned
+
+      - name: Install packages
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+            SOURCE_KEYS=("${{join(matrix.source_keys, '" "')}}")
+            SOURCES=("${{join(matrix.sources, '" "')}}")
+            # Add this by default
+            SOURCE_KEYS+=('http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x1E9377A2BA9EF27F')
+            SOURCES+=(ppa:ubuntu-toolchain-r/test)
+
+            ci/add-apt-keys.sh "${SOURCE_KEYS[@]}"
+            # Initial update before adding sources required to get e.g. keys
+            sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT update
+            ci/add-apt-repositories.sh "${SOURCES[@]}"
+
+            sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT update
+            if [[ -z "${{matrix.install}}" ]]; then
+                compiler="${{matrix.compiler}}"
+                pkgs="${compiler/gcc-/g++-}"
+                [[ -z "${{matrix.gcc_toolchain}}" ]] || pkgs+=" g++-${{matrix.gcc_toolchain}}"
+                if [[ "${{matrix.stdlib}}" == "libc++" && $compiler == "clang-"* ]]; then
+                    ver=${compiler#*-}
+                    pkgs+=" libc++-${ver}-dev libc++abi-${ver}-dev"
+                fi
+            else
+                pkgs="${{matrix.install}}"
+            fi
+            sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT -y -q --no-install-suggests --no-install-recommends install $pkgs
+
+      - name: Setup GCC Toolchain
+        if: matrix.gcc_toolchain
+        run: |
+            GCC_TOOLCHAIN_ROOT="$HOME/gcc-toolchain"
+            echo "GCC_TOOLCHAIN_ROOT=$GCC_TOOLCHAIN_ROOT" >> $GITHUB_ENV
+            if ! command -v dpkg-architecture; then
+                apt-get -o Acquire::Retries=$NET_RETRY_COUNT -y -q --no-install-suggests --no-install-recommends install dpkg-dev
+            fi
+            MULTIARCH_TRIPLET="$(dpkg-architecture -qDEB_HOST_MULTIARCH)"
+            mkdir -p "$GCC_TOOLCHAIN_ROOT"
+            ln -s /usr/include "$GCC_TOOLCHAIN_ROOT/include"
+            ln -s /usr/bin "$GCC_TOOLCHAIN_ROOT/bin"
+            mkdir -p "$GCC_TOOLCHAIN_ROOT/lib/gcc/$MULTIARCH_TRIPLET"
+            ln -s "/usr/lib/gcc/$MULTIARCH_TRIPLET/${{matrix.gcc_toolchain}}" "$GCC_TOOLCHAIN_ROOT/lib/gcc/$MULTIARCH_TRIPLET/${{matrix.gcc_toolchain}}"
+
+      - name: Setup multiarch
+        if: matrix.multiarch
+        run: ci/github/setup_bdde.sh
+        env:
+          BDDE_DISTRO: ${{matrix.distro}}
+          BDDE_EDITION: ${{matrix.edition}}
+          BDDE_ARCH: ${{matrix.arch}}
+
+      - name: Setup Boost
+        run: source ci/github/install.sh
+        env:
+          B2_ADDRESS_MODEL: ${{matrix.address-model}}
+          B2_COMPILER: ${{matrix.compiler}}
+          B2_CXXSTD: ${{matrix.cxxstd}}
+          B2_SANITIZE: ${{matrix.sanitize}}
+          B2_STDLIB: ${{matrix.stdlib}}
+          # Optional. Variables set here (to non-empty) will override the top-level environment variables
+          B2_DEFINES: ${{matrix.defines}}
+          B2_VARIANT: ${{matrix.variant}}
+          B2_LINK: ${{matrix.link}}
+          # More entries can be added in the same way, see the B2_ARGS assignment in ci/enforce.sh for the possible keys.
+          # Set the (B2) target(s) to build, defaults to the test folder of the current library
+          # Can alternatively be done like this in the build step or in the build command of the build step, e.g. `run: B2_TARGETS=libs/$SELF/doc ci/build.sh`
+          # B2_TARGETS: libs/foo/test//bar
+
+      - name: Setup coverage collection
+        if: matrix.coverage
+        run: ci/github/codecov.sh "setup"
+
+      - name: Run tests
+        if: '!matrix.coverity'
+        run: ci/build.sh
+
+      - name: Collect coverage
+        if: matrix.coverage
+        run: ci/codecov.sh "collect"
+
+      - name: Upload coverage
+        if: matrix.coverage
+        uses: codecov/codecov-action@v5
+        with:
+          fail_ci_if_error: true
+          disable_search: true
+          files: coverage.info
+          name: ${{env.CODECOV_NAME}} (POSIX)
+          token: ${{secrets.CODECOV_TOKEN}}
+          verbose: true
+
+      - name: Run coverity
+        if: matrix.coverity && github.event_name == 'push' && (github.ref_name == 'develop' || github.ref_name == 'master')
+        run: ci/github/coverity.sh
+        env:
+          COVERITY_SCAN_NOTIFICATION_EMAIL: ${{ secrets.COVERITY_SCAN_NOTIFICATION_EMAIL }}
+          COVERITY_SCAN_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
+
+  generate-windows-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+
+    steps:
+      - id: set-matrix
+        run: |
+          import json, os
+
+          original = [
+            {"toolset": "msvc-14.0", "cxxstd": "14,latest",       "address-model": "32,64", "os": "windows-2019"},
+            {"toolset": "msvc-14.2", "cxxstd": "14,17,20",        "address-model": "32,64", "os": "windows-2019"},
+            {"toolset": "msvc-14.3", "cxxstd": "14,17,20,latest", "address-model": "32,64", "os": "windows-2022"},
+            {"name": "Collect coverage", "coverage": "yes",
+             "toolset": "msvc-14.3", "cxxstd": "latest",          "address-model": "64",    "os": "windows-2025"},
+            {"toolset": "clang-win", "cxxstd": "14,17,latest",    "address-model": "32,64", "os": "windows-2025"},
+            {"toolset": "gcc",       "cxxstd": "11,14,17,2a",     "address-model": "64",    "os": "windows-2022"}
+          ]
+
+          exclude_cxxstd = os.environ.get('EXCLUDE_CXXSTD', '')
+          exclude_cxxstd = [x.strip() for x in exclude_cxxstd.split(',') if x.strip()]
+          def filter_cxxstd(entry):
+              cxxstds = [x.strip() for x in entry.get("cxxstd", "").split(',') if x.strip()]
+              filtered = [x for x in cxxstds if x not in exclude_cxxstd]
+              if not filtered and "cxxstd" in entry:
+                  return None
+              entry = entry.copy()
+              if "cxxstd" in entry:
+                  entry["cxxstd"] = ",".join(filtered)
+              return entry
+          filtered = [e for e in (filter_cxxstd(x) for x in original) if e]
+
+          exclude_compiler = os.environ.get('EXCLUDE_COMPILER', '')
+          exclude_compiler = [x.strip() for x in exclude_compiler.split(',') if x.strip()]
+          def filter_compiler(entry):
+              toolset = entry.get("toolset", "")
+              if toolset in exclude_compiler:
+                  return None
+              return entry
+          filtered = [e for e in (filter_compiler(x) for x in filtered) if e]
+
+          enable_32bit = os.environ.get('ENABLE_32BIT', 'false').lower() == 'true'
+          if not enable_32bit:
+              for entry in filtered:
+                  if "address-model" in entry:
+                    addrmds = [x.strip() for x in entry["address-model"].split(',') if x.strip()]
+                    addrmds = [x for x in addrmds if x != "32"]
+                    entry["address-model"] = ",".join(addrmds)
+              filtered = [e for e in filtered if e.get("address-model")]
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+              print(f"matrix={json.dumps({'include': filtered})}", file=fh)
+        shell: python
+        env:
+          ENABLE_32BIT: ${{ inputs.enable_32bit }}
+          EXCLUDE_CXXSTD: ${{ inputs.exclude_cxxstd }}
+          EXCLUDE_COMPILER: ${{ inputs.exclude_compiler }}
+
+  windows:
+    if: ${{ inputs.enable_windows }}
+    needs: generate-windows-matrix
+    runs-on: ${{matrix.os}}
+    timeout-minutes: 120
+
+    defaults:
+      run:
+        shell: cmd
+
+    strategy:
+      fail-fast: false
+      matrix: ${{fromJson(needs.generate-windows-matrix.outputs.matrix)}}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch Boost.CI
+        uses: actions/checkout@v4
+        with:
+          repository: boostorg/boost-ci
+          ref: master
+          path: boost-ci-cloned
+      - name: Get CI scripts folder
+        run: |
+            REM Copy ci folder if not testing Boost.CI
+            if "%GITHUB_REPOSITORY%" == "%GITHUB_REPOSITORY:boost-ci=%" xcopy /s /e /q /i /y boost-ci-cloned\ci .\ci
+            rmdir /s /q boost-ci-cloned
+
+      - name: Setup Boost
+        run: ci\github\install.bat
+
+      - name: Run tests
+        if: '!matrix.coverage'
+        run: ci\build.bat
+        env:
+          B2_TOOLSET: ${{matrix.toolset}}
+          B2_CXXSTD: ${{matrix.cxxstd}}
+          B2_ADDRESS_MODEL: ${{matrix.address-model}}
+          B2_DEFINES: ${{matrix.defines}}
+          B2_VARIANT: ${{matrix.variant}}
+          B2_LINK: ${{matrix.link}}
+
+      - name: Collect coverage
+        shell: powershell
+        if: matrix.coverage
+        run: ci\opencppcoverage.ps1
+        env:
+          B2_TOOLSET: ${{matrix.toolset}}
+          B2_CXXSTD: ${{matrix.cxxstd}}
+          B2_ADDRESS_MODEL: ${{matrix.address-model}}
+          B2_DEFINES: ${{matrix.defines}}
+          B2_VARIANT: ${{matrix.variant}}
+          B2_LINK: ${{matrix.link}}
+
+      - name: Upload coverage
+        if: matrix.coverage
+        uses: codecov/codecov-action@v5
+        with:
+          disable_search: true
+          files: __out/cobertura.xml
+          name: ${{env.CODECOV_NAME}} (Windows)
+          token: ${{secrets.CODECOV_TOKEN}}
+          verbose: true
+
+  generate-mingw-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - id: set-matrix
+        run: |
+          import json, os
+
+          original = [
+              {"sys": "MINGW32", "compiler": "gcc", "cxxstd": "11,17,20"},
+              {"sys": "MINGW64", "compiler": "gcc", "cxxstd": "11,17,20"}
+          ]
+
+          exclude_cxxstd = os.environ.get('EXCLUDE_CXXSTD', '')
+          exclude_cxxstd = [x.strip() for x in exclude_cxxstd.split(',') if x.strip()]
+          def filter_cxxstd(entry):
+              cxxstds = [x.strip() for x in entry.get("cxxstd", "").split(',') if x.strip()]
+              filtered = [x for x in cxxstds if x not in exclude_cxxstd]
+              if not filtered and "cxxstd" in entry:
+                  return None
+              entry = entry.copy()
+              if "cxxstd" in entry:
+                  entry["cxxstd"] = ",".join(filtered)
+              return entry
+          filtered = [e for e in (filter_cxxstd(x) for x in original) if e]
+
+          enable_32bit = os.environ.get('ENABLE_32BIT', 'false').lower() == 'true'
+          if not enable_32bit:
+              filtered = [e for e in filtered if e.get("sys") != "MINGW32"]
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+              print(f"matrix={json.dumps({'include': filtered})}", file=fh)
+        shell: python
+        env:
+          ENABLE_32BIT: ${{ inputs.enable_32bit }}
+          EXCLUDE_CXXSTD: ${{ inputs.exclude_cxxstd }}
+
+  mingw:
+    if: ${{ inputs.enable_mingw }}
+    needs: generate-mingw-matrix
+    runs-on: windows-latest
+    timeout-minutes: 120
+
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    strategy:
+      fail-fast: false
+      matrix: ${{fromJson(needs.generate-mingw-matrix.outputs.matrix)}}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup MSYS2 environment
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{matrix.sys}}
+          update: true
+          install: git python
+          pacboy: gcc:p cmake:p ninja:p
+
+      - name: Fetch Boost.CI
+        uses: actions/checkout@v4
+        with:
+          repository: boostorg/boost-ci
+          ref: master
+          path: boost-ci-cloned
+      - name: Get CI scripts folder
+        run: |
+            # Copy ci folder if not testing Boost.CI
+            [[ "$GITHUB_REPOSITORY" =~ "boost-ci" ]] || cp -r boost-ci-cloned/ci .
+            rm -rf boost-ci-cloned
+
+      - name: Setup Boost
+        run: ci/github/install.sh
+        env:
+          B2_COMPILER: ${{matrix.compiler}}
+          B2_CXXSTD: ${{matrix.cxxstd}}
+          B2_SANITIZE: ${{matrix.sanitize}}
+          B2_STDLIB: ${{matrix.stdlib}}
+          B2_DEFINES: ${{matrix.defines}}
+          B2_VARIANT: ${{matrix.variant}}
+          B2_LINK: ${{matrix.link}}
+
+      - name: Run tests
+        run: ci/build.sh
+
+      # Run also the CMake tests to avoid having to setup another matrix for CMake on MSYS
+      - name: Run CMake tests
+        run: |
+            cd "$BOOST_ROOT"
+            mkdir __build_cmake_test__ && cd __build_cmake_test__
+            cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBOOST_INCLUDE_LIBRARIES=$SELF -DBUILD_SHARED_LIBS=ON -DBUILD_TESTING=ON -DBoost_VERBOSE=ON ..
+            cmake --build . --target tests --config Debug -j$B2_JOBS
+            ctest --output-on-failure --build-config Debug
+
+  cmake:
+    if: ${{ inputs.enable_cmake }}
+    runs-on: ${{matrix.os}}
+    timeout-minutes: 120
+
+    defaults:
+      run:
+        shell: bash
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, build_shared: ON,  build_type: Debug, generator: 'Unix Makefiles' }
+          - { os: ubuntu-latest, build_shared: OFF, build_type: Debug, generator: 'Unix Makefiles' }
+          - { os: windows-2025,  build_shared: ON,  build_type: Debug, generator: 'Visual Studio 17 2022' }
+          - { os: windows-2025,  build_shared: OFF, build_type: Debug, generator: 'Visual Studio 17 2022' }
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch Boost.CI
+        uses: actions/checkout@v4
+        with:
+          repository: boostorg/boost-ci
+          ref: master
+          path: boost-ci-cloned
+
+      - name: Get CI scripts folder
+        run: |
+            # Copy ci folder if not testing Boost.CI
+            [[ "$GITHUB_REPOSITORY" =~ "boost-ci" ]] || cp -r boost-ci-cloned/ci .
+            rm -rf boost-ci-cloned
+
+      - name: Setup Boost
+        run: source ci/github/install.sh
+        env: {B2_DONT_BOOTSTRAP: 1}
+
+      - name: Run CMake tests
+        run: |
+            cd "$BOOST_ROOT"
+            mkdir __build_cmake_test__ && cd __build_cmake_test__
+            cmake -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DBOOST_INCLUDE_LIBRARIES=$SELF -DBUILD_SHARED_LIBS=${{matrix.build_shared}} -DBUILD_TESTING=ON -DBoost_VERBOSE=ON ..
+            cmake --build . --target tests --config ${{matrix.build_type}} -j$B2_JOBS
+            ctest --output-on-failure --build-config ${{matrix.build_type}}
+
+      - name: Run CMake subdir tests
+        run: |
+            cmake_test_folder="$BOOST_ROOT/libs/$SELF/test/cmake_test" # New unified folder
+            [ -d "$cmake_test_folder" ] || cmake_test_folder="$BOOST_ROOT/libs/$SELF/test/cmake_subdir_test"
+            cd "$cmake_test_folder"
+            mkdir __build_cmake_subdir_test__ && cd __build_cmake_subdir_test__
+            cmake -G "${{matrix.generator}}" -DBOOST_CI_INSTALL_TEST=OFF -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DBUILD_SHARED_LIBS=${{matrix.build_shared}} ..
+            cmake --build . --config ${{matrix.build_type}} -j$B2_JOBS
+            ctest --output-on-failure --build-config ${{matrix.build_type}}
+
+      - name: Install Library
+        run: |
+            cd "$BOOST_ROOT"
+            mkdir __build_cmake_install_test__ && cd __build_cmake_install_test__
+            cmake -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DBOOST_INCLUDE_LIBRARIES=$SELF -DBUILD_SHARED_LIBS=${{matrix.build_shared}} -DCMAKE_INSTALL_PREFIX=$HOME/local -DBoost_VERBOSE=ON -DBoost_DEBUG=ON ..
+            cmake --build . --target install --config ${{matrix.build_type}} -j$B2_JOBS
+      - name: Run CMake install tests
+        run: |
+            cmake_test_folder="$BOOST_ROOT/libs/$SELF/test/cmake_test" # New unified folder
+            [ -d "$cmake_test_folder" ] || cmake_test_folder="$BOOST_ROOT/libs/$SELF/test/cmake_install_test"
+            cd "$cmake_test_folder"
+            mkdir __build_cmake_install_test__ && cd __build_cmake_install_test__
+            cmake -G "${{matrix.generator}}" -DBOOST_CI_INSTALL_TEST=ON -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DBUILD_SHARED_LIBS=${{matrix.build_shared}} -DCMAKE_PREFIX_PATH=$HOME/local ..
+            cmake --build . --config ${{matrix.build_type}} -j$B2_JOBS
+            ctest --output-on-failure --build-config ${{matrix.build_type}}
