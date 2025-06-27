@@ -61,7 +61,8 @@ jobs:
           - { compiler: gcc-11,    cxxstd: '11,14,17,20',    os: ubuntu-22.04 }
           - { compiler: gcc-12,    cxxstd: '11,14,17,20',    os: ubuntu-22.04 }
           - { compiler: gcc-13,    cxxstd: '11,14,17,20,2b', os: ubuntu-24.04 }
-          - { compiler: gcc-14,    cxxstd: '11,14,17,20,2b', os: ubuntu-24.04 }
+          - { compiler: gcc-14,    cxxstd: '11,14,17,20,23', os: ubuntu-24.04 }
+          - { compiler: gcc-15,    cxxstd: '11,14,17,20,23,2c', os: ubuntu-24.04 }
 
           - { name: GCC w/ sanitizers, sanitize: yes,
               compiler: gcc-13,    cxxstd: '11,14,17,20',    os: ubuntu-24.04 }
