@@ -16,16 +16,18 @@ Some integrations require additional setup actions to complete.
 
 Boost.CI also allows you to run a big-endian build on Github Actions.
 
-### Build Status
+## Build Status
 
-<!-- boost-ci/tools/makebadges.sh --repo boost-ci --appveyorbadge ynnd2l3gu4oiyium --appveyororg Flamefire --codecovbadge mncfhR5Zjv -p -d -n -->
-| Branch          | GHA CI | Appveyor | Azure Pipelines | Drone | codecov.io |
-| :-------------: | ------ | -------- | --------------- | ----- | ---------- |
-| [`master`](https://github.com/boostorg/boost-ci/tree/master) | [![Build Status](https://github.com/boostorg/boost-ci/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/boostorg/boost-ci/actions?query=branch:master) | [![Build status](https://ci.appveyor.com/api/projects/status/ynnd2l3gu4oiyium/branch/master?svg=true)](https://ci.appveyor.com/project/Flamefire/boost-ci/branch/master) | [![Build Status](https://dev.azure.com/boostorg/boost-ci/_apis/build/status/boostorg.boost-ci?branchName=master)](https://dev.azure.com/boostorg/boost-ci/_build/latest?definitionId=8&branchName=master) | [![Build Status](https://drone.cpp.al/api/badges/boostorg/boost-ci/status.svg?ref=refs/heads/master)](https://drone.cpp.al/boostorg/boost-ci) | [![codecov](https://codecov.io/gh/boostorg/boost-ci/branch/master/graph/badge.svg?token=mncfhR5Zjv)](https://codecov.io/gh/boostorg/boost-ci/tree/master) |
+<!-- boost-ci/tools/makebadges.sh --repo boost-ci --appveyorbadge ynnd2l3gu4oiyium --appveyororg Flamefire --codecovbadge mncfhR5Zjv --coverity boostorg-boost-ci -p -d -n -->
+| Branch          | GHA CI | Appveyor | Azure Pipelines | Drone | Coverity Scan | codecov.io |
+| :-------------: | ------ | -------- | --------------- | ----- | ------------- | ---------- |
+| [`master`](https://github.com/boostorg/boost-ci/tree/master) | [![Build Status](https://github.com/boostorg/boost-ci/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/boostorg/boost-ci/actions?query=branch:master) | [![Build status](https://ci.appveyor.com/api/projects/status/ynnd2l3gu4oiyium/branch/master?svg=true)](https://ci.appveyor.com/project/Flamefire/boost-ci/branch/master) | [![Build Status](https://dev.azure.com/boostorg/boost-ci/_apis/build/status/boostorg.boost-ci?branchName=master)](https://dev.azure.com/boostorg/boost-ci/_build/latest?definitionId=8&branchName=master) | [![Build Status](https://drone.cpp.al/api/badges/boostorg/boost-ci/status.svg?ref=refs/heads/master)](https://drone.cpp.al/boostorg/boost-ci) | [![Coverity Scan Build Status](https://scan.coverity.com/projects/boostorg-boost-ci/badge.svg)](https://scan.coverity.com/projects/boostorg-boost-ci) | [![codecov](https://codecov.io/gh/boostorg/boost-ci/branch/master/graph/badge.svg?token=mncfhR5Zjv)](https://codecov.io/gh/boostorg/boost-ci/tree/master) |
 
-## Summary (TL;DR)
+## Setup
 
-Here are all the steps you need to take as a Boost repository maintainer to enable all of these CI features in your repository.
+For GitHub Actions setup instructions, see [GitHub Actions Setup](SETUP-GHA.md).
+
+For other CI types, here are all the steps you need to take as a Boost repository maintainer to enable all of these CI features in your repository.
 (Note that you may skip some steps, e.g. if you don't need a specific CI service):
 
 1. Checkout `develop` and then make a new branch called `ci`.
