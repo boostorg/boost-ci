@@ -174,7 +174,8 @@ jobs:
           if not coverity_scan_token:
               filtered = [e for e in filtered if not e.get("coverity") == "yes"]
 
-          print(f"::set-output name=matrix::{json.dumps({'include': filtered})}")
+          with open(os.environ["GITHUB_OUTPUT"]) as f:
+              f.write(f"matrix={json.dumps({'include': filtered})}\n")
         shell: python
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
