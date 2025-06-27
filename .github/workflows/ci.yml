@@ -1,12 +1,12 @@
 # Copyright 2020-2021 Peter Dimov
 # Copyright 2021 Andrey Semashev
 # Copyright 2021-2024 Alexander Grund
-# Copyright 2022 James E. King III
+# Copyright 2022-2025 James E. King III
 #
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at http://boost.org/LICENSE_1_0.txt)
 ---
-name: CI
+name: Boost.CI
 
 on:
   pull_request:
@@ -22,6 +22,38 @@ on:
       - LICENSE
       - meta/**
       - README.md
+  workflow_call:
+    inputs:
+      branch_coverage:
+        description: "Collect branch coverage"
+        required: false
+        type: boolean
+        default: true
+      enable_multiarch:
+        description: "When enabled, a s390x big-endian build will occur"
+        required: false
+        type: boolean
+        default: true
+      exclude_cxxstd:
+        description: "Comma-separated list of C++ standards to disable"
+        required: false
+        type: string
+        default: ''
+      exclude_compiler:
+        description: "Comma-separated list of compilers to disable"
+        required: false
+        type: string
+        default: ''
+    secrets:
+      CODECOV_TOKEN:
+        description: "token for covecov.io; if defined then coverage will be collected"
+        required: false
+      COVERITY_SCAN_NOTIFICATION_EMAIL:
+        description: "email address for coverity scan notifications"
+        required: false
+      COVERITY_SCAN_TOKEN:
+        description: "token for coverity scan; if defined then coverity scan will run"
+        required: false
 
 concurrency:
   group: ${{format('{0}:{1}', github.repository, github.ref)}}
@@ -33,86 +65,133 @@ env:
   B2_CI_VERSION: 1
   B2_VARIANT: debug,release
   B2_LINK: shared,static
-  LCOV_BRANCH_COVERAGE: 0
+  LCOV_BRANCH_COVERAGE: ${{ inputs.branch_coverage && '1' || '0' }}
   CODECOV_NAME: Github Actions
 
 jobs:
+  generate-posix-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - id: set-matrix
+        run: |
+          import json, os
+
+          # The original matrix (copied from the posix job below)
+          original = [
+            # libstdc++
+              {"compiler": "gcc-4.4",   "cxxstd": "98,0x",             "os": "ubuntu-latest", "container": "ubuntu:16.04"},
+              {"compiler": "gcc-4.6",   "cxxstd": "0x",                "os": "ubuntu-latest", "container": "ubuntu:16.04"},
+              {"compiler": "gcc-4.7",   "cxxstd": "11",                "os": "ubuntu-latest", "container": "ubuntu:16.04"},
+              {"compiler": "gcc-4.8",   "cxxstd": "11",                "os": "ubuntu-latest", "container": "ubuntu:16.04"},
+              {"compiler": "gcc-4.9",   "cxxstd": "11",                "os": "ubuntu-latest", "container": "ubuntu:16.04"},
+              {"compiler": "gcc-5",     "cxxstd": "11,14,1z",          "os": "ubuntu-latest", "container": "ubuntu:18.04"},
+              {"compiler": "gcc-6",     "cxxstd": "11,14,17",          "os": "ubuntu-latest", "container": "ubuntu:18.04"},
+              {"compiler": "gcc-7",     "cxxstd": "11,14,17",          "os": "ubuntu-latest", "container": "ubuntu:20.04"},
+              {"compiler": "gcc-8",     "cxxstd": "11,14,17,2a",       "os": "ubuntu-latest", "container": "ubuntu:20.04"},
+              {"compiler": "gcc-9",     "cxxstd": "11,14,17,2a",       "os": "ubuntu-22.04"},
+              {"compiler": "gcc-10",    "cxxstd": "11,14,17,20",       "os": "ubuntu-22.04"},
+              {"compiler": "gcc-11",    "cxxstd": "11,14,17,20",       "os": "ubuntu-22.04"},
+              {"compiler": "gcc-12",    "cxxstd": "11,14,17,20",       "os": "ubuntu-22.04"},
+              {"compiler": "gcc-13",    "cxxstd": "11,14,17,20,2b",    "os": "ubuntu-24.04"},
+              {"name": "coverage-gcc-linux", "coverage": "yes", 
+               "compiler": "gcc-13",    "cxxstd": "2b",                "os": "ubuntu-24.04", "install": "g++-13-multilib gcc-multilib", "address-model": "32,64" },
+              {"name": "sanitize-gcc-linux", "sanitize": "yes",
+               "compiler": "gcc-13",    "cxxstd": "11,14,17,20",       "os": "ubuntu-24.04"},
+              {"compiler": "gcc-14",    "cxxstd": "11,14,17,20,2b",    "os": "ubuntu-24.04"},
+              {"compiler": "clang-3.5", "cxxstd": "11",                "os": "ubuntu-latest", "container": "ubuntu:16.04"},
+              {"compiler": "clang-3.6", "cxxstd": "11,14",             "os": "ubuntu-latest", "container": "ubuntu:16.04"},
+              {"compiler": "clang-3.7", "cxxstd": "11,14",             "os": "ubuntu-latest", "container": "ubuntu:16.04"},
+              {"compiler": "clang-3.8", "cxxstd": "11,14",             "os": "ubuntu-latest", "container": "ubuntu:16.04"},
+              {"compiler": "clang-3.9", "cxxstd": "11,14",             "os": "ubuntu-latest", "container": "ubuntu:18.04"},
+              {"compiler": "clang-4.0", "cxxstd": "11,14",             "os": "ubuntu-latest", "container": "ubuntu:18.04"},
+              {"compiler": "clang-5.0", "cxxstd": "11,14,1z",          "os": "ubuntu-latest", "container": "ubuntu:18.04"},
+              {"compiler": "clang-6.0", "cxxstd": "11,14,17",          "os": "ubuntu-latest", "container": "ubuntu:20.04"},
+              {"compiler": "clang-7",   "cxxstd": "11,14,17",          "os": "ubuntu-latest", "container": "ubuntu:20.04"},
+              {"compiler": "clang-8",   "cxxstd": "11,14,17",          "os": "ubuntu-latest", "container": "ubuntu:20.04"},
+              {"compiler": "clang-9",   "cxxstd": "11,14,17,2a",       "os": "ubuntu-latest", "container": "ubuntu:20.04"},
+              {"compiler": "clang-10",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:20.04"},
+              {"compiler": "clang-11",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:20.04"},
+              {"compiler": "clang-12",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:20.04"},
+              {"compiler": "clang-13",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:22.04"},
+              {"compiler": "clang-14",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:22.04"},
+              {"compiler": "clang-15",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:22.04"},
+              {"compiler": "clang-16",  "cxxstd": "11,14,17,20,2b",    "os": "ubuntu-24.04"},
+              {"compiler": "clang-17",  "cxxstd": "11,14,17,20,23",    "os": "ubuntu-latest", "container": "ubuntu:24.04"},
+              {"compiler": "clang-18",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-24.04"},
+            # libc++
+              {"stdlib": "libc++",
+               "compiler": "clang-6.0", "cxxstd": "11,14",             "os": "ubuntu-latest", "container": "ubuntu:18.04", "install": "clang-6.0 libc++-dev libc++abi-dev"},
+              {"stdlib": "libc++",
+               "compiler": "clang-7",   "cxxstd": "11,14,17",          "os": "ubuntu-latest", "container": "ubuntu:20.04"},
+              {"stdlib": "libc++",
+               "compiler": "clang-12",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:20.04", "sanitize": "yes", "name": "Clang w/ sanitizers"},
+            # MacOS
+              {"compiler": "clang",     "cxxstd": "11,14,17,20,2b",    "os": "macos-13"},
+              {"compiler": "clang",     "cxxstd": "11,14,17,20,2b",    "os": "macos-14", "sanitize": "yes", "name": "sanitize-clang-macos"},
+              {"compiler": "clang",     "cxxstd": "11,14,17,20,2b",    "os": "macos-15"},
+            # Coverity
+              {"name": "coverage-clang-linux", "coverity": "yes",
+               "compiler": "clang-12",  "cxxstd": "20",                "os": "ubuntu-22.04", "ccache": "no"},
+            # Big-Endian
+              {"name": "bigendian-s390x", "multiarch": "yes",
+               "compiler": "clang",     "cxxstd": "17",                "os": "ubuntu-22.04", "ccache": "no", "distro": "fedora", "edition": "34", "arch": "s390x"}
+          ]
+
+          exclude_cxxstd = os.environ.get('EXCLUDE_CXXSTD', '')
+          exclude_cxxstd = [x.strip() for x in exclude_cxxstd.split(',') if x.strip()]
+          def filter_cxxstd(entry):
+              cxxstds = [x.strip() for x in entry.get("cxxstd", "").split(',') if x.strip()]
+              filtered = [x for x in cxxstds if x not in exclude_cxxstd]
+              if not filtered and "cxxstd" in entry:
+                  return None
+              entry = entry.copy()
+              if "cxxstd" in entry:
+                  entry["cxxstd"] = ",".join(filtered)
+              return entry
+
+          filtered = [e for e in (filter_cxxstd(x) for x in original) if e]
+
+          exclude_compiler = os.environ.get('EXCLUDE_COMPILER', '')
+          exclude_compiler = [x.strip() for x in exclude_compiler.split(',') if x.strip()]
+          def filter_compiler(entry):
+              compiler = entry.get("compiler", "")
+              if compiler in exclude_compiler:
+                  return None
+              return entry
+          filtered = [e for e in (filter_compiler(x) for x in filtered) if e]
+          
+          enable_multiarch = os.environ.get('ENABLE_MULTIARCH', 'true').lower() == 'true'
+          if not enable_multiarch:
+              filtered = [e for e in filtered if not e.get("multiarch") == "yes"]
+
+          codecov_token = os.environ.get('CODECOV_TOKEN', '')
+          if not codecov_token:
+              filtered = [e for e in filtered if not e.get("coverage") == "yes"]
+
+          coverity_scan_token = os.environ.get('COVERITY_SCAN_TOKEN', '')
+          if not coverity_scan_token:
+              filtered = [e for e in filtered if not e.get("coverity") == "yes"]
+
+          print(f"::set-output name=matrix::{json.dumps({'include': filtered})}")
+        shell: python
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+          COVERITY_SCAN_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
+          ENABLE_MULTIARCH: ${{ inputs.enable_multiarch }}
+          EXCLUDE_COMPILER: ${{ inputs.exclude_compiler }}
+          EXCLUDE_CXXSTD: ${{ inputs.exclude_cxxstd }}
+
   posix:
+    needs: generate-posix-matrix
     defaults:
       run:
         shell: bash
 
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          # Linux, gcc
-          - { compiler: gcc-4.4,   cxxstd: '98,0x',          os: ubuntu-latest, container: 'ubuntu:16.04' }
-          - { compiler: gcc-4.6,   cxxstd: '0x',             os: ubuntu-latest, container: 'ubuntu:16.04' }
-          - { compiler: gcc-4.7,   cxxstd: '11',             os: ubuntu-latest, container: 'ubuntu:16.04' }
-          - { compiler: gcc-4.8,   cxxstd: '11',             os: ubuntu-latest, container: 'ubuntu:16.04' }
-          - { compiler: gcc-4.9,   cxxstd: '11',             os: ubuntu-latest, container: 'ubuntu:16.04' }
-          - { compiler: gcc-5,     cxxstd: '11,14,1z',       os: ubuntu-latest, container: 'ubuntu:18.04' }
-          - { compiler: gcc-6,     cxxstd: '11,14,17',       os: ubuntu-latest, container: 'ubuntu:18.04' }
-          - { compiler: gcc-7,     cxxstd: '11,14,17',       os: ubuntu-latest, container: 'ubuntu:20.04' }
-          - { compiler: gcc-8,     cxxstd: '11,14,17,2a',    os: ubuntu-latest, container: 'ubuntu:20.04' }
-          - { compiler: gcc-9,     cxxstd: '11,14,17,2a',    os: ubuntu-22.04 }
-          - { compiler: gcc-10,    cxxstd: '11,14,17,20',    os: ubuntu-22.04 }
-          - { compiler: gcc-11,    cxxstd: '11,14,17,20',    os: ubuntu-22.04 }
-          - { compiler: gcc-12,    cxxstd: '11,14,17,20',    os: ubuntu-22.04 }
-          - { compiler: gcc-13,    cxxstd: '11,14,17,20,2b', os: ubuntu-24.04 }
-          - { compiler: gcc-14,    cxxstd: '11,14,17,20,2b', os: ubuntu-24.04 }
-
-          - { name: GCC w/ sanitizers, sanitize: yes,
-              compiler: gcc-13,    cxxstd: '11,14,17,20',    os: ubuntu-24.04 }
-          - { name: Collect coverage, coverage: yes,
-              compiler: gcc-13,    cxxstd: '2b',             os: ubuntu-24.04, install: 'g++-13-multilib gcc-multilib', address-model: '32,64' }
-
-          # Linux, clang
-          - { compiler: clang-3.5, cxxstd: '11',             os: ubuntu-latest, container: 'ubuntu:16.04' }
-          - { compiler: clang-3.6, cxxstd: '11,14',          os: ubuntu-latest, container: 'ubuntu:16.04' }
-          - { compiler: clang-3.7, cxxstd: '11,14',          os: ubuntu-latest, container: 'ubuntu:16.04' }
-          - { compiler: clang-3.8, cxxstd: '11,14',          os: ubuntu-latest, container: 'ubuntu:16.04' }
-          - { compiler: clang-3.9, cxxstd: '11,14',          os: ubuntu-latest, container: 'ubuntu:18.04' }
-          - { compiler: clang-4.0, cxxstd: '11,14',          os: ubuntu-latest, container: 'ubuntu:18.04' }
-          - { compiler: clang-5.0, cxxstd: '11,14,1z',       os: ubuntu-latest, container: 'ubuntu:18.04' }
-          - { compiler: clang-6.0, cxxstd: '11,14,17',       os: ubuntu-latest, container: 'ubuntu:20.04' }
-          - { compiler: clang-7,   cxxstd: '11,14,17',       os: ubuntu-latest, container: 'ubuntu:20.04' }
-          # Note: clang-8 does not fully support C++20, so it is not compatible with some libstdc++ versions in this mode
-          - { compiler: clang-8,   cxxstd: '11,14,17',       os: ubuntu-latest, container: 'ubuntu:20.04' }
-          - { compiler: clang-9,   cxxstd: '11,14,17,2a',    os: ubuntu-latest, container: 'ubuntu:20.04' }
-          - { compiler: clang-10,  cxxstd: '11,14,17,20',    os: ubuntu-latest, container: 'ubuntu:20.04' }
-          - { compiler: clang-11,  cxxstd: '11,14,17,20',    os: ubuntu-latest, container: 'ubuntu:20.04' }
-          - { compiler: clang-12,  cxxstd: '11,14,17,20',    os: ubuntu-latest, container: 'ubuntu:20.04' }
-          - { compiler: clang-13,  cxxstd: '11,14,17,20',    os: ubuntu-latest, container: 'ubuntu:22.04' }
-          - { compiler: clang-14,  cxxstd: '11,14,17,20',    os: ubuntu-latest, container: 'ubuntu:22.04' }
-          - { compiler: clang-15,  cxxstd: '11,14,17,20',    os: ubuntu-latest, container: 'ubuntu:22.04' }
-          - { compiler: clang-16,  cxxstd: '11,14,17,20,2b', os: ubuntu-24.04 }
-          - { compiler: clang-17,  cxxstd: '11,14,17,20,23', os: ubuntu-latest, container: 'ubuntu:24.04' }
-          - { compiler: clang-18,  cxxstd: '11,14,17,20,23,2c', os: ubuntu-24.04 }
-
-          # libc++
-          - { compiler: clang-6.0, cxxstd: '11,14',          os: ubuntu-latest, container: 'ubuntu:18.04', stdlib: libc++, install: 'clang-6.0 libc++-dev libc++abi-dev' }
-          - { compiler: clang-7,   cxxstd: '11,14,17',       os: ubuntu-latest, container: 'ubuntu:20.04', stdlib: libc++ }
-          - { name: Clang w/ sanitizers, sanitize: yes,
-              compiler: clang-12,  cxxstd: '11,14,17,20',    os: ubuntu-latest, container: 'ubuntu:20.04', stdlib: libc++ }
-
-          # OSX, clang
-          - { name: MacOS w/ clang and sanitizers,
-              compiler: clang,     cxxstd: '11,14,17,20,2b', os: macos-13, sanitize: yes }
-          - { compiler: clang,     cxxstd: '11,14,17,20,2b', os: macos-14 }
-          - { compiler: clang,     cxxstd: '11,14,17,20,2b', os: macos-15 }
-
-          # Coverity Scan
-          # requires two github secrets in repo to activate; see ci/github/coverity.sh
-          # does not run on pull requests, only on pushes into develop and master
-          - { name: Coverity, coverity: yes,
-              compiler: clang-12,  cxxstd: '20',             os: ubuntu-22.04, ccache: no }
-
-          # multiarch (bigendian testing) - does not support coverage yet
-          - { name: Big-endian, multiarch: yes,
-              compiler: clang,     cxxstd: '17',             os: ubuntu-22.04, ccache: no, distro: fedora, edition: 34, arch: s390x }
-
+      matrix: ${{fromJson(needs.generate-posix-matrix.outputs.matrix)}}
 
     timeout-minutes: 120
     runs-on: ${{matrix.os}}
