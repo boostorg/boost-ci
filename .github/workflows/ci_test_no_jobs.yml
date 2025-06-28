@@ -7,14 +7,12 @@
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at http://boost.org/LICENSE_1_0.txt)
 #
-# This workflow uses the Boost.CI reusable workflow which builds a variety of
-# configurations of your project, runs tests, and generates code coverage reports.
-#
-# To use it, copy this file into your repository as `.github/workflows/ci.yml` and
-# customize it appropriately.
+# This workflow uses the Boost.CI reusable workflow but it tests what happens if
+# all of the default large section jobs are disabled.  This action should yield
+# all top level jobs as skipped.
 # 
 ---
-name: Boost.CI
+name: Test.NoJobs.CI
 
 on:
   pull_request:
@@ -32,10 +30,11 @@ on:
       - README.md
 
 jobs:
-  call-boost-ci:
+  call-neutered-boost-ci:
     name: Run Boost.CI
     uses: boostorg/boost-ci/.github/workflows/reusable.yml@feature/reusable
-    secrets:
-      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      COVERITY_SCAN_NOTIFICATION_EMAIL: ${{ secrets.COVERITY_SCAN_NOTIFICATION_EMAIL }}
-      COVERITY_SCAN_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
+    with:  # disable all four major job options
+      enable_posix: false
+      enable_windows: false
+      enable_mingw: false
+      enable_cmake: false
