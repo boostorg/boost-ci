@@ -261,6 +261,7 @@ jobs:
       - name: Run tests
         if: '!matrix.coverity'
         run: ci/build.sh
+        # inherits environment from Setup Boost step
 
       - name: Collect coverage
         if: matrix.coverage
@@ -319,6 +320,8 @@ jobs:
 
       - name: Setup Boost
         run: ci\github\install.bat
+        env:
+          B2_TOOLSET: ${{matrix.toolset}}
 
       - name: Run tests
         if: '!matrix.coverage'
@@ -392,6 +395,12 @@ jobs:
       - name: Setup Boost
         run: ci/github/install.sh
         env:
+          # call bootstrap.bat with the mingw argument
+          B2_TOOLSET: mingw
+
+      - name: Run tests
+        run: ci/build.sh
+        env:
           B2_COMPILER: ${{matrix.compiler}}
           B2_CXXSTD: ${{matrix.cxxstd}}
           B2_SANITIZE: ${{matrix.sanitize}}
@@ -399,9 +408,6 @@ jobs:
           B2_DEFINES: ${{matrix.defines}}
           B2_VARIANT: ${{matrix.variant}}
           B2_LINK: ${{matrix.link}}
-
-      - name: Run tests
-        run: ci/build.sh
 
       # Run also the CMake tests to avoid having to setup another matrix for CMake on MSYS
       - name: Run CMake tests
