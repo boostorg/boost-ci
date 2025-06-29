@@ -66,7 +66,22 @@ if NOT %cxx_exe% == "" (
 
 REM Bootstrap is not expecting B2_CXXFLAGS content so we zero it out for the bootstrap only
 SET B2_CXXFLAGS=
-cmd /c bootstrap
+
+REM Convert the boost jam toolset into bootstrap.bat toolset
+REM This is a temporary workaround, we should fix bootstrap.bat to accept the same toolset names as b2
+SET BOOTSTRAP_TOOLSET=%B2_TOOLSET%
+IF "%B2_TOOLSET%" == "msvc-7.1" SET BOOTSTRAP_TOOLSET=vc71
+IF "%B2_TOOLSET%" == "msvc-8.0" SET BOOTSTRAP_TOOLSET=vc8
+IF "%B2_TOOLSET%" == "msvc-9.0" SET BOOTSTRAP_TOOLSET=vc9
+IF "%B2_TOOLSET%" == "msvc-10.0" SET BOOTSTRAP_TOOLSET=vc10
+IF "%B2_TOOLSET%" == "msvc-11.0" SET BOOTSTRAP_TOOLSET=vc11
+IF "%B2_TOOLSET%" == "msvc-12.0" SET BOOTSTRAP_TOOLSET=vc12
+IF "%B2_TOOLSET%" == "msvc-14.0" SET BOOTSTRAP_TOOLSET=vc14
+IF "%B2_TOOLSET%" == "msvc-14.1" SET BOOTSTRAP_TOOLSET=vc141
+IF "%B2_TOOLSET%" == "msvc-14.2" SET BOOTSTRAP_TOOLSET=vc142
+IF "%B2_TOOLSET%" == "msvc-14.3" SET BOOTSTRAP_TOOLSET=vc143
+
+cmd /c bootstrap %BOOTSTRAP_TOOLSET%
 IF NOT %ERRORLEVEL% == 0 (
     type bootstrap.log
     EXIT /B 1
