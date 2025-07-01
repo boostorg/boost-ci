@@ -419,8 +419,6 @@ jobs:
           import json, os
 
           original = [
-            {"toolset": "msvc-14.0", "cxxstd": "14,latest",       "address-model": "32,64", "os": "windows-2019"},
-            {"toolset": "msvc-14.2", "cxxstd": "14,17,20",        "address-model": "32,64", "os": "windows-2019"},
             {"toolset": "msvc-14.3", "cxxstd": "14,17,20,latest", "address-model": "32,64", "os": "windows-2022"},
             {"name": "Collect coverage", "coverage": "yes",
              "toolset": "msvc-14.3", "cxxstd": "latest",          "address-model": "64",    "os": "windows-2025"},
