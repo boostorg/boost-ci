@@ -32,7 +32,7 @@ on:
 jobs:
   call-neutered-boost-ci:
     name: Run Boost.CI
-    uses: boostorg/boost-ci/.github/workflows/reusable.yml@feature/reusable
+    uses: boostorg/boost-ci/.github/workflows/reusable.yml@master
     with:  # disable all four major job options
       enable_posix: false
       enable_windows: false

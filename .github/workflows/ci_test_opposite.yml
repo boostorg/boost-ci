@@ -32,7 +32,7 @@ on:
 jobs:
   call-neutered-boost-ci:
     name: Run Boost.CI
-    uses: boostorg/boost-ci/.github/workflows/reusable.yml@feature/reusable
+    uses: boostorg/boost-ci/.github/workflows/reusable.yml@master
     with:  # negates the defaults for options that do not disable entire job categories
       branch_coverage: false
       enable_32bit: false
