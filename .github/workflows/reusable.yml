@@ -495,6 +495,8 @@ jobs:
 
       - name: Setup Boost
         run: ci\github\install.bat
+        env:
+          B2_TOOLSET: ${{matrix.toolset}}
 
       - name: Run tests
         if: '!matrix.coverage'
