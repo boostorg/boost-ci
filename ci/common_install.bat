@@ -1,9 +1,8 @@
+@ECHO OFF
 REM Generic install script for Windows
 REM The following CI specific environment variables need to be set:
 REM - BOOST_CI_TARGET_BRANCH
 REM - BOOST_CI_SRC_FOLDER
-
-@ECHO ON
 
 if NOT DEFINED B2_CI_VERSION (
     echo
@@ -14,6 +13,8 @@ if NOT DEFINED B2_CI_VERSION (
     echo
     set B2_CI_VERSION=0
 )
+
+@ECHO ON
 
 if not DEFINED SELF (
     for /F "delims=" %%i in ('python %~dp0\get_libname.py') do (
