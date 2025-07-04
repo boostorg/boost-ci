@@ -69,17 +69,38 @@ SET B2_CXXFLAGS=
 
 REM Convert the boost jam toolset into bootstrap.bat toolset
 REM This is a temporary workaround, we should fix bootstrap.bat to accept the same toolset names as b2
-SET BOOTSTRAP_TOOLSET=%B2_TOOLSET%
-IF "%B2_TOOLSET%" == "msvc-7.1" SET BOOTSTRAP_TOOLSET=vc71
-IF "%B2_TOOLSET%" == "msvc-8.0" SET BOOTSTRAP_TOOLSET=vc8
-IF "%B2_TOOLSET%" == "msvc-9.0" SET BOOTSTRAP_TOOLSET=vc9
-IF "%B2_TOOLSET%" == "msvc-10.0" SET BOOTSTRAP_TOOLSET=vc10
-IF "%B2_TOOLSET%" == "msvc-11.0" SET BOOTSTRAP_TOOLSET=vc11
-IF "%B2_TOOLSET%" == "msvc-12.0" SET BOOTSTRAP_TOOLSET=vc12
-IF "%B2_TOOLSET%" == "msvc-14.0" SET BOOTSTRAP_TOOLSET=vc14
-IF "%B2_TOOLSET%" == "msvc-14.1" SET BOOTSTRAP_TOOLSET=vc141
-IF "%B2_TOOLSET%" == "msvc-14.2" SET BOOTSTRAP_TOOLSET=vc142
-IF "%B2_TOOLSET%" == "msvc-14.3" SET BOOTSTRAP_TOOLSET=vc143
+
+REM If B2_TOOLSET has multiple values, we take the last one
+REM This is useful for the CI, where we may have multiple toolsets defined in the environment
+
+set "LAST_TOOLSET=%B2_TOOLSET%"
+:toolsetloop
+for /f "tokens=1* delims=," %%a in ("%LAST_TOOLSET%") do (
+    if "%%b"=="" (
+        set "LAST_TOOLSET=%%a"
+        goto toolsetdone
+    ) else (
+        set "LAST_TOOLSET=%%b"
+        goto toolsetloop
+    )
+)
+:toolsetdone
+
+REM boost build does not support compilers before MSVC2013 (vc12)
+REM so we just pick any one we can find, which means we're building
+REM boost.build with a compiler that may not be the same as the one
+REM we are using to build the library
+set BOOTSTRAP_TOOLSET=%LAST_TOOLSET%
+IF "%LAST_TOOLSET%" == "msvc-7.1" SET BOOTSTRAP_TOOLSET=
+IF "%LAST_TOOLSET%" == "msvc-8.0" SET BOOTSTRAP_TOOLSET=
+IF "%LAST_TOOLSET%" == "msvc-9.0" SET BOOTSTRAP_TOOLSET=
+IF "%LAST_TOOLSET%" == "msvc-10.0" SET BOOTSTRAP_TOOLSET=
+IF "%LAST_TOOLSET%" == "msvc-11.0" SET BOOTSTRAP_TOOLSET=
+IF "%LAST_TOOLSET%" == "msvc-12.0" SET BOOTSTRAP_TOOLSET=vc12
+IF "%LAST_TOOLSET%" == "msvc-14.0" SET BOOTSTRAP_TOOLSET=vc14
+IF "%LAST_TOOLSET%" == "msvc-14.1" SET BOOTSTRAP_TOOLSET=vc141
+IF "%LAST_TOOLSET%" == "msvc-14.2" SET BOOTSTRAP_TOOLSET=vc142
+IF "%LAST_TOOLSET%" == "msvc-14.3" SET BOOTSTRAP_TOOLSET=vc143
 
 cmd /c bootstrap %BOOTSTRAP_TOOLSET%
 IF NOT %ERRORLEVEL% == 0 (
