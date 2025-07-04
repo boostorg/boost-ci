@@ -119,13 +119,6 @@ environment:
       B2_CXXSTD: 11,14,1z
       B2_TOOLSET: gcc
 
-    - FLAVOR: mingw32
-      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-      B2_ADDRESS_MODEL: 32
-      ADDPATH: C:\mingw\bin;
-      B2_CXXSTD: 11,14,1z
-      B2_TOOLSET: gcc
-
     - FLAVOR: mingw64 (32-bit)
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       ADDPATH: C:\mingw-w64\i686-8.1.0-posix-dwarf-rt_v6-rev0\mingw32\bin;
