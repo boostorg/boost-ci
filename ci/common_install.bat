@@ -87,21 +87,20 @@ if NOT DEFINED BOOTSTRAP_TOOLSET (
     REM Remaining elements -> Go back
     if DEFINED REST goto toolsetloop
 
-    REM boost build does not support compilers before MSVC2013 (vc12)
-    REM so we just pick any one we can find, which means we're building
+    REM Boost build does not support all toolsets/compilers, e.g. MSVC before 2013 (vc12)
+    REM So we just set known values and default to "auto", which means we're building
     REM boost.build with a compiler that may not be the same as the one
     REM we are using to build the library
-    set BOOTSTRAP_TOOLSET=%LAST_TOOLSET%
-    IF "%LAST_TOOLSET%" == "msvc-7.1" SET BOOTSTRAP_TOOLSET=
-    IF "%LAST_TOOLSET%" == "msvc-8.0" SET BOOTSTRAP_TOOLSET=
-    IF "%LAST_TOOLSET%" == "msvc-9.0" SET BOOTSTRAP_TOOLSET=
-    IF "%LAST_TOOLSET%" == "msvc-10.0" SET BOOTSTRAP_TOOLSET=
-    IF "%LAST_TOOLSET%" == "msvc-11.0" SET BOOTSTRAP_TOOLSET=
+    set BOOTSTRAP_TOOLSET=auto
     IF "%LAST_TOOLSET%" == "msvc-12.0" SET BOOTSTRAP_TOOLSET=vc12
     IF "%LAST_TOOLSET%" == "msvc-14.0" SET BOOTSTRAP_TOOLSET=vc14
     IF "%LAST_TOOLSET%" == "msvc-14.1" SET BOOTSTRAP_TOOLSET=vc141
     IF "%LAST_TOOLSET%" == "msvc-14.2" SET BOOTSTRAP_TOOLSET=vc142
     IF "%LAST_TOOLSET%" == "msvc-14.3" SET BOOTSTRAP_TOOLSET=vc143
+    IF "%LAST_TOOLSET%" == "clang" SET BOOTSTRAP_TOOLSET=clang
+    IF "%LAST_TOOLSET%" == "clang-win" SET BOOTSTRAP_TOOLSET=clang-win
+    IF "%LAST_TOOLSET%" == "gcc" SET BOOTSTRAP_TOOLSET=gcc
+    IF "%LAST_TOOLSET%" == "mingw" SET BOOTSTRAP_TOOLSET=mingw
 )
 IF "%BOOTSTRAP_TOOLSET%" == "auto" SET BOOTSTRAP_TOOLSET=
 
