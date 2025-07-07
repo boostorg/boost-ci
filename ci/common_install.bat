@@ -78,18 +78,15 @@ if NOT DEFINED BOOTSTRAP_TOOLSET (
     REM If B2_TOOLSET has multiple values, we take the last one
     REM This is useful for the CI, where we may have multiple toolsets defined in the environment
 
-    set "LAST_TOOLSET=%B2_TOOLSET%"
+
+    set "REST=%B2_TOOLSET%"
     :toolsetloop
-    for /f "tokens=1* delims=," %%a in ("%LAST_TOOLSET%") do (
-        if "%%b"=="" (
-            set "LAST_TOOLSET=%%a"
-            goto toolsetdone
-        ) else (
-            set "LAST_TOOLSET=%%b"
-            goto toolsetloop
-        )
+    for /f "tokens=1* delims=," %%a in ("!REST!") do (
+        set "LAST_TOOLSET=%%a"
+        set REST=%%b
     )
-    :toolsetdone
+    REM Remaining elements -> Go back
+    if DEFINED REST goto toolsetloop
 
     REM boost build does not support compilers before MSVC2013 (vc12)
     REM so we just pick any one we can find, which means we're building
