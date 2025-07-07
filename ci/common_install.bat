@@ -74,6 +74,7 @@ SET B2_CXXFLAGS=
     REM Convert the boost jam toolset into bootstrap.bat toolset
     REM This is a temporary workaround, we should fix bootstrap.bat to accept the same toolset names as b2
 
+if NOT DEFINED BOOTSTRAP_TOOLSET (
     REM If B2_TOOLSET has multiple values, we take the last one
     REM This is useful for the CI, where we may have multiple toolsets defined in the environment
 
@@ -90,7 +91,6 @@ SET B2_CXXFLAGS=
     )
     :toolsetdone
 
-if NOT DEFINED BOOTSTRAP_TOOLSET (
     REM boost build does not support compilers before MSVC2013 (vc12)
     REM so we just pick any one we can find, which means we're building
     REM boost.build with a compiler that may not be the same as the one
