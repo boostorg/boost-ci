@@ -71,7 +71,6 @@ if NOT %cxx_exe% == "" (
 REM Bootstrap is not expecting B2_CXXFLAGS content so we zero it out for the bootstrap only
 SET B2_CXXFLAGS=
 
-if NOT DEFINED BOOTSTRAP_TOOLSET (
     REM Convert the boost jam toolset into bootstrap.bat toolset
     REM This is a temporary workaround, we should fix bootstrap.bat to accept the same toolset names as b2
 
@@ -91,6 +90,7 @@ if NOT DEFINED BOOTSTRAP_TOOLSET (
     )
     :toolsetdone
 
+if NOT DEFINED BOOTSTRAP_TOOLSET (
     REM boost build does not support compilers before MSVC2013 (vc12)
     REM so we just pick any one we can find, which means we're building
     REM boost.build with a compiler that may not be the same as the one
