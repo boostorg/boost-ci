@@ -36,6 +36,7 @@ jobs:
     with:  # negates the defaults for options that do not disable entire job categories
       branch_coverage: false
       enable_32bit: false
+      enable_cygwin: false
       enable_multiarch: false
       enable_sanitizers: false
       exclude_compiler: 'gcc-10,clang-10,msvc-14.2'

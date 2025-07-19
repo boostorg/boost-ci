@@ -31,6 +31,11 @@ on:
         required: false
         type: boolean
         default: true
+      enable_cygwin:
+        description: "When enabled, Cygwin jobs will be added. By default, Cygwin jobs are enabled."
+        required: false
+        type: boolean
+        default: true
       enable_mingw:
         description: "When enabled, MinGW jobs will be added using MSYS2.By default, MinGW jobs are enabled."
         required: false
@@ -426,8 +431,14 @@ jobs:
             {"name": "Collect coverage", "coverage": "yes",
              "toolset": "msvc-14.3", "cxxstd": "latest",          "address-model": "64",    "os": "windows-2025"},
             {"toolset": "clang-win", "cxxstd": "14,17,latest",    "address-model": "32,64", "os": "windows-2025"},
-            {"toolset": "gcc",       "cxxstd": "11,14,17,2a",     "address-model": "64",    "os": "windows-2022"}
+            {"toolset": "gcc",       "cxxstd": "11,14,17,2a",     "address-model": "64",    "os": "windows-2022"},
+            {"toolset": "gcc",       "cxxstd": "11,14,17,2a",     "address-model": "32",    "os": "windows-2025", "target-os": "cygwin"},
+            {"toolset": "gcc",       "cxxstd": "11,14,17,2a",     "address-model": "64",    "os": "windows-2025", "target-os": "cygwin"},
           ]
+
+          enable_cygwin = os.environ['ENABLE_CYGWIN'].lower() == 'true'
+          if not enable_cygwin:
+              filtered = [e for e in filtered if not e.get("target-os") == "cygwin"]
 
           exclude_cxxstd = os.environ['EXCLUDE_CXXSTD']
           exclude_cxxstd = [x.strip() for x in exclude_cxxstd.split(',') if x.strip()]
@@ -464,6 +475,7 @@ jobs:
         shell: python
         env:
           ENABLE_32BIT: ${{ inputs.enable_32bit }}
+          ENABLE_CYGWIN: ${{ inputs.enable_cygwin }}
           EXCLUDE_CXXSTD: ${{ inputs.exclude_cxxstd }}
           EXCLUDE_COMPILER: ${{ inputs.exclude_compiler }}
 
@@ -496,6 +508,13 @@ jobs:
             if "%GITHUB_REPOSITORY%" == "%GITHUB_REPOSITORY:boost-ci=%" xcopy /s /e /q /i /y boost-ci-cloned\ci .\ci
             rmdir /s /q boost-ci-cloned
 
+      - name: Setup cygwin
+        if: ${{ matrix.target-os == 'cygwin' }}
+        uses: cygwin/cygwin-install-action@v6
+        with:
+          packages: coreutils, gcc-g++, libstdc++6, make, moreutils, openssl, libbz2-devel, libgmp-devel, libicu-devel, libjpeg-devel, libmpfr-devel, libpng-devel, libssl-devel, libtiff-devel, libxslt-devel, libzstd-devel
+          platform: ${{ matrix.address-model == '64' && 'x86_64' || 'x86' }}
+
       - name: Setup Boost
         run: ci\github\install.bat
         env:
@@ -506,6 +525,7 @@ jobs:
         run: ci\build.bat
         env:
           B2_TOOLSET: ${{matrix.toolset}}
+          B2_TARGET_OS: ${{matrix.target-os}}
           B2_CXXSTD: ${{matrix.cxxstd}}
           B2_ADDRESS_MODEL: ${{matrix.address-model}}
           B2_DEFINES: ${{matrix.defines}}
@@ -654,6 +674,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
       - name: Fetch Boost.CI
         uses: actions/checkout@v4
         with:
