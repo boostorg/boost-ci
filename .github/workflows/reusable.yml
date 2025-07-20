@@ -436,10 +436,6 @@ jobs:
             {"toolset": "gcc",       "cxxstd": "11,14,17,2a",     "address-model": "64",    "os": "windows-2025", "target-os": "cygwin"},
           ]
 
-          enable_cygwin = os.environ['ENABLE_CYGWIN'].lower() == 'true'
-          if not enable_cygwin:
-              filtered = [e for e in filtered if not e.get("target-os") == "cygwin"]
-
           exclude_cxxstd = os.environ['EXCLUDE_CXXSTD']
           exclude_cxxstd = [x.strip() for x in exclude_cxxstd.split(',') if x.strip()]
           def filter_cxxstd(entry):
@@ -469,6 +465,10 @@ jobs:
                     addrmds = [x for x in addrmds if x != "32"]
                     entry["address-model"] = ",".join(addrmds)
               filtered = [e for e in filtered if e.get("address-model")]
+
+          enable_cygwin = os.environ['ENABLE_CYGWIN'].lower() == 'true'
+          if not enable_cygwin:
+              filtered = [e for e in filtered if not e.get("target-os") == "cygwin"]
 
           with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
               print(f"matrix={json.dumps({'include': filtered})}", file=fh)
