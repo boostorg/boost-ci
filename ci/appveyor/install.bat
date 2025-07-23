@@ -1,10 +1,7 @@
 @ECHO ON
 
 REM Handle old appveyor configs
-if NOT DEFINED B2_CI_VERSION (
-    set B2_CI_VERSION=0
-)
-if %B2_CI_VERSION% LSS 1 (
+if "%B2_CI_VERSION%" == "0" (
 	IF DEFINED CXXFLAGS (
 	  SET B2_CXXFLAGS=%CXXFLAGS%
 	  SET CXXFLAGS=

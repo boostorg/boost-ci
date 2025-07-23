@@ -36,7 +36,7 @@ For other CI types, here are all the steps you need to take as a Boost repositor
 1. Copy the `.travis.yml` file from this repository into the top level of your repository.
 1. Copy the `.github/workflows/ci.yml` file from this repository into the the same folder in your repository.
     * Note that those include CMake tests, so see the [CMake docs](CMake.md#ci-tests) for details and requirements.
-    * For some features to work the `B2_CI_VERSION` variable set in those configs is relevant as without that a legacy codepath will be used to ensure compatibility with old CI configs if that is unset or set to zero.
+    * Historical note: for some features to work the `B2_CI_VERSION` variable set in those configs is relevant -  to ensure compatibility with the old legacy CI configs set B2_CI_VERSION=0. Usually that is not recommended. The "default" now is equivalent to B2_CI_VERSION=1.
 1. Copy the `.drone.star` file and optionally the `.drone` directory from this repository to the top level of your repository.
 1. Copy the `.codecov.yml` file from this repository to the top level of your repository and edit if required. Note that **only** the file in the default branch (usually `master`/`main`, or `develop` for most Boost libraries) is considered!
 1. Copy the `LICENSE` file from this repository to the top level of your repository.  This adds the `BSL-1.0` designation to your repository on github.
