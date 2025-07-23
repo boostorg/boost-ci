@@ -2,17 +2,13 @@ REM Generic build script for Windows
 REM Should usually be run after common_install.bat (or the specific install.bat scripts)
 REM and requires the following env variables:
 REM - SELF
-REM - B2_CI_VERSION
+REM - B2_CI_VERSION (optional. Defaults to the newer method of v1 rather than v0)
 REM - B2_TOOLSET
 
 @ECHO OFF
 setlocal enabledelayedexpansion
 
-IF NOT DEFINED B2_CI_VERSION (
-    echo You need to set B2_CI_VERSION in your CI script
-    exit /B 1
-)
-IF %B2_CI_VERSION% LSS 1 (
+IF "%B2_CI_VERSION%" == "0" (
     echo "Only B2_CI_VERSION >= 1 is supported, got %B2_CI_VERSION%"
     exit /B 1
 )

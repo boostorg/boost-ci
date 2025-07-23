@@ -40,7 +40,6 @@ branches:
 
 env:
   global:
-    - B2_CI_VERSION=1
     - CODECOV_NAME=Travis
   # see: http://www.boost.org/build/doc/html/bbv2/overview/invocation.html#bbv2.overview.invocation.properties
   # - B2_ADDRESS_MODEL=64,32

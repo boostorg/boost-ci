@@ -38,6 +38,7 @@ jobs:
         include:
           - name: Old var usage
             env:
+              B2_CI_VERSION: 0
               B2_TOOLSET: gcc-13
               B2_ADDRESS_MODEL: address-model=64
               B2_LINK: link=shared,static
@@ -51,6 +52,7 @@ jobs:
             install: g++-13
           - name: Old var usage, multiple values per key
             env:
+              B2_CI_VERSION: 0
               B2_TOOLSET: gcc-13
               B2_ADDRESS_MODEL: address-model=64
               B2_LINK: link=shared,static
@@ -65,7 +67,6 @@ jobs:
 
           - name: New var usage, multiple values per key
             env:
-              B2_CI_VERSION: 1
               B2_TOOLSET: gcc-13
               B2_ADDRESS_MODEL: 64
               B2_LINK: shared,static
@@ -80,6 +81,7 @@ jobs:
           - name: Travis-like coverage collection
             coverage: yes
             env:
+              B2_CI_VERSION: 0
               B2_TOOLSET: gcc-13
               B2_CXXSTD: 03,11
               B2_DEFINES: define=BOOST_NO_STRESS_TEST=1
@@ -88,6 +90,7 @@ jobs:
           - name: Travis-like coverage collection with set CXX/LINK-flags
             coverage: yes
             env:
+              B2_CI_VERSION: 0
               B2_TOOLSET: gcc-13
               B2_CXXSTD: 03,11
               B2_CXXFLAGS: cxxflags=-g0
@@ -100,6 +103,7 @@ jobs:
             install: 'libcapture-tiny-perl libdatetime-perl'
             address-model: '32,64'
             env:
+              B2_CI_VERSION: 0
               B2_TOOLSET: gcc-12
               B2_CXXSTD: 14,17
               B2_DEFINES: define=BOOST_NO_STRESS_TEST=1

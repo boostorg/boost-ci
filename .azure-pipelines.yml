@@ -35,7 +35,6 @@ pr: [develop, master, main]
 variables:
   GIT_FETCH_JOBS: 4
   NET_RETRY_COUNT: 5
-  B2_CI_VERSION: 1
   B2_VARIANT: release,debug
   B2_LINK: shared,static
 
