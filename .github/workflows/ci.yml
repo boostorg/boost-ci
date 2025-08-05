@@ -36,6 +36,10 @@ jobs:
   call-boost-ci:
     name: Run Boost.CI
     uses: boostorg/boost-ci/.github/workflows/reusable.yml@master
+    # Example of customization:
+    # with:
+    #   enable_reflection: true
+    #   enable_windows: false
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       COVERITY_SCAN_NOTIFICATION_EMAIL: ${{ secrets.COVERITY_SCAN_NOTIFICATION_EMAIL }}
