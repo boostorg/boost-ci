@@ -51,6 +51,11 @@ on:
         required: false
         type: boolean
         default: true
+      enable_pr_coverage:
+        description: "When enabled, coverage will be collected even without a $CODECOV_TOKEN, e.g for PRs where it  usually is not available. Enabled by default."
+        required: false
+        type: boolean
+        default: true
       enable_sanitizers:
         description: "When enabled, sanitizer (ASAN, UBSAN) jobs will be added. By default, sanitizer jobs are enabled."
         required: false
@@ -221,7 +226,7 @@ jobs:
               filtered = [e for e in filtered if not e.get("sanitize") == "yes"]
 
           codecov_token = os.environ.get('CODECOV_TOKEN', '')
-          if not codecov_token:
+          if not codecov_token and '${{inputs.enable_pr_coverage}}' != 'true':
               filtered = [e for e in filtered if not e.get("coverage") == "yes"]
 
           coverity_scan_token = os.environ.get('COVERITY_SCAN_TOKEN', '')
