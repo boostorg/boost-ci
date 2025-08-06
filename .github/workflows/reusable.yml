@@ -61,6 +61,11 @@ on:
         required: false
         type: boolean
         default: true
+      enable_reflection:
+        description: "When enabled, clang-p2996 jobs will be added. By default, p2996 reflection jobs are not enabled."
+        required: false
+        type: boolean
+        default: false
       exclude_compiler:
         description: "Comma-separated list of compilers to disable. By default, all compilers are enabled."
         required: false
@@ -170,7 +175,10 @@ jobs:
                "compiler": "clang-12",  "cxxstd": "20",                "os": "ubuntu-22.04", "ccache": "no"},
             # Big-Endian
               {"name": "bigendian-s390x", "multiarch": "yes",
-               "compiler": "clang",     "cxxstd": "17",                "os": "ubuntu-22.04", "ccache": "no", "distro": "fedora", "edition": "34", "arch": "s390x"}
+               "compiler": "clang",     "cxxstd": "17",                "os": "ubuntu-22.04", "ccache": "no", "distro": "fedora", "edition": "34", "arch": "s390x"},
+            # Reflection
+              {"name": "Clang-preview w/ reflection",
+               "compiler": "clang",  "cxxstd": "20,23,2c",       "os": "ubuntu-latest", "container": "cppalliance/2404-p2996:1", "reflection": "yes"},
           ]
 
           exclude_cxxstd = os.environ['EXCLUDE_CXXSTD']
@@ -220,6 +228,10 @@ jobs:
           if not coverity_scan_token:
               filtered = [e for e in filtered if not e.get("coverity") == "yes"]
 
+          enable_reflection = os.environ['ENABLE_REFLECTION'].lower() == 'true'
+          if not enable_reflection:
+              filtered = [e for e in filtered if not e.get("reflection") == "yes"]
+
           with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
               print(f"matrix={json.dumps({'include': filtered})}", file=fh)
         shell: python
@@ -229,6 +241,7 @@ jobs:
           ENABLE_32BIT: ${{ inputs.enable_32bit }}
           ENABLE_MULTIARCH: ${{ inputs.enable_multiarch }}
           ENABLE_SANITIZERS: ${{ inputs.enable_sanitizers }}
+          ENABLE_REFLECTION: ${{ inputs.enable_reflection }}
           EXCLUDE_COMPILER: ${{ inputs.exclude_compiler }}
           EXCLUDE_CXXSTD: ${{ inputs.exclude_cxxstd }}
 
