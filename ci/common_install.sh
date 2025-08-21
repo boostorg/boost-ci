@@ -109,8 +109,10 @@ if [ -z "${B2_TOOLSET:-}" ] && [ -n "${B2_COMPILER:-}" ]; then
         export B2_TOOLSET=clang
     elif [[ "$B2_COMPILER" =~ gcc|g\+\+ ]]; then
         export B2_TOOLSET=gcc
+    elif [[ "$B2_COMPILER" =~ icpx ]]; then
+        export B2_TOOLSET=intel-linux
     else
-        echo "Unknown compiler: '$B2_COMPILER'. Need either clang or gcc/g++" >&2
+        echo "Unknown compiler: '$B2_COMPILER'. Need either clang, gcc/g++, or icpx" >&2
         false
     fi
 fi
@@ -159,6 +161,8 @@ if [ -n "${B2_COMPILER:-}" ]; then
     # Get C++ compiler
     if [[ "$B2_COMPILER" == clang* ]] && [[ "$B2_COMPILER" != clang++* ]]; then
         CXX="${B2_COMPILER/clang/clang++}"
+    elif [[ "$B2_COMPILER" =~ icpx ]]; then
+        CXX="icpx"
     else
         CXX="${B2_COMPILER/gcc/g++}"
     fi

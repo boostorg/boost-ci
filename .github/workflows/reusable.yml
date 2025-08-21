@@ -8,7 +8,7 @@
 # (See accompanying file LICENSE_1_0.txt or copy at http://boost.org/LICENSE_1_0.txt)
 #
 # This reusable workflow is called from ci.yml, if you want to use it you should do the
-# same.  See the README for more detauls.
+# same. See the README for more details.
 #
 ---
 name: Boost.CI
@@ -131,7 +131,7 @@ jobs:
               {"compiler": "gcc-11",    "cxxstd": "11,14,17,20",       "os": "ubuntu-22.04"},
               {"compiler": "gcc-12",    "cxxstd": "11,14,17,20",       "os": "ubuntu-22.04"},
               {"compiler": "gcc-13",    "cxxstd": "11,14,17,20,2b",    "os": "ubuntu-24.04"},
-              {"name": "coverage-gcc-linux", "coverage": "yes", 
+              {"name": "coverage-gcc-linux", "coverage": "yes",
                "compiler": "gcc-13",    "cxxstd": "2b",                "os": "ubuntu-24.04", "install": "g++-13-multilib gcc-multilib", "address-model": "32,64" },
               {"name": "sanitize-gcc-linux", "sanitize": "yes",
                "compiler": "gcc-13",    "cxxstd": "11,14,17,20",       "os": "ubuntu-24.04"},
@@ -159,6 +159,7 @@ jobs:
               {"compiler": "clang-18",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-24.04"},
               {"compiler": "clang-19",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-24.04"},
               {"compiler": "clang-20",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "ubuntu:25.04"},
+              {"compiler": "icpx-2025", "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "intel/oneapi-hpckit:2025.2.2-0-devel-ubuntu24.04"},
             # libc++
               {"stdlib": "libc++",
                "compiler": "clang-6.0", "cxxstd": "11,14",             "os": "ubuntu-latest", "container": "ubuntu:18.04", "install": "clang-6.0 libc++-dev libc++abi-dev"},
@@ -201,7 +202,7 @@ jobs:
                   return None
               return entry
           filtered = [e for e in (filter_compiler(x) for x in filtered) if e]
-          
+
           enable_32bit = os.environ['ENABLE_32BIT'].lower() == 'true'
           if not enable_32bit:
             for entry in filtered:
@@ -346,17 +347,21 @@ jobs:
 
             sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT update
             if [[ -z "${{matrix.install}}" ]]; then
-                compiler="${{matrix.compiler}}"
-                pkgs="${compiler/gcc-/g++-}"
-                [[ -z "${{matrix.gcc_toolchain}}" ]] || pkgs+=" g++-${{matrix.gcc_toolchain}}"
-                if [[ "${{matrix.stdlib}}" == "libc++" && $compiler == "clang-"* ]]; then
-                    ver=${compiler#*-}
-                    pkgs+=" libc++-${ver}-dev libc++abi-${ver}-dev"
+                if [[ ! "${{matrix.compiler}}" =~ icpx* ]]; then
+                    compiler="${{matrix.compiler}}"
+                    pkgs="${compiler/gcc-/g++-}"
+                    [[ -z "${{matrix.gcc_toolchain}}" ]] || pkgs+=" g++-${{matrix.gcc_toolchain}}"
+                    if [[ "${{matrix.stdlib}}" == "libc++" && $compiler == "clang-"* ]]; then
+                        ver=${compiler#*-}
+                        pkgs+=" libc++-${ver}-dev libc++abi-${ver}-dev"
+                    fi
                 fi
             else
                 pkgs="${{matrix.install}}"
             fi
-            sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT -y -q --no-install-suggests --no-install-recommends install $pkgs
+            if [ -n "${pkgs}" ]; then
+                sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT -y -q --no-install-suggests --no-install-recommends install $pkgs
+            fi
 
       - name: Setup GCC Toolchain
         if: matrix.gcc_toolchain
