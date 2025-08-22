@@ -9,13 +9,8 @@ REM If not set it will be deduced from B2_TOOLSET
 REM The special value "auto" will let the bootstrap script automatically select one
 
 if NOT DEFINED B2_CI_VERSION (
-    echo
-    echo =========================== WARNING ======================
-    echo B2_CI_VERSION is not set, assuming this is an old CI version and setting it to '0'.
-    echo Please update your CI configuration and set B2_CI_VERSION.
-    echo =========================== WARNING ======================
-    echo
-    set B2_CI_VERSION=0
+    REM If B2_CI_VERSION is not set, assume it is a new CI version and set it to '1'.
+    set B2_CI_VERSION=1
 )
 
 @ECHO ON
