@@ -37,6 +37,18 @@ if [[ "$B2_SANITIZE" == "yes" ]]; then
   fi
 fi
 
+if [[ "$RUNNER_OS" == "macOS" ]] && [[ "${B2_COMPILER:-}" =~ "clang-" ]]; then
+    clang_version=${B2_COMPILER#clang-}
+    # When the default clang doesn't match the requested version try using the brew installed one
+    if [[ $(clang --version) != *"clang version ${clang_version}."* ]]; then
+        if ! B2_COMPILER=$(brew --prefix llvm@$clang_version)/bin/clang; then
+            echo "Failed to find Clang $clang_version as requested from B2_COMPILER=${B2_COMPILER}"
+            exit 1
+        fi
+    fi
+fi
+
+
 . "$(dirname "${BASH_SOURCE[0]}")"/../common_install.sh
 
 # Persist the environment for all future steps
