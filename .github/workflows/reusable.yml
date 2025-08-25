@@ -17,37 +17,37 @@ on:
   workflow_call:
     inputs:
       branch_coverage:
-        description: "Collect branch coverage instead of line coverage. By default, branch coverage is collected."
+        description: "Collect branch coverage instead of line coverage. Enabled by default."
         required: false
         type: boolean
         default: true
       enable_32bit:
-        description: "When enabled, 32-bit jobs will be added. By default, 32-bit jobs are enabled."
+        description: "When enabled, 32-bit jobs will be added. Enabled by default."
         required: false
         type: boolean
         default: true
       enable_cmake:
-        description: "When enabled, CMake jobs will be added. By default, CMake jobs are enabled."
+        description: "When enabled, CMake jobs will be added. Enabled by default."
         required: false
         type: boolean
         default: true
       enable_cygwin:
-        description: "When enabled, Cygwin jobs will be added. By default, Cygwin jobs are enabled."
+        description: "When enabled, Cygwin jobs will be added. Enabled by default."
         required: false
         type: boolean
         default: true
       enable_mingw:
-        description: "When enabled, MinGW jobs will be added using MSYS2.By default, MinGW jobs are enabled."
+        description: "When enabled, MinGW jobs will be added using MSYS2. Enabled by default."
         required: false
         type: boolean
         default: true
       enable_multiarch:
-        description: "When enabled, a s390x big-endian job will be added. By default, multiarch jobs are enabled."
+        description: "When enabled, a s390x big-endian job will be added. Enabled by default."
         required: false
         type: boolean
         default: true
       enable_posix:
-        description: "When enabled, POSIX jobs will be added (includes macos). By default, POSIX jobs are enabled."
+        description: "When enabled, POSIX jobs will be added (includes macos). Enabled by default."
         required: false
         type: boolean
         default: true
@@ -57,22 +57,22 @@ on:
         type: boolean
         default: true
       enable_sanitizers:
-        description: "When enabled, sanitizer (ASAN, UBSAN) jobs will be added. By default, sanitizer jobs are enabled."
+        description: "When enabled, sanitizer (ASAN, UBSAN) jobs will be added. Enabled by default."
         required: false
         type: boolean
         default: true
       enable_windows:
-        description: "When enabled, Windows jobs will be added. By default, Windows jobs are enabled."
+        description: "When enabled, Windows jobs will be added. Enabled by default."
         required: false
         type: boolean
         default: true
       enable_reflection:
-        description: "When enabled, clang-p2996 jobs will be added. By default, p2996 reflection jobs are not enabled."
+        description: "When enabled, clang-p2996 jobs will be added. Disabled by default."
         required: false
         type: boolean
         default: false
       exclude_compiler:
-        description: "Comma-separated list of compilers to disable. By default, all compilers are enabled."
+        description: "Comma-separated list of compilers to disable. By default only GCC 4.7 is excluded."
         required: false
         type: string
         # gcc-4.7 is not fully compliant with C++11, so we disable it by default
