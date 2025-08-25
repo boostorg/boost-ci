@@ -170,7 +170,8 @@ jobs:
               {"compiler": "clang",     "cxxstd": "11,14,17,20,2b",    "os": "macos-13"},
               {"name": "sanitize-clang-macos", "sanitize": "yes",
                "compiler": "clang",     "cxxstd": "11,14,17,20,2b",    "os": "macos-14"},
-              {"compiler": "clang",     "cxxstd": "11,14,17,20,2b",    "os": "macos-15"},
+              {"compiler": "clang-16",  "cxxstd": "11,14,17,20,2b",    "os": "macos-15"},
+              {"compiler": "clang-18",  "cxxstd": "11,14,17,20,2b",    "os": "macos-15"},
             # Coverity
               {"name": "coverage-clang-linux", "coverity": "yes",
                "compiler": "clang-12",  "cxxstd": "20",                "os": "ubuntu-22.04", "ccache": "no"},
