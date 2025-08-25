@@ -35,7 +35,7 @@ on:
 jobs:
   call-boost-ci:
     name: Run Boost.CI
-    uses: boostorg/boost-ci/.github/workflows/reusable.yml@master
+    uses: boostorg/boost-ci/.github/workflows/reusable.yml@clang-18-macos
     # Example of customization:
     # with:
     #   enable_reflection: true
