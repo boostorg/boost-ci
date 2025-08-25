@@ -164,11 +164,12 @@ jobs:
                "compiler": "clang-6.0", "cxxstd": "11,14",             "os": "ubuntu-latest", "container": "ubuntu:18.04", "install": "clang-6.0 libc++-dev libc++abi-dev"},
               {"stdlib": "libc++",
                "compiler": "clang-7",   "cxxstd": "11,14,17",          "os": "ubuntu-latest", "container": "ubuntu:20.04"},
-              {"stdlib": "libc++",
-               "compiler": "clang-12",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:20.04", "sanitize": "yes", "name": "Clang w/ sanitizers"},
+              {"name": "Clang w/ sanitizers", "sanitize": "yes", "stdlib": "libc++",
+               "compiler": "clang-12",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:20.04"}, 
             # MacOS
               {"compiler": "clang",     "cxxstd": "11,14,17,20,2b",    "os": "macos-13"},
-              {"compiler": "clang",     "cxxstd": "11,14,17,20,2b",    "os": "macos-14", "sanitize": "yes", "name": "sanitize-clang-macos"},
+              {"name": "sanitize-clang-macos", "sanitize": "yes",
+               "compiler": "clang",     "cxxstd": "11,14,17,20,2b",    "os": "macos-14"},
               {"compiler": "clang",     "cxxstd": "11,14,17,20,2b",    "os": "macos-15"},
             # Coverity
               {"name": "coverage-clang-linux", "coverity": "yes",
