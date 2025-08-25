@@ -110,8 +110,8 @@ jobs:
         run: |
           import json, os
 
-          # The original matrix (copied from the posix job below)
-          original = [
+          # All jobs
+          all_jobs = [
             # libstdc++ (by default: disabled (see exclude_cxxstd, exclude_compiler),
             #            tests are pre-C++11 standard; gcc-4.7 is not fully compliant)
               {"compiler": "gcc-4.4",   "cxxstd": "98",                "os": "ubuntu-latest", "container": "ubuntu:16.04"},
@@ -180,62 +180,47 @@ jobs:
                "compiler": "clang",     "cxxstd": "17",                "os": "ubuntu-22.04", "ccache": "no", "distro": "fedora", "edition": "34", "arch": "s390x"},
             # Reflection
               {"name": "Clang-preview w/ reflection",
-               "compiler": "clang",  "cxxstd": "20,23,2c",       "os": "ubuntu-latest", "container": "cppalliance/2404-p2996:1", "reflection": "yes"},
+               "compiler": "clang",  "cxxstd": "20,23,2c",             "os": "ubuntu-latest", "container": "cppalliance/2404-p2996:1", "reflection": "yes"},
           ]
 
-          exclude_cxxstd = os.environ['EXCLUDE_CXXSTD']
-          exclude_cxxstd = [x.strip() for x in exclude_cxxstd.split(',') if x.strip()]
-          def filter_cxxstd(entry):
-              cxxstds = [x.strip() for x in entry.get("cxxstd", "").split(',') if x.strip()]
-              filtered = [x for x in cxxstds if x not in exclude_cxxstd]
-              if not filtered and "cxxstd" in entry:
-                  return None
-              if "cxxstd" in entry:
-                  entry["cxxstd"] = ",".join(filtered)
-              return entry
-          filtered = [e for e in (filter_cxxstd(x) for x in original) if e]
+          def is_true(env_var):
+              return os.environ.get(env_var).lower() == 'true'
 
-          exclude_compiler = os.environ['EXCLUDE_COMPILER']
-          exclude_compiler = [x.strip() for x in exclude_compiler.split(',') if x.strip()]
-          def filter_compiler(entry):
-              compiler = entry.get("compiler", "")
-              if compiler in exclude_compiler:
-                  return None
-              return entry
-          filtered = [e for e in (filter_compiler(x) for x in filtered) if e]
+          def filter_multi_valued(in_list, key_name, excluded):
+              """Remove all entries from the value identified by key_name that are contained in excluded (comma-separated).
+                 Omit the entry when the attribute is empty, keep it if the attribute is not present."""
+              excluded_values = {x.strip() for x in excluded.split(',')}
+              for entry in in_list:
+                  try:
+                      values = [x.strip() for x in entry[key_name].split(',')]
+                  except KeyError:
+                      yield entry
+                  else:
+                      remaining_values = [v for v in values if v and v not in excluded_values]
+                      if remaining_values:
+                          entry[key_name] = ",".join(remaining_values)
+                          yield entry
 
-          enable_32bit = os.environ['ENABLE_32BIT'].lower() == 'true'
-          if not enable_32bit:
-            for entry in filtered:
-              if "address-model" in entry:
-                addrmds = [x.strip() for x in entry["address-model"].split(',') if x.strip()]
-                addrmds = [x for x in addrmds if x != "32"]
-                entry["address-model"] = ",".join(addrmds)
-            # Only exclude entries where address-model exists and is now empty
-            filtered = [e for e in filtered if ("address-model" not in e) or e.get("address-model")]
+          def filter_yes_values(in_list, key_name):
+              """Remove all entries with value 'yes' for the key"""
+              return (e for e in in_list if not e.get(key_name) == "yes")
 
-          enable_multiarch = os.environ['ENABLE_MULTIARCH'].lower() == 'true'
-          if not enable_multiarch:
-              filtered = [e for e in filtered if not e.get("multiarch") == "yes"]
-
-          enable_sanitizers = os.environ['ENABLE_SANITIZERS'].lower() == 'true'
-          if not enable_sanitizers:
-              filtered = [e for e in filtered if not e.get("sanitize") == "yes"]
-
-          codecov_token = os.environ.get('CODECOV_TOKEN', '')
-          if not codecov_token:
-              filtered = [e for e in filtered if not e.get("coverage") == "yes"]
-
-          coverity_scan_token = os.environ.get('COVERITY_SCAN_TOKEN', '')
-          if not coverity_scan_token:
-              filtered = [e for e in filtered if not e.get("coverity") == "yes"]
-
-          enable_reflection = os.environ['ENABLE_REFLECTION'].lower() == 'true'
-          if not enable_reflection:
-              filtered = [e for e in filtered if not e.get("reflection") == "yes"]
+          filtered = all_jobs
+          filtered = filter_multi_valued(filtered, 'cxxstd', os.environ['EXCLUDE_CXXSTD'])
+          filtered = filter_multi_valued(filtered, 'compiler', os.environ['EXCLUDE_COMPILER'])
+          if not is_true('ENABLE_32BIT'):
+              filtered = filter_multi_valued(filtered, 'address-model', '32')
+          if not is_true('ENABLE_SANITIZERS'):
+              filtered = filter_yes_values(filtered, 'sanitize')
+          if not os.environ.get('CODECOV_TOKEN'):
+              filtered = filter_yes_values(filtered, 'coverage')
+          if not os.environ.get('COVERITY_SCAN_TOKEN'):
+              filtered = filter_yes_values(filtered, 'coverity')
+          if not is_true('ENABLE_REFLECTION'):
+              filtered = filter_yes_values(filtered, 'reflection')
 
           with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-              print(f"matrix={json.dumps({'include': filtered})}", file=fh)
+              print(f"matrix={json.dumps({'include': list(filtered)})}", file=fh)
         shell: python
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
@@ -445,7 +430,7 @@ jobs:
         run: |
           import json, os
 
-          original = [
+          all_jobs = [
             {"toolset": "msvc-14.3", "cxxstd": "14,17,20,latest", "address-model": "32,64", "os": "windows-2022"},
             {"name": "Collect coverage", "coverage": "yes",
              "toolset": "msvc-14.3", "cxxstd": "latest",          "address-model": "64",    "os": "windows-2025"},
@@ -455,42 +440,38 @@ jobs:
             {"toolset": "gcc",       "cxxstd": "11,14,17,2a",     "address-model": "64",    "os": "windows-2025", "target-os": "cygwin"},
           ]
 
-          exclude_cxxstd = os.environ['EXCLUDE_CXXSTD']
-          exclude_cxxstd = [x.strip() for x in exclude_cxxstd.split(',') if x.strip()]
-          def filter_cxxstd(entry):
-              cxxstds = [x.strip() for x in entry.get("cxxstd", "").split(',') if x.strip()]
-              filtered = [x for x in cxxstds if x not in exclude_cxxstd]
-              if not filtered and "cxxstd" in entry:
-                  return None
-              if "cxxstd" in entry:
-                  entry["cxxstd"] = ",".join(filtered)
-              return entry
-          filtered = [e for e in (filter_cxxstd(x) for x in original) if e]
+          def is_true(env_var):
+              return os.environ.get(env_var).lower() == 'true'
 
-          exclude_compiler = os.environ['EXCLUDE_COMPILER']
-          exclude_compiler = [x.strip() for x in exclude_compiler.split(',') if x.strip()]
-          def filter_compiler(entry):
-              toolset = entry.get("toolset", "")
-              if toolset in exclude_compiler:
-                  return None
-              return entry
-          filtered = [e for e in (filter_compiler(x) for x in filtered) if e]
+          def filter_multi_valued(in_list, key_name, excluded):
+              """Remove all entries from the value identified by key_name that are contained in excluded (comma-separated).
+                 Omit the entry when the attribute is empty, keep it if the attribute is not present."""
+              excluded_values = {x.strip() for x in excluded.split(',')}
+              for entry in in_list:
+                  try:
+                      values = [x.strip() for x in entry[key_name].split(',')]
+                  except KeyError:
+                      yield entry
+                  else:
+                      remaining_values = [v for v in values if v and v not in excluded_values]
+                      if remaining_values:
+                          entry[key_name] = ",".join(remaining_values)
+                          yield entry
 
-          enable_32bit = os.environ['ENABLE_32BIT'].lower() == 'true'
-          if not enable_32bit:
-              for entry in filtered:
-                  if "address-model" in entry:
-                    addrmds = [x.strip() for x in entry["address-model"].split(',') if x.strip()]
-                    addrmds = [x for x in addrmds if x != "32"]
-                    entry["address-model"] = ",".join(addrmds)
-              filtered = [e for e in filtered if e.get("address-model")]
+          def filter_yes_values(in_list, key_name):
+              """Remove all entries with value 'yes' for the key"""
+              return (e for e in in_list if not e.get(key_name) == "yes")
 
-          enable_cygwin = os.environ['ENABLE_CYGWIN'].lower() == 'true'
-          if not enable_cygwin:
-              filtered = [e for e in filtered if not e.get("target-os") == "cygwin"]
+          filtered = all_jobs
+          filtered = filter_multi_valued(filtered, 'cxxstd', os.environ['EXCLUDE_CXXSTD'])
+          filtered = filter_multi_valued(filtered, 'toolset', os.environ['EXCLUDE_COMPILER'])
+          if not is_true('ENABLE_32BIT'):
+              filtered = filter_multi_valued(filtered, 'address-model', '32')
+          if not is_true('ENABLE_CYGWIN'):
+              filtered = filter_multi_valued(filtered, 'target-os', 'cygwin')
 
           with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-              print(f"matrix={json.dumps({'include': filtered})}", file=fh)
+              print(f"matrix={json.dumps({'include': list(filtered)})}", file=fh)
         shell: python
         env:
           ENABLE_32BIT: ${{ inputs.enable_32bit }}
@@ -582,30 +563,40 @@ jobs:
         run: |
           import json, os
 
-          original = [
+          all_jobs = [
               {"sys": "MINGW32", "compiler": "gcc", "cxxstd": "11,17,20"},
               {"sys": "MINGW64", "compiler": "gcc", "cxxstd": "11,17,20"}
           ]
 
-          exclude_cxxstd = os.environ['EXCLUDE_CXXSTD']
-          exclude_cxxstd = [x.strip() for x in exclude_cxxstd.split(',') if x.strip()]
-          def filter_cxxstd(entry):
-              cxxstds = [x.strip() for x in entry.get("cxxstd", "").split(',') if x.strip()]
-              filtered = [x for x in cxxstds if x not in exclude_cxxstd]
-              if not filtered and "cxxstd" in entry:
-                  return None
-              entry = entry.copy()
-              if "cxxstd" in entry:
-                  entry["cxxstd"] = ",".join(filtered)
-              return entry
-          filtered = [e for e in (filter_cxxstd(x) for x in original) if e]
+          def is_true(env_var):
+              return os.environ.get(env_var).lower() == 'true'
 
-          enable_32bit = os.environ['ENABLE_32BIT'].lower() == 'true'
-          if not enable_32bit:
-              filtered = [e for e in filtered if e.get("sys") != "MINGW32"]
+          def filter_multi_valued(in_list, excluded, key_name):
+              """Remove all entries from the value identified by key_name that are contained in excluded (comma-separated).
+                 Omit the entry when the attribute is empty, keep it if the attribute is not present."""
+              excluded_values = {x.strip() for x in excluded.split(',')}
+              for entry in in_list:
+                  try:
+                      values = [x.strip() for x in entry[key_name].split(',')]
+                  except KeyError:
+                      yield entry
+                  else:
+                      remaining_values = [v for v in values if v and v not in excluded_values]
+                      if remaining_values:
+                          entry[key_name] = ",".join(remaining_values)
+                          yield entry
+
+          def filter_yes_values(in_list, key_name):
+              """Remove all entries with value 'yes' for the key"""
+              return (e for e in in_list if not e.get(key_name) == "yes")
+
+          filtered = all_jobs
+          filtered = filter_multi_valued(filtered, 'cxxstd', os.environ['EXCLUDE_CXXSTD'])
+          if not is_true('ENABLE_32BIT'):
+              filtered = filter_multi_valued(filtered, 'sys', 'MINGW32')
 
           with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-              print(f"matrix={json.dumps({'include': filtered})}", file=fh)
+              print(f"matrix={json.dumps({'include': list(filtered)})}", file=fh)
         shell: python
         env:
           ENABLE_32BIT: ${{ inputs.enable_32bit }}
