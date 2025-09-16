@@ -95,7 +95,6 @@ concurrency:
 env:
   GIT_FETCH_JOBS: 8
   NET_RETRY_COUNT: 5
-  B2_CI_VERSION: 1
   B2_VARIANT: debug,release
   B2_LINK: shared,static
   LCOV_BRANCH_COVERAGE: ${{ inputs.branch_coverage && '1' || '0' }}
