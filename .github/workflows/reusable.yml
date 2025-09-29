@@ -167,7 +167,6 @@ jobs:
               {"name": "Clang w/ sanitizers", "sanitize": "yes", "stdlib": "libc++",
                "compiler": "clang-12",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:20.04"}, 
             # MacOS
-              {"compiler": "clang",     "cxxstd": "11,14,17,20,2b",    "os": "macos-13"},
               {"name": "sanitize-clang-macos", "sanitize": "yes",
                "compiler": "clang",     "cxxstd": "11,14,17,20,2b",    "os": "macos-14"},
               {"compiler": "clang-16",  "cxxstd": "11,14,17,20,2b",    "os": "macos-15"},
