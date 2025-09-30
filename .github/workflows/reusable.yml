@@ -576,7 +576,7 @@ jobs:
           def is_true(env_var):
               return os.environ.get(env_var).lower() == 'true'
 
-          def filter_multi_valued(in_list, excluded, key_name):
+          def filter_multi_valued(in_list, key_name, excluded):
               """Remove all entries from the value identified by key_name that are contained in excluded (comma-separated).
                  Omit the entry when the attribute is empty, keep it if the attribute is not present."""
               excluded_values = {x.strip() for x in excluded.split(',')}
