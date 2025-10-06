@@ -215,6 +215,8 @@ jobs:
           filtered = filter_multi_valued(filtered, 'compiler', os.environ['EXCLUDE_COMPILER'])
           if not is_true('ENABLE_32BIT'):
               filtered = filter_multi_valued(filtered, 'address-model', '32')
+          if not is_true('ENABLE_MULTIARCH'):
+              filtered = filter_yes_values(filtered, 'multiarch')
           if not is_true('ENABLE_SANITIZERS'):
               filtered = filter_yes_values(filtered, 'sanitize')
           if not os.environ.get('CODECOV_TOKEN') and '${{inputs.enable_pr_coverage}}' != 'true':
