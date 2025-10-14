@@ -45,11 +45,16 @@ if [[ "$RUNNER_OS" == "macOS" ]] && [[ "${B2_COMPILER:-}" =~ "clang-" ]] && ! co
     else
         # When the default clang doesn't match the requested version try using the brew installed one
         if brew_clang_prefix=$(brew --prefix "llvm@$clang_version"); then
-          echo "$brew_clang_prefix/bin" >> "$GITHUB_PATH"
-          echo "Found Clangs in HomeBrew: " "$brew_clang_prefix/bin/"clang* /opt/homebrew/opt/llvm/bin/clang*
-          export PATH="$brew_clang_prefix/bin:$PATH"
-          echo "Clang to be used: $(command -v clang)"
-          B2_COMPILER=clang
+          if [[ -f "$brew_clang_prefix/bin/clang" ]]; then
+              echo "$brew_clang_prefix/bin" >> "$GITHUB_PATH"
+              echo "Found Clangs in HomeBrew: " "$brew_clang_prefix/bin/"clang* /opt/homebrew/opt/llvm/bin/clang*
+              export PATH="$brew_clang_prefix/bin:$PATH"
+              echo "Clang to be used: $(command -v clang)"
+              B2_COMPILER=clang
+          else
+            echo "Failed to find Clang $clang_version as requested from B2_COMPILER=${B2_COMPILER} in system or $brew_clang_prefix"
+            exit 1
+          fi
         else
             echo "Failed to find Clang $clang_version as requested from B2_COMPILER=${B2_COMPILER}"
             exit 1
