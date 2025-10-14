@@ -175,7 +175,7 @@ jobs:
               {"compiler": "clang",     "cxxstd": "11,14,17,20,2b",    "os": "macos-13", "ccache": "no"},
               {"name": "sanitize-clang-macos", "sanitize": "yes",
                "compiler": "clang",     "cxxstd": "11,14,17,20,2b",    "os": "macos-14"},
-              {"compiler": "clang-16",  "cxxstd": "11,14,17,20,2b",    "os": "macos-15"},
+              {"compiler": "clang-16",  "cxxstd": "11,14,17,20,2b",    "os": "macos-15", "xcode_app": "/Applications/Xcode_16.2.app"},
               {"compiler": "clang-18",  "cxxstd": "11,14,17,20,2b",    "os": "macos-15"},
             # Coverity
               {"name": "coverage-clang-linux", "coverity": "yes",
@@ -392,6 +392,7 @@ jobs:
           B2_DEFINES: ${{matrix.defines}}
           B2_VARIANT: ${{matrix.variant}}
           B2_LINK: ${{matrix.link}}
+          XCODE_APP: ${{matrix.xcode_app}}
           # More entries can be added in the same way, see the B2_ARGS assignment in ci/enforce.sh for the possible keys.
           # Set the (B2) target(s) to build, defaults to the test folder of the current library
           # Can alternatively be done like this in the build step or in the build command of the build step, e.g. `run: B2_TARGETS=libs/$SELF/doc ci/build.sh`
