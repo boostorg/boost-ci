@@ -37,9 +37,9 @@ function add_repository_toolchain {
         echo "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu ${VERSION_CODENAME} main" 
         echo "# deb-src http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu ${VERSION_CODENAME} main"
     } > "/etc/apt/sources.list.d/ubuntu-toolchain-r-ubuntu-test-${VERSION_CODENAME}.list"
-    keyserver="keyserver.boost.org"
-    echo "Downloading toolchain gpg key via ${keyserver}"
-    curl -sSL --retry "${NET_RETRY_COUNT:-5}" "http://${keyserver}/pks/lookup?op=get&search=0x1E9377A2BA9EF27F" | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/toolchain-r.gpg
+    key_server="keyserver.boost.org"
+    echo "Downloading toolchain gpg key via ${key_server}"
+    curl -sSL --retry "${NET_RETRY_COUNT:-5}" "https://${key_server}/pks/lookup?op=get&search=0x1E9377A2BA9EF27F" | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/toolchain-r.gpg
 }
 
 echo ">>>>> APT: REPOSITORIES..."
