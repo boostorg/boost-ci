@@ -161,7 +161,8 @@ def linux_cxx(
       "arch": arch
     },
     "clone": {
-       "retries": 5
+       "retries": 5,
+       "timeout": 60
     },
     "node": node,
     "steps": steps
