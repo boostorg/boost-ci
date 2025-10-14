@@ -22,7 +22,8 @@ function do_add_key
         keyfilename="${BASH_REMATCH[1]}.key"
     elif [[ $key_url =~ ^0x[A-F0-9]+$ ]]; then
         keyfilename=${key_url#0x}.key
-        key_url="http://keyserver.ubuntu.com/pks/lookup?op=get&search=$key_url"
+        key_server="keyserver.boost.org"
+        key_url="https://$key_server/pks/lookup?op=get&search=$key_url"
     else
         keyfilename=$(basename -s .key "$key_url")
     fi
