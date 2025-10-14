@@ -138,6 +138,9 @@ if [[ "${B2_TOOLSET:-}" == clang* ]]; then
             hash -r || true
         fi
     elif [ -n "${XCODE_APP:-}" ]; then
+        if [[ $XCODE_APP =~ ^[0-9]+.[0-9]+$ ]]; then
+            XCODE_APP="/Applications/Xcode_${XCODE_APP}.app/Contents/Developer"
+        fi
         sudo xcode-select -switch "${XCODE_APP}"
     fi
     command -v clang || true
