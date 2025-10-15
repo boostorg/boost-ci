@@ -212,7 +212,7 @@ jobs:
 
           def filter_os(in_list, excluded):
               """Remove all jobs that match any of the excluded OS (comma-separated, supports partial matches)"""
-              excluded_values = [x.strip().replace('-', ':') for x in excluded.split(',')]
+              excluded_values = [v for v in (x.strip().replace('-', ':') for x in excluded.split(',')) if v]
               return (job for job in in_list if not any(ev in job.get('container', job['os']).replace('-', ':') for ev in excluded_values))
 
           def filter_yes_values(in_list, key_name):
@@ -478,7 +478,7 @@ jobs:
 
           def filter_os(in_list, excluded):
               """Remove all jobs that match any of the excluded OS (comma-separated, supports partial matches)"""
-              excluded_values = [x.strip().replace('-', ':') for x in excluded.split(',')]
+              excluded_values = [v for v in (x.strip().replace('-', ':') for x in excluded.split(',')) if v]
               return (job for job in in_list if not any(ev in job.get('container', job['os']).replace('-', ':') for ev in excluded_values))
 
           def filter_yes_values(in_list, key_name):
@@ -613,7 +613,7 @@ jobs:
 
           def filter_os(in_list, excluded):
               """Remove all jobs that match any of the excluded OS (comma-separated, supports partial matches)"""
-              excluded_values = [x.strip().lower() for x in excluded.split(',')]
+              excluded_values = [v for v in (x.strip().replace('-', ':') for x in excluded.split(',')) if v]
               return (job for job in in_list if not any(ev in job['sys'] for ev in excluded_values))
 
           def filter_yes_values(in_list, key_name):
