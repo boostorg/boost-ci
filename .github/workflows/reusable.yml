@@ -82,6 +82,11 @@ on:
         required: false
         type: string
         default: '98,03,0x'
+      exclude_os:
+        description: "Comma-separated list of OS to disable, e.g. 'ubuntu:18.04'. Supports partial matches such as 'macos'. By default no OS is excluded."
+        required: false
+        type: string
+        default: ''
     secrets:
       CODECOV_TOKEN:
         description: "The token for covecov.io; if defined then coverage will be collected."
@@ -206,6 +211,11 @@ jobs:
                           entry[key_name] = ",".join(remaining_values)
                           yield entry
 
+          def filter_os(in_list, excluded):
+              """Remove all jobs that match any of the excluded OS (comma-separated, supports partial matches)"""
+              excluded_values = [x.strip().replace('-', ':') for x in excluded.split(',')]
+              return (job for job in in_list if not any(ev in job.get('container', job['os']).replace('-', ':') for ev in excluded_values))
+
           def filter_yes_values(in_list, key_name):
               """Remove all entries with value 'yes' for the key"""
               return (e for e in in_list if not e.get(key_name) == "yes")
@@ -213,6 +223,7 @@ jobs:
           filtered = all_jobs
           filtered = filter_multi_valued(filtered, 'cxxstd', os.environ['EXCLUDE_CXXSTD'])
           filtered = filter_multi_valued(filtered, 'compiler', os.environ['EXCLUDE_COMPILER'])
+          filtered = filter_os(filtered, os.environ['EXCLUDE_OS'])
           if not is_true('ENABLE_32BIT'):
               filtered = filter_multi_valued(filtered, 'address-model', '32')
           if not is_true('ENABLE_MULTIARCH'):
@@ -238,6 +249,7 @@ jobs:
           ENABLE_REFLECTION: ${{ inputs.enable_reflection }}
           EXCLUDE_COMPILER: ${{ inputs.exclude_compiler }}
           EXCLUDE_CXXSTD: ${{ inputs.exclude_cxxstd }}
+          EXCLUDE_OS: ${{ inputs.exclude_os }}
 
   posix:
     if: ${{ inputs.enable_posix }}
@@ -465,6 +477,11 @@ jobs:
                           entry[key_name] = ",".join(remaining_values)
                           yield entry
 
+          def filter_os(in_list, excluded):
+              """Remove all jobs that match any of the excluded OS (comma-separated, supports partial matches)"""
+              excluded_values = [x.strip().replace('-', ':') for x in excluded.split(',')]
+              return (job for job in in_list if not any(ev in job.get('container', job['os']).replace('-', ':') for ev in excluded_values))
+
           def filter_yes_values(in_list, key_name):
               """Remove all entries with value 'yes' for the key"""
               return (e for e in in_list if not e.get(key_name) == "yes")
@@ -472,6 +489,7 @@ jobs:
           filtered = all_jobs
           filtered = filter_multi_valued(filtered, 'cxxstd', os.environ['EXCLUDE_CXXSTD'])
           filtered = filter_multi_valued(filtered, 'toolset', os.environ['EXCLUDE_COMPILER'])
+          filtered = filter_os(filtered, os.environ['EXCLUDE_OS'])
           if not is_true('ENABLE_32BIT'):
               filtered = filter_multi_valued(filtered, 'address-model', '32')
           if not is_true('ENABLE_CYGWIN'):
@@ -592,6 +610,11 @@ jobs:
                       if remaining_values:
                           entry[key_name] = ",".join(remaining_values)
                           yield entry
+
+          def filter_os(in_list, excluded):
+              """Remove all jobs that match any of the excluded OS (comma-separated, supports partial matches)"""
+              excluded_values = [x.strip().lower() for x in excluded.split(',')]
+              return (job for job in in_list if not any(ev in job['sys'] for ev in excluded_values))
 
           def filter_yes_values(in_list, key_name):
               """Remove all entries with value 'yes' for the key"""
