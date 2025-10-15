@@ -502,6 +502,7 @@ jobs:
           ENABLE_CYGWIN: ${{ inputs.enable_cygwin }}
           EXCLUDE_CXXSTD: ${{ inputs.exclude_cxxstd }}
           EXCLUDE_COMPILER: ${{ inputs.exclude_compiler }}
+          EXCLUDE_OS: ${{ inputs.exclude_os }}
 
   windows:
     if: ${{ inputs.enable_windows }}
