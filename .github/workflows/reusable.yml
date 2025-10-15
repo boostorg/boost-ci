@@ -177,10 +177,10 @@ jobs:
               {"name": "Clang w/ sanitizers", "sanitize": "yes", "stdlib": "libc++",
                "compiler": "clang-12",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:20.04"}, 
             # MacOS
-              {"name": "sanitize-clang-macos", "sanitize": "yes",
-               "compiler": "clang",     "cxxstd": "11,14,17,20,2b",    "os": "macos-14"},
-              {"compiler": "clang-16",  "cxxstd": "11,14,17,20,2b",    "os": "macos-15", "xcode_app": "/Applications/Xcode_16.2.app"},
-              {"compiler": "clang-18",  "cxxstd": "11,14,17,20,2b",    "os": "macos-15"},
+              {"name": "MacOS sanitize w/ clang",
+               "os": "macos-14", "compiler": "clang",     "cxxstd": "11,14,17,20,2b", "sanitize": "yes"},
+              {"os": "macos-15", "compiler": "clang-16",  "cxxstd": "11,14,17,20,2b", "xcode_app": "/Applications/Xcode_16.2.app"},
+              {"os": "macos-15", "compiler": "clang-18",  "cxxstd": "11,14,17,20,2b"},
             # Coverity
               {"name": "coverage-clang-linux", "coverity": "yes",
                "compiler": "clang-12",  "cxxstd": "20",                "os": "ubuntu-22.04", "ccache": "no"},
