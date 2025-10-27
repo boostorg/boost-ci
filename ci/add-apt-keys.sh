@@ -11,6 +11,14 @@
 
 set -eu
 
+curl_extra_options=""
+if curl --retry-all-errors 2>&1 | grep -i unknown > /dev/null ; then
+    # --retry-all-errors not available
+    true
+else
+    curl_extra_options="--retry-all-errors"
+fi
+
 function do_add_key
 {
     key_url=$1
@@ -28,7 +36,7 @@ function do_add_key
         keyfilename=$(basename -s .key "$key_url")
     fi
     echo -e "\tDownloading APT key from '$key_url' to '$keyfilename'"
-    if ! curl -sSL --retry "${NET_RETRY_COUNT:-5}" "$key_url" | sudo gpg --dearmor -o "/etc/apt/trusted.gpg.d/${keyfilename}"; then
+    if ! curl ${curl_extra_options} --connect-timeout 15 -sSL --retry "${NET_RETRY_COUNT:-5}" "$key_url" | sudo gpg --dearmor -o "/etc/apt/trusted.gpg.d/${keyfilename}"; then
         echo "Failed downloading $keyfilename"
         return 1
     fi

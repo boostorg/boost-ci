@@ -8,6 +8,14 @@
 
 set -e
 
+curl_extra_options=""
+if curl --retry-all-errors 2>&1 | grep -i unknown > /dev/null ; then
+    # --retry-all-errors not available
+    true
+else
+    curl_extra_options="--retry-all-errors"
+fi
+
 function add_repository {
     name="$1"
     echo -e "\tAdding repository $name"
@@ -39,7 +47,7 @@ function add_repository_toolchain {
     } > "/etc/apt/sources.list.d/ubuntu-toolchain-r-ubuntu-test-${VERSION_CODENAME}.list"
     key_server="keyserver.boost.org"
     echo "Downloading toolchain gpg key via ${key_server}"
-    curl -sSL --retry "${NET_RETRY_COUNT:-5}" "https://${key_server}/pks/lookup?op=get&search=0x1E9377A2BA9EF27F" | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/toolchain-r.gpg
+    curl ${curl_extra_options} --connect-timeout 15 -sSL --retry "${NET_RETRY_COUNT:-5}" "https://${key_server}/pks/lookup?op=get&search=0x1E9377A2BA9EF27F" | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/toolchain-r.gpg
 }
 
 echo ">>>>> APT: REPOSITORIES..."
@@ -53,7 +61,7 @@ fi
 
 if [ -n "${LLVM_OS}" ]; then
     echo ">>>>> APT: INSTALL LLVM repo"
-    curl -sSL --retry 5 https://apt.llvm.org/llvm-snapshot.gpg.key | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/llvm-snapshot.gpg
+    curl ${curl_extra_options} --connect-timeout 15 -sSL --retry 5 https://apt.llvm.org/llvm-snapshot.gpg.key | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/llvm-snapshot.gpg
     if [ -n "${LLVM_VER}" ]; then
         llvm_toolchain="llvm-toolchain-${LLVM_OS}-${LLVM_VER}"
     else
