@@ -8,10 +8,9 @@
 
 set -e
 
-curl_extra_options=""
-if curl --retry-all-errors 2>&1 | grep -i unknown > /dev/null ; then
+if curl --retry-all-errors 2>&1 | grep -iq unknown; then
     # --retry-all-errors not available
-    true
+    curl_extra_options=""
 else
     curl_extra_options="--retry-all-errors"
 fi
