@@ -717,6 +717,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Cache ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        if: runner.os == 'Linux'
+        with:
+          create-symlink: true
+          key: ${{matrix.os}}-${{matrix.build_shared}}
+
       - name: Fetch Boost.CI
         uses: actions/checkout@v4
         with:
