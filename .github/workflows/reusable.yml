@@ -718,7 +718,7 @@ jobs:
           - { os: ubuntu-latest, build_shared: OFF, build_type: Debug, generator: 'Unix Makefiles' }
           - { os: windows-2025,  build_shared: ON,  build_type: Debug, generator: 'Visual Studio 17 2022' }
           - { os: windows-2025,  build_shared: OFF, build_type: Debug, generator: 'Visual Studio 17 2022' }
-          - { name: "Linux CMake", cmake_version: '${{inputs.min_cmake_version}}',
+          - { name: "Min. CMake", cmake_version: '${{inputs.min_cmake_version}}',
               os: ubuntu-latest, build_shared: ON,  build_type: Debug, generator: 'Unix Makefiles' }
 
     steps:
@@ -740,6 +740,7 @@ jobs:
         if: matrix.cmake_version && steps.cache-cmake.outputs.cache-hit != 'true'
         run: |
             version=${{matrix.cmake_version}}
+            [[ ${version} =~ [0-9]+\.[0-9]+\.[0-9]+ ]] || version+=".0"
             filename="cmake-$version.tar.gz"
             cd "$(mktemp -d)"
             wget https://cmake.org/files/v${version%.*}/$filename
