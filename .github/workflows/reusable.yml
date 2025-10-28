@@ -31,6 +31,11 @@ on:
         required: false
         type: boolean
         default: true
+      min_cmake_version:
+        description: "Minimal required CMake version, defaults to 3.16. Default of ubuntu-latest is always tested additionally."
+        required: false
+        type: string
+        default: '3.16'
       enable_cygwin:
         description: "When enabled, Cygwin jobs will be added. Enabled by default."
         required: false
@@ -713,8 +718,44 @@ jobs:
           - { os: ubuntu-latest, build_shared: OFF, build_type: Debug, generator: 'Unix Makefiles' }
           - { os: windows-2025,  build_shared: ON,  build_type: Debug, generator: 'Visual Studio 17 2022' }
           - { os: windows-2025,  build_shared: OFF, build_type: Debug, generator: 'Visual Studio 17 2022' }
+          - { name: "Linux CMake", cmake_version: '${{inputs.min_cmake_version}}',
+              os: ubuntu-latest, build_shared: ON,  build_type: Debug, generator: 'Unix Makefiles' }
 
     steps:
+      - name: Cache CMake
+        if: matrix.cmake_version
+        id: cache-cmake
+        uses: actions/cache@v4
+        with:
+          path: /tmp/cmake
+          key: ${{runner.os}}-cmake-${{matrix.cmake_version}}
+
+      - name: Install CMake dependencies
+        if: matrix.cmake_version
+        run: |
+            sudo apt-get -o Acquire::Retries=3 -y -q --no-install-suggests --no-install-recommends install curl libcurl4-openssl-dev libarchive-dev
+            echo /tmp/cmake/bin >> $GITHUB_PATH
+
+      - name: Build CMake
+        if: matrix.cmake_version && steps.cache-cmake.outputs.cache-hit != 'true'
+        run: |
+            version=${{matrix.cmake_version}}
+            filename="cmake-$version.tar.gz"
+            cd "$(mktemp -d)"
+            wget https://cmake.org/files/v${version%.*}/$filename
+            tar -xf $filename --strip-components=1
+            flags=(
+              "-DCMAKE_BUILD_TYPE=Release"
+              "-DCMAKE_INSTALL_PREFIX=/tmp/cmake"
+              "-B" "__build"
+              "-Wno-dev"  # Make configuring more silent
+              "-DCMAKE_USE_SYSTEM_CURL=1"  # Avoid failures caused by newer (system) OpenSSL in CMake < 3.10
+              "-DCMAKE_CXX_FLAGS='-include cstdint -include limits'"  # Fix missing includes in CMake < 3.10
+            )
+            cmake "${flags[@]}" .
+            cmake --build __build -- -j 3
+            cmake --build __build --target install
+
       - uses: actions/checkout@v4
 
       - name: Fetch Boost.CI
