@@ -18,6 +18,17 @@
 #define MSVC_VALUE 0
 #endif
 
+// This define is usually set in boost/<libname>/config.hpp
+#if defined(BOOST_ALL_DYN_LINK) || defined(BOOST_BOOST_CI_DYN_LINK)
+#ifdef BOOST_BOOST_CI_SOURCE
+#define BOOST_BOOST_CI_DECL BOOST_SYMBOL_EXPORT
+#else
+#define BOOST_BOOST_CI_DECL BOOST_SYMBOL_IMPORT
+#endif
+#else
+#define BOOST_BOOST_CI_DECL
+#endif
+
 namespace boost
 {
   namespace boost_ci
@@ -27,25 +38,7 @@ namespace boost
       example_error() : std::runtime_error("Example error for demonstration") {}
     };
 
-    // Some function to test
-    BOOST_NOINLINE int get_answer(const int isMsvc = MSVC_VALUE)
-    {
-      int answer;
-      // Specifically crafted condition to check for coverage from MSVC and non MSVC builds
-      if(isMsvc == 0)
-        answer = 42;
-      else if(isMsvc == 1)
-        answer = 21;
-      else
-        throw example_error();
-
-#ifdef BOOST_NO_CXX11_SMART_PTR
-      return answer;
-#else
-      // Just use some stdlib feature combined with a Boost.Config feature as demonstration
-      auto ptr = std::unique_ptr<int>(new int(answer));
-      return *ptr;
-#endif
-    }
+    // Some function to test. Returns 41 for 0, 42 for 1 and throws for other values
+    BOOST_BOOST_CI_DECL int get_answer(int isMsvc = MSVC_VALUE);
   }
 }
