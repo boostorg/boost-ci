@@ -101,6 +101,8 @@ environment:
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       B2_CXXSTD: 11,14,17
       B2_TOOLSET: clang-win
+      # clang-win 32 bit fails to link with "unable to load mspdbcore.dll (error code: 126)"
+      B2_ADDRESS_MODEL: 64
       BOOTSTRAP_TOOLSET: vc141
 
     - FLAVOR: clang-cl 18.1
