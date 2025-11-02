@@ -25,6 +25,7 @@ if [[ -f "$b2_config" ]]; then
   prev_config=$(mktemp)
   mv "$b2_config" "$prev_config"
   function prepend_config {
+    { set +x; } 2>/dev/null
     [[ -f "$b2_config" ]] || return
     echo "=========================== END PREVIOUS CONFIG ======================" >> "$prev_config"
     cat "$b2_config" >> "$prev_config"
