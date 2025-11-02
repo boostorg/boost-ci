@@ -36,7 +36,10 @@ function print_on_gha {
 
 if [ -n "${XCODE_APP:-}" ]; then
   if [[ $XCODE_APP =~ ^[0-9]+.[0-9]+$ ]]; then
-      XCODE_APP="/Applications/Xcode_${XCODE_APP}.app"
+      XCODE_APP="Xcode_${XCODE_APP}"
+  fi
+  if [[ $XCODE_APP =~ ^Xcode_[0-9]+.[0-9]+$ ]]; then
+      XCODE_APP="/Applications/${XCODE_APP}.app"
   fi
   sudo xcode-select -switch "${XCODE_APP}"
 fi
