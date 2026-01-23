@@ -187,7 +187,7 @@ jobs:
               {"os": "macos-15", "compiler": "clang-16",  "cxxstd": "11,14,17,20,2b", "xcode_app": "Xcode_16.2"},
               {"os": "macos-15", "compiler": "clang-18",  "cxxstd": "11,14,17,20,2b"},
             # Coverity
-              {"name": "coverage-clang-linux", "coverity": "yes",
+              {"name": "Coverity Scan w/ Clang on Linux", "coverity": "yes",
                "compiler": "clang-12",  "cxxstd": "20",                "os": "ubuntu-22.04", "ccache": "no"},
             # Big-Endian
               {"name": "bigendian-s390x", "multiarch": "yes",
