@@ -98,10 +98,22 @@ if [ -d "libs/$SELF" ]; then
     rm -rf "libs/$SELF"
 fi
 mkdir -p "libs/$SELF"
-# On Windows copy symlinks w/o strict security checks, that may fail if the target does not exist yet.
-export CYGWIN=winsymlinks:native
-export MSYS=$CYGWIN
-cp -ra "$BOOST_CI_SRC_FOLDER"/* "libs/$SELF"
+
+# On Windows copying of symlinks to files that don't exist (yet) fails and a "fake" symlink will be created instead
+# that is only recognized inside MSYS.
+# Or it may fail completely during the copy with:
+#    cp: cannot create symbolic link '[...]': No such file or directory
+# because of security checks against the pointed-to file. Although `export CYGWIN=winsymlinks:native` could avoid that
+# it will still run into issues when the file is read by e.g. Python where the "fake" symlink can't be resolved
+case "${OSTYPE:-}" in
+    win32 | msys | cygwin)
+        # Redirect through tar to restore symlinks as-is
+        tar -C "$BOOST_CI_SRC_FOLDER" -cf - . | tar -C "libs/$SELF" -xf -
+        ;;
+    *)
+        cp -r "$BOOST_CI_SRC_FOLDER"/* "libs/$SELF/"
+        ;;
+esac
 
 export BOOST_ROOT="$(pwd)"
 export PATH="$(pwd):$PATH"
