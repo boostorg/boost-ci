@@ -68,6 +68,7 @@ print_on_gha "::endgroup::"
 
 print_on_gha "::group::Checkout and setup Boost build tree"
 pythonexecutable=$(get_python_executable)
+$pythonexecutable --version
 
 if [ -z "${SELF:-}" ]; then
     export SELF=$($pythonexecutable "$CI_DIR/get_libname.py")
