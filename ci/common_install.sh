@@ -98,6 +98,9 @@ if [ -d "libs/$SELF" ]; then
     rm -rf "libs/$SELF"
 fi
 mkdir -p "libs/$SELF"
+# On Windows copy symlinks w/o strict security checks, that may fail if the target does not exist yet.
+export CYGWIN=winsymlinks:native
+export MSYS=$CYGWIN
 cp -r "$BOOST_CI_SRC_FOLDER"/* "libs/$SELF"
 
 export BOOST_ROOT="$(pwd)"
