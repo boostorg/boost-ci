@@ -1,0 +1,19 @@
+---
+extends: default
+
+rules:
+  braces:
+    level: warning
+  brackets:
+    level: warning
+  colons:
+    level: warning
+  commas:
+    level: warning
+  indentation:
+    level: warning
+  line-length:
+    max: 200
+  truthy:
+    level: error
+
