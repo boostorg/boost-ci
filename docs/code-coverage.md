@@ -9,7 +9,8 @@ An exciting new method to generate gcovr coverage reports without relying on Cod
 
 Copy the file `.github/workflows/code-coverage.yml` from boost-ci into your Boost library repository.
 
-Run the workflow at least once. It will create a code-coverage branch to store reports.
+Run the workflow at least once, which can be done [manually](https://docs.github.com/de/actions/how-tos/manage-workflow-runs/manually-run-a-workflow).
+This will create a branch called "code-coverage" to store reports.
 
 Next, enable GitHub Pages. Go to https://github.com/ORGANIZATION/REPO/settings/pages and enable the new branch.  
 

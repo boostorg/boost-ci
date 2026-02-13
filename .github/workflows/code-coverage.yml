@@ -22,6 +22,7 @@ on:
     paths:
       - 'src/**'
       - 'include/**'
+  workflow_dispatch:
 
 env:
   GIT_FETCH_JOBS: 8
