@@ -77,6 +77,8 @@ Multiple CI configs contain jobs collecting code coverage data.
 E.g. Github Actions and Drone CI for Linux and Appveyor for Windows.
 Especially the latter allows to collect coverage data for Windows-only codeparts or code using e.g. `wchar_t` which is different on Windows than on other platforms.
 
+Besides using Codecov, it's also possible to generate coverage reports with [GitHub Actions + GitHub Pages](docs/code-coverage.md).
+
 ### Exclusion of coverage data
 
 If you want to exclude parts of your code from coverage analysis you can use the LCOV comments/macros:
