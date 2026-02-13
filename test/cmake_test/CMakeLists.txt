@@ -23,7 +23,6 @@ else()
       assert
       predef
       preprocessor
-      static_assert
       throw_exception
       type_traits
       winapi
