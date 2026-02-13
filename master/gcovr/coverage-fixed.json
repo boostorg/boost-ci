@@ -1,0 +1,274 @@
+{
+    "gcovr/format_version": "0.14",
+    "files": [
+        {
+            "file": "include/boost/boost-ci/boost_ci.hpp",
+            "lines": [
+                {
+                    "line_number": 38,
+                    "function_name": "boost::boost_ci::example_error::example_error()",
+                    "count": 1,
+                    "branches": [],
+                    "calls": [
+                        {
+                            "callno": 0,
+                            "source_block_id": 0,
+                            "returned": 1
+                        }
+                    ],
+                    "gcovr/md5": "6310771e49403666c6fefe195bee1238"
+                }
+            ],
+            "functions": [
+                {
+                    "demangled_name": "boost::boost_ci::example_error::example_error()",
+                    "lineno": 38,
+                    "execution_count": 1,
+                    "blocks_percent": 100.0
+                }
+            ]
+        },
+        {
+            "file": "src/boost_ci.cpp",
+            "lines": [
+                {
+                    "line_number": 19,
+                    "function_name": "X::X(int)",
+                    "count": 5,
+                    "branches": [],
+                    "gcovr/md5": "a19b4bc88bf83a2634ad38bacd5a6349"
+                },
+                {
+                    "line_number": 27,
+                    "function_name": "boost::boost_ci::get_answer(int)",
+                    "count": 3,
+                    "branches": [],
+                    "gcovr/md5": "038431ad2b939d7546d282dc50ec94ad"
+                },
+                {
+                    "line_number": 29,
+                    "function_name": "boost::boost_ci::get_answer(int)",
+                    "count": 3,
+                    "branches": [
+                        {
+                            "branchno": 1,
+                            "count": 3,
+                            "fallthrough": true,
+                            "throw": false,
+                            "source_block_id": 0,
+                            "gcovr/excluded": true
+                        }
+                    ],
+                    "calls": [
+                        {
+                            "callno": 0,
+                            "source_block_id": 0,
+                            "returned": 3
+                        }
+                    ],
+                    "gcovr/md5": "c74b16cbb0770cfa16783025b5d112b2"
+                },
+                {
+                    "line_number": 31,
+                    "function_name": "boost::boost_ci::get_answer(int)",
+                    "count": 3,
+                    "branches": [
+                        {
+                            "branchno": 0,
+                            "count": 0,
+                            "fallthrough": true,
+                            "throw": false,
+                            "source_block_id": 0,
+                            "gcovr/excluded": true
+                        },
+                        {
+                            "branchno": 1,
+                            "count": 3,
+                            "fallthrough": false,
+                            "throw": false,
+                            "source_block_id": 0,
+                            "gcovr/excluded": true
+                        }
+                    ],
+                    "gcovr/md5": "757cc8974ba2ba413836795ae4173cf6"
+                },
+                {
+                    "line_number": 32,
+                    "function_name": "boost::boost_ci::get_answer(int)",
+                    "count": 0,
+                    "branches": [],
+                    "calls": [
+                        {
+                            "callno": 0,
+                            "source_block_id": 0,
+                            "returned": 0
+                        }
+                    ],
+                    "gcovr/md5": "b58b5fbdaf78c953e9fbbd17445c8318"
+                },
+                {
+                    "line_number": 33,
+                    "function_name": "boost::boost_ci::get_answer(int)",
+                    "count": 3,
+                    "branches": [
+                        {
+                            "branchno": 0,
+                            "count": 2,
+                            "fallthrough": true,
+                            "throw": false,
+                            "source_block_id": 0,
+                            "gcovr/excluded": true
+                        },
+                        {
+                            "branchno": 1,
+                            "count": 1,
+                            "fallthrough": false,
+                            "throw": false,
+                            "source_block_id": 0,
+                            "gcovr/excluded": true
+                        }
+                    ],
+                    "gcovr/md5": "481414dc67751e204b5a088d1e87b7df"
+                },
+                {
+                    "line_number": 34,
+                    "function_name": "boost::boost_ci::get_answer(int)",
+                    "count": 4,
+                    "branches": [],
+                    "calls": [
+                        {
+                            "callno": 0,
+                            "source_block_id": 0,
+                            "returned": 2
+                        }
+                    ],
+                    "gcovr/md5": "849950c989379ce52f90a5bea13d41cd"
+                },
+                {
+                    "line_number": 36,
+                    "function_name": "boost::boost_ci::get_answer(int)",
+                    "count": 1,
+                    "branches": [
+                        {
+                            "branchno": 2,
+                            "count": 1,
+                            "fallthrough": true,
+                            "throw": false,
+                            "source_block_id": 0,
+                            "gcovr/excluded": true
+                        }
+                    ],
+                    "calls": [
+                        {
+                            "callno": 0,
+                            "source_block_id": 0,
+                            "returned": 1
+                        },
+                        {
+                            "callno": 1,
+                            "source_block_id": 0,
+                            "returned": 1
+                        },
+                        {
+                            "callno": 4,
+                            "source_block_id": 1,
+                            "returned": 1
+                        },
+                        {
+                            "callno": 5,
+                            "source_block_id": 2,
+                            "returned": 0
+                        }
+                    ],
+                    "gcovr/md5": "c7980065baca9f87e41291929106f2f1"
+                },
+                {
+                    "line_number": 41,
+                    "function_name": "boost::boost_ci::get_answer(int)",
+                    "count": 4,
+                    "branches": [
+                        {
+                            "branchno": 1,
+                            "count": 2,
+                            "fallthrough": true,
+                            "throw": false,
+                            "source_block_id": 0,
+                            "gcovr/excluded": true
+                        },
+                        {
+                            "branchno": 3,
+                            "count": 0,
+                            "fallthrough": true,
+                            "throw": false,
+                            "source_block_id": 1,
+                            "gcovr/excluded": true
+                        },
+                        {
+                            "branchno": 4,
+                            "count": 2,
+                            "fallthrough": false,
+                            "throw": false,
+                            "source_block_id": 1,
+                            "gcovr/excluded": true
+                        }
+                    ],
+                    "calls": [
+                        {
+                            "callno": 0,
+                            "source_block_id": 0,
+                            "returned": 2
+                        },
+                        {
+                            "callno": 5,
+                            "source_block_id": 2,
+                            "returned": 2
+                        }
+                    ],
+                    "gcovr/md5": "a561bc1dde14e38c895782bd0692ce8f"
+                },
+                {
+                    "line_number": 42,
+                    "function_name": "boost::boost_ci::get_answer(int)",
+                    "count": 4,
+                    "branches": [],
+                    "calls": [
+                        {
+                            "callno": 0,
+                            "source_block_id": 2,
+                            "returned": 2
+                        }
+                    ],
+                    "gcovr/md5": "64dca3de3d24071209c902cf445df5ef"
+                },
+                {
+                    "line_number": 44,
+                    "function_name": "boost::boost_ci::get_answer(int)",
+                    "count": 2,
+                    "branches": [],
+                    "calls": [
+                        {
+                            "callno": 0,
+                            "source_block_id": 0,
+                            "returned": 2
+                        }
+                    ],
+                    "gcovr/md5": "ea5a1cbe764918679997181a3ea281d3"
+                }
+            ],
+            "functions": [
+                {
+                    "demangled_name": "X::X(int)",
+                    "lineno": 19,
+                    "execution_count": 5,
+                    "blocks_percent": 100.0
+                },
+                {
+                    "demangled_name": "boost::boost_ci::get_answer(int)",
+                    "lineno": 27,
+                    "execution_count": 3,
+                    "blocks_percent": 60.0
+                }
+            ]
+        }
+    ]
+}

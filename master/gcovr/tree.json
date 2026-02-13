@@ -1,0 +1,34 @@
+[
+  {
+    "name": "boost_ci.cpp",
+    "coverage": "90.9",
+    "coverageClass": "coverage-high",
+    "linesTotal": "11",
+    "linesExec": "10",
+    "linesCoverage": "90.9",
+    "linesClass": "coverage-high",
+    "functionsCoverage": "100.0",
+    "functionsClass": "coverage-high",
+    "branchesCoverage": "-",
+    "branchesClass": "coverage-unknown",
+    "isDirectory": false,
+    "link": "index.boost_ci.cpp.44103cc41392610d770990e683f982bf.html",
+    "children": []
+  },
+  {
+    "name": "boost_ci.hpp",
+    "coverage": "100.0",
+    "coverageClass": "coverage-high",
+    "linesTotal": "1",
+    "linesExec": "1",
+    "linesCoverage": "100.0",
+    "linesClass": "coverage-high",
+    "functionsCoverage": "100.0",
+    "functionsClass": "coverage-high",
+    "branchesCoverage": "-",
+    "branchesClass": "coverage-unknown",
+    "isDirectory": false,
+    "link": "index.boost_ci.hpp.248e0e60295a41f62f1fb81d6a238ad3.html",
+    "children": []
+  }
+]
