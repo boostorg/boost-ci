@@ -1,0 +1,18 @@
+[
+  {
+    "name": "include/boost/boost-ci/boost_ci.hpp",
+    "coverage": "100.0",
+    "coverageClass": "coverage-high",
+    "isDirectory": false,
+    "link": "index.boost_ci.hpp.248e0e60295a41f62f1fb81d6a238ad3.html",
+    "children": []
+  },
+  {
+    "name": "src/boost_ci.cpp",
+    "coverage": "90.9",
+    "coverageClass": "coverage-high",
+    "isDirectory": false,
+    "link": "index.boost_ci.cpp.44103cc41392610d770990e683f982bf.html",
+    "children": []
+  }
+]
