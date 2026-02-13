@@ -1,0 +1,25 @@
+# Boost CI Test Build Jamfile
+
+# Copyright (c) 2022 Alexander Grund
+# 
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE or www.boost.org/LICENSE_1_0.txt)
+
+import configure ;
+
+local requirements =
+  <link>shared:<define>BOOST_BOOST_CI_DYN_LINK=1
+  <library>/boost/atomic//boost_atomic
+  ;
+
+project boost/ci
+  : source-location ../src
+  : requirements $(requirements)
+  : usage-requirements $(requirements)
+  ;
+
+lib boost_ci
+  : boost_ci.cpp
+  ;
+
+boost-install boost_ci ;

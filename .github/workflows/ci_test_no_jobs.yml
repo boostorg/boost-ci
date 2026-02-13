@@ -1,0 +1,40 @@
+#
+# Copyright 2020-2021 Peter Dimov
+# Copyright 2021 Andrey Semashev
+# Copyright 2021-2024 Alexander Grund
+# Copyright 2022-2025 James E. King III
+#
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at http://boost.org/LICENSE_1_0.txt)
+#
+# This workflow uses the Boost.CI reusable workflow but it tests what happens if
+# all of the default large section jobs are disabled.  This action should yield
+# all top level jobs as skipped.
+# 
+---
+name: Test.NoJobs.CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - develop
+      - bugfix/**
+      - feature/**
+      - fix/**
+      - pr/**
+    paths-ignore:
+      - LICENSE
+      - meta/**
+      - README.md
+
+jobs:
+  call-neutered-boost-ci:
+    name: Run Boost.CI
+    uses: boostorg/boost-ci/.github/workflows/reusable.yml@master
+    with:  # disable all four major job options
+      enable_posix: false
+      enable_windows: false
+      enable_mingw: false
+      enable_cmake: false
