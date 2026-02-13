@@ -21,11 +21,12 @@ To display coverage badges in your repository's README, use the following Markdo
 
 **Available badges:**
 
-| Badge | URL |
-|-------|-----|
-| Lines | `https://{organization}.github.io/{repo}/{branch}/gcovr/badges/coverage-lines.svg` |
-| Functions | `https://{organization}.github.io/{repo}/{branch}/gcovr/badges/coverage-functions.svg` |
-| Branches | `https://{organization}.github.io/{repo}/{branch}/gcovr/badges/coverage-branches.svg` |
+| Badge | URL | Preview |
+|-------|-----|---------|
+| Lines | `https://{organization}.github.io/{repo}/{branch}/gcovr/badges/coverage-lines.svg` | [![Lines](https://boostorg.github.io/boost-ci/master/gcovr/badges/coverage-lines.svg)](https://boostorg.github.io/boost-ci/master/gcovr/index.html)
+| Functions | `https://{organization}.github.io/{repo}/{branch}/gcovr/badges/coverage-functions.svg` | [![Functions](https://boostorg.github.io/boost-ci/master/gcovr/badges/coverage-functions.svg)](https://boostorg.github.io/boost-ci/master/gcovr/index.html)
+| Branches | `https://{organization}.github.io/{repo}/{branch}/gcovr/badges/coverage-branches.svg` | [![Branches](https://boostorg.github.io/boost-ci/master/gcovr/badges/coverage-branches.svg)](https://boostorg.github.io/boost-ci/master/gcovr/index.html)
+
 
 **Markdown to copy into your README:**
 
@@ -41,5 +42,4 @@ For example, boostorg/json on the `develop` branch:
 [![Lines](https://boostorg.github.io/json/develop/gcovr/badges/coverage-lines.svg)](https://boostorg.github.io/json/develop/gcovr/index.html)
 [![Functions](https://boostorg.github.io/json/develop/gcovr/badges/coverage-functions.svg)](https://boostorg.github.io/json/develop/gcovr/index.html)
 [![Branches](https://boostorg.github.io/json/develop/gcovr/badges/coverage-branches.svg)](https://boostorg.github.io/json/develop/gcovr/index.html)
-
-
+```
