@@ -28,6 +28,8 @@ on:
 env:
   GIT_FETCH_JOBS: 8
   NET_RETRY_COUNT: 5
+  # Commit title of the automatically created commits
+  # Will amend the last commit when it has the same title
   GCOVR_COMMIT_MSG: "Update coverage data"
 
 jobs:
@@ -113,6 +115,7 @@ jobs:
             cp gh_pages_dir/develop/index.html gh_pages_dir/master/index.html
             cd gh_pages_dir
             git add .
+            # Amend if current HEAD is (still) a coverage update
             if [[ "$(git show --format="%s" --no-patch)" == "$GCOVR_COMMIT_MSG" ]]; then
                 git commit --amend --no-edit
             else
