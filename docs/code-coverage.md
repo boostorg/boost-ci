@@ -11,6 +11,8 @@ Copy the file `.github/workflows/code-coverage.yml` from boost-ci into your Boos
 
 Run the workflow at least once, which can be done [manually](https://docs.github.com/actions/how-tos/manage-workflow-runs/manually-run-a-workflow).
 This will create a branch called "code-coverage" to store reports.
+On this branch a single commit will be created and updated (amended) with every run of the workflow to reduce the size of the repository.
+Hence it is not intended for other commits as the last one will always be changed.
 
 Next, enable GitHub Pages. Go to https://github.com/ORGANIZATION/REPO/settings/pages and enable the new branch.  
 

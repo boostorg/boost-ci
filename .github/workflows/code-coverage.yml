@@ -1,5 +1,6 @@
 #
 # Copyright (c) 2026 Sam Darwin
+# Copyright (c) 2026 Alexander Grund
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -28,6 +29,8 @@ on:
 env:
   GIT_FETCH_JOBS: 8
   NET_RETRY_COUNT: 5
+  # Commit title of the automatically created commits
+  GCOVR_COMMIT_MSG: "Update coverage data"
 
 jobs:
   build:
@@ -62,7 +65,8 @@ jobs:
                 echo "The code-coverage branch exists. Continuing."
             else
                 echo "The code-coverage branch does not exist. Creating it."
-                git checkout -b code-coverage
+                git switch --orphan code-coverage
+                git commit --allow-empty -m "$GCOVR_COMMIT_MSG"
                 git push origin code-coverage
                 git checkout $GITHUB_REF_NAME
             fi
@@ -111,5 +115,5 @@ jobs:
             cp gh_pages_dir/develop/index.html gh_pages_dir/master/index.html
             cd gh_pages_dir
             git add .
-            git commit --amend -m code-coverage
+            git commit --amend -m "$GCOVR_COMMIT_MSG"
             git push -f origin code-coverage
