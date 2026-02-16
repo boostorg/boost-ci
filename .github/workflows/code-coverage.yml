@@ -31,6 +31,8 @@ env:
   NET_RETRY_COUNT: 5
   # Commit title of the automatically created commits
   GCOVR_COMMIT_MSG: "Update coverage data"
+  # Should branch coverage be reported? Default to no.
+  BOOST_BRANCH_COVERAGE: 0
 
 jobs:
   build:
@@ -108,6 +110,7 @@ jobs:
             touch gh_pages_dir/.nojekyll # Prevent GH pages from treating these files as Jekyll pages.
             mkdir -p gh_pages_dir/develop
             mkdir -p gh_pages_dir/master
+            rm -rf "gh_pages_dir/${GITHUB_REF_NAME}/gcovr"
             cp -rp gcovr gh_pages_dir/${GITHUB_REF_NAME}/
             echo -e "<html>\n<head>\n</head>\n<body>\n<a href=develop/index.html>develop</a><br>\n<a href=master/index.html>master</a><br>\n</body>\n</html>\n" > gh_pages_dir/index.html
             # In the future: echo -e "<html>\n<head>\n</head>\n<body>\n<a href=gcovr/index.html>gcovr</a><br>\n</body>\n</html>\n" > gh_pages_dir/develop/index.html
