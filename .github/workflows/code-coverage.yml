@@ -37,6 +37,8 @@ env:
   GCOVR_COMMIT_MSG: "Update coverage data"
   # Should branch coverage be reported? Default to no.
   BOOST_BRANCH_COVERAGE: 0
+  # Dependencies:
+  # EXTRA_BOOST_LIBRARIES: "myorg/myrepo other/repo3"
 
 jobs:
   build:
