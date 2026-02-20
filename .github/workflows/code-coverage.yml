@@ -74,7 +74,7 @@ jobs:
                 git switch --orphan code-coverage
                 git commit --allow-empty -m "$GCOVR_COMMIT_MSG"
                 git push origin code-coverage
-                git checkout $GITHUB_REF_NAME
+                git checkout "$GITHUB_REF_NAME"
             fi
 
       - name: Install Python
