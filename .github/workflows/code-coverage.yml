@@ -9,7 +9,7 @@
 # Instructions
 #
 # After running this workflow successfully, go to https://github.com/ORGANIZATION/REPO/settings/pages
-# and enable github pages on the code-coverage branch.  
+# and enable github pages on the code-coverage branch.
 # The pages will be hosted at https://ORGANIZATION.github.io/REPO
 #
 
