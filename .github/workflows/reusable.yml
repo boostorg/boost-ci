@@ -550,7 +550,7 @@ jobs:
         if: ${{ matrix.target-os == 'cygwin' }}
         uses: cygwin/cygwin-install-action@v6
         with:
-          site: ${{ matrix.address-model == '64' && 'https://mirrors.cicku.me/cygwin' || 'https://ftp-stud.hs-esslingen.de/pub/Mirrors/sources.redhat.com/cygwin-archive/20221123' }}
+          site: ${{ matrix.address-model == '64' && 'https://mirrors.kernel.org/sourceware/cygwin https://mirrors.cicku.me/cygwin' || 'https://ftp-stud.hs-esslingen.de/pub/Mirrors/sources.redhat.com/cygwin-archive/20221123' }}
           packages: coreutils, gcc-g++, libstdc++6, make, moreutils, openssl, libbz2-devel, libgmp-devel, libicu-devel, libjpeg-devel, libmpfr-devel, libpng-devel, libssl-devel, libtiff-devel, libxslt-devel, libzstd-devel
           platform: ${{ matrix.address-model == '64' && 'x86_64' || 'x86' }}
 
