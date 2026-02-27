@@ -741,6 +741,7 @@ jobs:
       - name: Install CMake dependencies
         if: matrix.cmake_version
         run: |
+            sudo apt-get -o Acquire::Retries=3 update
             sudo apt-get -o Acquire::Retries=3 -y -q --no-install-suggests --no-install-recommends install curl libcurl4-openssl-dev libarchive-dev
             echo /tmp/cmake/bin >> $GITHUB_PATH
 
