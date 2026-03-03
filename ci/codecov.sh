@@ -56,6 +56,9 @@ elif [[ "$coverage_action" == "collect" ]] || [[ "$coverage_action" == "upload" 
 
     : "${LCOV_VERSION:=v2.3}" # Set default lcov version to install
 
+    # Convert arguments, if any, to array
+    read -ra LCOV_OPTIONS <<< "${LCOV_OPTIONS:-}"
+
     : "${LCOV_BRANCH_COVERAGE:=1}" # Set default for branch coverage
 
     : "${LCOV_IGNORE_ERRORS_LEVEL:="standard"}" # Set default error level. See below.
