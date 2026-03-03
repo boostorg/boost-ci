@@ -14,6 +14,9 @@
 ---
 name: Test.NoJobs.CI
 
+permissions:
+  contents: read
+
 on:
   pull_request:
   push:
@@ -29,9 +32,6 @@ on:
       - meta/**
       - README.md
 
-permissions:
-  contents: read
-  
 jobs:
   call-neutered-boost-ci:
     name: Run Boost.CI

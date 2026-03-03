@@ -11,6 +11,9 @@
 ---
 name: Compatible.Old.CI
 
+permissions:
+  contents: read
+
 on:
   pull_request:
   push:
@@ -19,9 +22,6 @@ on:
       - develop
       - feature/**
 
-permissions:
-  contents: read
-  
 concurrency:
   group: ${{format('compat-{0}:{1}', github.repository, github.ref)}}
   cancel-in-progress: true
