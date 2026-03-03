@@ -13,6 +13,9 @@
 ---
 name: Boost.CI
 
+permissions:
+  contents: read
+  
 on:
   workflow_call:
     inputs:

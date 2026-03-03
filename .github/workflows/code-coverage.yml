@@ -26,6 +26,9 @@ on:
       - '.github/workflows/code-coverage.yml'
   workflow_dispatch:
 
+permissions:
+  contents: write
+  
 concurrency:
   group: code-coverage-pages
   cancel-in-progress: false
