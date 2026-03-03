@@ -19,6 +19,7 @@ set -ex
 
 CI_DIR="$(dirname "${BASH_SOURCE[0]}")/.."
 
+#shellcheck source=../enforce.sh
 . "$CI_DIR"/enforce.sh
 
 if [ -z "$INTEL_ICC_SERIAL_NUMBER" ]; then
@@ -42,5 +43,5 @@ rm -f silent.cfg
 export PATH=/opt/intel/bin:$PATH
 popd
 cd ../..
-./bootstrap.sh --with-toolset=$B2_TOOLSET
+./bootstrap.sh --with-toolset="$B2_TOOLSET"
 "$CI_DIR"/build.sh

@@ -8,4 +8,4 @@
 # Bash script to run in Linux images of Azure Pipelines to
 # perform a bjam build.
 #
-. $(dirname "${BASH_SOURCE[0]}")/../build.sh
+. "$(dirname "${BASH_SOURCE[0]}")/../build.sh"

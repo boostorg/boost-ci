@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright 2021-2025 Alexander Grund
+# Copyright 2021-2026 Alexander Grund
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at
 #      http://www.boost.org/LICENSE_1_0.txt)
@@ -37,6 +37,7 @@ if [[ "$B2_SANITIZE" == "yes" ]]; then
   fi
 fi
 
+# shellcheck disable=SC1091
 . "$(dirname "${BASH_SOURCE[0]}")"/../common_install.sh
 
 # Persist the environment for all future steps

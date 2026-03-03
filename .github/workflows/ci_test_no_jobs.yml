@@ -1,7 +1,7 @@
 #
 # Copyright 2020-2021 Peter Dimov
 # Copyright 2021 Andrey Semashev
-# Copyright 2021-2024 Alexander Grund
+# Copyright 2021-2026 Alexander Grund
 # Copyright 2022-2025 James E. King III
 #
 # Distributed under the Boost Software License, Version 1.0.
@@ -13,6 +13,9 @@
 # 
 ---
 name: Test.NoJobs.CI
+
+permissions:
+  contents: read
 
 on:
   pull_request:
