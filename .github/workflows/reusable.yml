@@ -320,13 +320,13 @@ jobs:
               curl -sL https://archives.boost.io/misc/node/node-v20.9.0-linux-x64-glibc-217.tar.xz | tar -xJ --strip-components 1 -C /node20217
             fi
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           # For coverage builds fetch the whole history, else only 1 commit using a 'fake ternary'
           fetch-depth: ${{ matrix.coverage && '0' || '1' }}
 
       - name: Cache ccache
-        uses: actions/cache@v4
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         if: env.B2_USE_CCACHE
         with:
           path: ~/.ccache
@@ -334,7 +334,7 @@ jobs:
           restore-keys: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-
 
       - name: Fetch Boost.CI
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: boostorg/boost-ci
           ref: master
@@ -438,7 +438,7 @@ jobs:
 
       - name: Upload coverage
         if: matrix.coverage
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
         with:
           fail_ci_if_error: true
           disable_search: true
@@ -536,10 +536,10 @@ jobs:
       matrix: ${{fromJson(needs.generate-windows-matrix.outputs.matrix)}}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Fetch Boost.CI
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: boostorg/boost-ci
           ref: master
@@ -552,7 +552,7 @@ jobs:
 
       - name: Setup cygwin
         if: ${{ matrix.target-os == 'cygwin' }}
-        uses: cygwin/cygwin-install-action@v6
+        uses: cygwin/cygwin-install-action@711d29f3da23c9f4a1798e369a6f01198c13b11a # v6.1
         with:
           site: ${{ matrix.address-model == '64' && 'https://www.mirrorservice.org/sites/sourceware.org/pub/cygwin' || 'https://ftp-stud.hs-esslingen.de/pub/Mirrors/sources.redhat.com/cygwin-archive/20221123' }}
           packages: coreutils, gcc-g++, libstdc++6, make, moreutils, openssl, libbz2-devel, libgmp-devel, libicu-devel, libjpeg-devel, libmpfr-devel, libpng-devel, libssl-devel, libtiff-devel, libxslt-devel, libzstd-devel
@@ -589,7 +589,7 @@ jobs:
 
       - name: Upload coverage
         if: matrix.coverage
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
         with:
           disable_search: true
           files: __out/cobertura.xml
@@ -665,10 +665,10 @@ jobs:
       matrix: ${{fromJson(needs.generate-mingw-matrix.outputs.matrix)}}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Setup MSYS2 environment for MinGW
-        uses: msys2/setup-msys2@v2
+        uses: msys2/setup-msys2@4f806de0a5a7294ffabaff804b38a9b435a73bda # v2.30.0
         with:
           msystem: ${{matrix.sys}}
           update: true
@@ -676,7 +676,7 @@ jobs:
           pacboy: gcc:p cmake:p ninja:p
 
       - name: Fetch Boost.CI
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: boostorg/boost-ci
           ref: master
@@ -736,7 +736,7 @@ jobs:
       - name: Cache CMake
         if: matrix.cmake_version
         id: cache-cmake
-        uses: actions/cache@v4
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
           path: /tmp/cmake
           key: ${{runner.os}}-cmake-${{matrix.cmake_version}}
@@ -769,17 +769,17 @@ jobs:
             cmake --build __build -- -j 3
             cmake --build __build --target install
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Cache ccache
-        uses: hendrikmuhs/ccache-action@v1.2
+        uses: hendrikmuhs/ccache-action@5ebbd400eff9e74630f759d94ddd7b6c26299639 # v1.2.20
         if: runner.os == 'Linux'
         with:
           create-symlink: true
           key: ${{matrix.os}}-${{matrix.build_shared}}
 
       - name: Fetch Boost.CI
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: boostorg/boost-ci
           ref: master
