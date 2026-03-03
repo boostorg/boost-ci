@@ -3,6 +3,7 @@
 # Generates markdown for README build status badges.
 #
 # Copyright 2025 James E. King III <jking@apache.org>
+# Copyright 2026 Alexander Grund
 #
 
 set -eu
@@ -33,10 +34,9 @@ EOF
   exit 1
 }
 
-ORIGARGS=$@
-ARGS=$(getopt --longoptions "repo:,appveyor:,appveyororg:,codecovbadge:,coverity:,azure,drone,notcode,help" "r:a:o:c:v:y:pdnh" -- "$@")
+ORIGARGS=$*
 
-if [ $? -ne 0 ]; then
+if ! ARGS=$(getopt --longoptions "repo:,appveyor:,appveyororg:,codecovbadge:,coverity:,azure,drone,notcode,help" "r:a:o:c:v:y:pdnh" -- "$@"); then
   echo "Failed to parse options" >&2
   usage
 fi

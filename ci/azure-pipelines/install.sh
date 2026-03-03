@@ -2,7 +2,7 @@
 #
 # Copyright 2017 - 2019 James E. King III
 # Copyright 2019 Mateusz Loskot <mateusz at loskot dot net>
-# Copyright 2021-2024 Alexander Grund
+# Copyright 2021 - 2026 Alexander Grund
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at
 #      http://www.boost.org/LICENSE_1_0.txt)
@@ -41,21 +41,24 @@ fi
 
 if [ "$AGENT_OS" != "Darwin" ]; then
     # If no package set install at least the compiler if not already found
-    if [[ -z "$PACKAGES" ]] && ! command -v $B2_COMPILER; then
+    if [[ -z "$PACKAGES" ]] && ! command -v "$B2_COMPILER"; then
         PACKAGES="$(get_compiler_package "$B2_COMPILER")"
     fi
 
     if [ -n "$PACKAGES" ]; then
-        for i in {1..${NET_RETRY_COUNT:-3}}; do
+        for ((i=1; i <= ${NET_RETRY_COUNT:-3}; i++)); do
+            # shellcheck disable=SC2015
             sudo -E apt-add-repository -y "ppa:ubuntu-toolchain-r/test" && break || sleep 10
         done
         if [ -n "${LLVM_REPO}" ]; then
-            curl -sSL --retry ${NET_RETRY_COUNT:-5} https://apt.llvm.org/llvm-snapshot.gpg.key | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/llvm-snapshot.gpg
-            for i in {1..${NET_RETRY_COUNT:-3}}; do
+            curl -sSL --retry "${NET_RETRY_COUNT:-5}" https://apt.llvm.org/llvm-snapshot.gpg.key | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/llvm-snapshot.gpg
+            for ((i=1; i <= ${NET_RETRY_COUNT:-3}; i++)); do
+                # shellcheck disable=SC2015
                 sudo -E apt-add-repository "deb http://apt.llvm.org/${LLVM_OS:-xenial}/ ${LLVM_REPO} main" && break || sleep 10
             done
         fi
         sudo apt-get -o Acquire::Retries="${NET_RETRY_COUNT:-3}" update
+        # shellcheck disable=SC2086
         sudo apt-get -o Acquire::Retries="${NET_RETRY_COUNT:-3}" -y -q --no-install-suggests --no-install-recommends install ${PACKAGES}
     fi
 
@@ -76,7 +79,7 @@ fi
 
 old_B2_TOOLSET="$B2_TOOLSET"
 
-. $(dirname "${BASH_SOURCE[0]}")/../common_install.sh
+. "$(dirname "${BASH_SOURCE[0]}")/../common_install.sh"
 
 # AzP requires to run special task in order to export job-scoped variable from a script.
 #
@@ -86,6 +89,6 @@ old_B2_TOOLSET="$B2_TOOLSET"
 set +x
 echo "##vso[task.setvariable variable=SELF]$SELF"
 echo "##vso[task.setvariable variable=BOOST_ROOT]$BOOST_ROOT"
-[ -n "old_B2_TOOLSET" ] || echo "##vso[task.setvariable variable=B2_TOOLSET]$B2_TOOLSET"
+[[ -n "$old_B2_TOOLSET" ]] || echo "##vso[task.setvariable variable=B2_TOOLSET]$B2_TOOLSET"
 echo "##vso[task.setvariable variable=B2_COMPILER]$B2_COMPILER"
 set -x

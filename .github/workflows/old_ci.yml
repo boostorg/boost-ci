@@ -117,7 +117,7 @@ jobs:
     steps:
       - name: Setup environment
         run: |
-            [ ! -f "/etc/debian_version" ] || echo "DEBIAN_FRONTEND=noninteractive" >> $GITHUB_ENV
+            [ ! -f "/etc/debian_version" ] || echo "DEBIAN_FRONTEND=noninteractive" >> "$GITHUB_ENV"
             git config --global pack.threads 0
 
       - uses: actions/checkout@v4

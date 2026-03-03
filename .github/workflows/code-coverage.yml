@@ -94,12 +94,13 @@ jobs:
           path: ci-automation
 
       - name: Build and run tests & collect coverage data
+        env:
+          B2_CXXSTD: ${{matrix.cxxstd}}
+          ORGANIZATION: ${{github.repository_owner}}
         run: |
             set -xe
             ls -al
-            export ORGANIZATION=${GITHUB_REPOSITORY_OWNER}
-            export REPONAME=$(basename ${GITHUB_REPOSITORY})
-            export B2_CXXSTD=${{matrix.cxxstd}}
+            export REPONAME=$(basename "${GITHUB_REPOSITORY}")
             ${{matrix.gcovr_script}}
 
       - name: Checkout GitHub pages branch

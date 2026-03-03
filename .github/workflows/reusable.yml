@@ -1,7 +1,7 @@
 #
 # Copyright 2020-2021 Peter Dimov
 # Copyright 2021 Andrey Semashev
-# Copyright 2021-2024 Alexander Grund
+# Copyright 2021-2026 Alexander Grund
 # Copyright 2022-2025 James E. King III
 #
 # Distributed under the Boost Software License, Version 1.0.
@@ -235,7 +235,7 @@ jobs:
               filtered = filter_yes_values(filtered, 'multiarch')
           if not is_true('ENABLE_SANITIZERS'):
               filtered = filter_yes_values(filtered, 'sanitize')
-          if not os.environ.get('CODECOV_TOKEN') and '${{inputs.enable_pr_coverage}}' != 'true':
+          if not os.environ.get('CODECOV_TOKEN') and os.environ.get('$ENABLE_PR_COVERAGE') != 'true':
               filtered = filter_yes_values(filtered, 'coverage')
           if not os.environ.get('COVERITY_SCAN_TOKEN'):
               filtered = filter_yes_values(filtered, 'coverity')
@@ -252,6 +252,7 @@ jobs:
           ENABLE_MULTIARCH: ${{ inputs.enable_multiarch }}
           ENABLE_SANITIZERS: ${{ inputs.enable_sanitizers }}
           ENABLE_REFLECTION: ${{ inputs.enable_reflection }}
+          ENABLE_PR_COVERAGE: ${{inputs.enable_pr_coverage}}
           EXCLUDE_COMPILER: ${{ inputs.exclude_compiler }}
           EXCLUDE_CXXSTD: ${{ inputs.exclude_cxxstd }}
           EXCLUDE_OS: ${{ inputs.exclude_os }}
@@ -282,7 +283,7 @@ jobs:
       - name: Setup environment
         run: |
             if [ -f "/etc/debian_version" ]; then
-                echo "DEBIAN_FRONTEND=noninteractive" >> $GITHUB_ENV
+                echo "DEBIAN_FRONTEND=noninteractive" >> "$GITHUB_ENV"
                 export DEBIAN_FRONTEND=noninteractive
             fi
             if [ -n "${{matrix.container}}" ] && [ -f "/etc/debian_version" ]; then
@@ -292,7 +293,9 @@ jobs:
                 key_server="keyserver.boost.org"
                 echo "Downloading key from $key_server"
                 curl -sSL --retry ${NET_RETRY_COUNT:-5} "https://$key_server/pks/lookup?op=get&search=0xE1DD270288B4E6030699E45FA1715D88E1DF1F24" | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/git-core_ubuntu_ppa.gpg
-                for i in {1..${NET_RETRY_COUNT:-3}}; do sudo -E add-apt-repository -y ppa:git-core/ppa && break || sleep 10; done
+                for ((i=1; i <= ${NET_RETRY_COUNT:-3}; i++)); do
+                    sudo -E add-apt-repository -y ppa:git-core/ppa && break || sleep 10
+                done
                 apt-get -o Acquire::Retries=$NET_RETRY_COUNT update
                 osver=$(lsb_release -sr | cut -f1 -d.)
                 pkgs="g++ git xz-utils"
@@ -306,10 +309,10 @@ jobs:
             fi
             # For jobs not compatible with ccache, use "ccache: no" in the matrix
             if [[ "${{ matrix.ccache }}" == "no" ]]; then
-                echo "B2_USE_CCACHE=0" >> $GITHUB_ENV
+                echo "B2_USE_CCACHE=0" >> "$GITHUB_ENV"
             fi
             if [[ "${{ matrix.sanitize }}" == "yes" ]]; then
-                echo "LSAN_OPTIONS=suppressions=${GITHUB_WORKSPACE}/test/suppressions.txt" >> $GITHUB_ENV
+                echo "LSAN_OPTIONS=suppressions=${GITHUB_WORKSPACE}/test/suppressions.txt" >> "$GITHUB_ENV"
             fi
             git config --global pack.threads 0
             if [[ "${{matrix.container}}" == "ubuntu:1"* ]]; then
@@ -379,7 +382,7 @@ jobs:
         if: matrix.gcc_toolchain
         run: |
             GCC_TOOLCHAIN_ROOT="$HOME/gcc-toolchain"
-            echo "GCC_TOOLCHAIN_ROOT=$GCC_TOOLCHAIN_ROOT" >> $GITHUB_ENV
+            echo "GCC_TOOLCHAIN_ROOT=$GCC_TOOLCHAIN_ROOT" >> "$GITHUB_ENV"
             if ! command -v dpkg-architecture; then
                 apt-get -o Acquire::Retries=$NET_RETRY_COUNT -y -q --no-install-suggests --no-install-recommends install dpkg-dev
             fi
@@ -743,7 +746,7 @@ jobs:
         run: |
             sudo apt-get -o Acquire::Retries=3 update
             sudo apt-get -o Acquire::Retries=3 -y -q --no-install-suggests --no-install-recommends install curl libcurl4-openssl-dev libarchive-dev
-            echo /tmp/cmake/bin >> $GITHUB_PATH
+            echo /tmp/cmake/bin >> "$GITHUB_PATH"
 
       - name: Build CMake
         if: matrix.cmake_version && steps.cache-cmake.outputs.cache-hit != 'true'
@@ -818,7 +821,7 @@ jobs:
       - name: Install Library
         run: |
             BCM_INSTALL_PATH=/tmp/boost_install
-            echo "BCM_INSTALL_PATH=$BCM_INSTALL_PATH" >> $GITHUB_ENV
+            echo "BCM_INSTALL_PATH=$BCM_INSTALL_PATH" >> "$GITHUB_ENV"
             cd "$BOOST_ROOT"
             mkdir __build_cmake_install_test__ && cd __build_cmake_install_test__
             cmake -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DBOOST_INCLUDE_LIBRARIES=$SELF -DBUILD_SHARED_LIBS=${{matrix.build_shared}} -DCMAKE_INSTALL_PREFIX="$BCM_INSTALL_PATH" -DBoost_VERBOSE=ON -DBoost_DEBUG=ON ..

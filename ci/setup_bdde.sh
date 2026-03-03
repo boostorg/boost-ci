@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright 2024 Alexander Grund
+# Copyright 2024 - 2026 Alexander Grund
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at
 #      http://www.boost.org/LICENSE_1_0.txt)
@@ -27,7 +27,7 @@ git clone --depth=1 https://github.com/jeking3/bdde.git
 BDDE_SCRIPTS=$(pwd)/bdde/bin/linux
 
 # this prepares the VM for multiarch docker
-sudo ${BDDE_SCRIPTS}/bdde-multiarch
-sudo ${BDDE_SCRIPTS}/bdde-multiarch --version
+sudo "${BDDE_SCRIPTS}/bdde-multiarch"
+sudo "${BDDE_SCRIPTS}/bdde-multiarch" --version
 
 export PATH="${BDDE_SCRIPTS}:${PATH}"

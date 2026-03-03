@@ -9,4 +9,4 @@
 # cwd should be $BOOST_ROOT/libs/$SELF before running
 #
 
-. $(dirname "${BASH_SOURCE[0]}")/../build.sh
+. "$(dirname "${BASH_SOURCE[0]}")/../build.sh"

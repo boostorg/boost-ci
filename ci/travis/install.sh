@@ -36,4 +36,4 @@ if [ "${B2_TOOLSET:-}" == "" ]; then
     echo "using $B2_TOOLSET : : $TRAVIS_COMPILER ;" > ~/user-config.jam
 fi
 
-. $(dirname "${BASH_SOURCE[0]}")/../common_install.sh
+. "$(dirname "${BASH_SOURCE[0]}")/../common_install.sh"

@@ -17,9 +17,9 @@
 
 set -ex
 
-. $(dirname "${BASH_SOURCE[0]}")/../setup_bdde.sh
+. "$(dirname "${BASH_SOURCE[0]}")/../setup_bdde.sh"
 
-. $(dirname "${BASH_SOURCE[0]}")/../enforce.sh
+. "$(dirname "${BASH_SOURCE[0]}")/../enforce.sh"
 
 bdde "echo this just pulls the image"
 
