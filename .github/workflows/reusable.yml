@@ -154,6 +154,7 @@ jobs:
                "compiler": "gcc-13",    "cxxstd": "11,14,17,20",       "os": "ubuntu-24.04"},
               {"compiler": "gcc-14",    "cxxstd": "11,14,17,20,23",    "os": "ubuntu-24.04"},
               {"compiler": "gcc-15",    "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "ubuntu:25.04"},
+              {"compiler": "gcc-15.2",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "ubuntu:26.04"},
               {"compiler": "clang-3.5", "cxxstd": "11",                "os": "ubuntu-latest", "container": "ubuntu:16.04"},
               {"compiler": "clang-3.6", "cxxstd": "11,14",             "os": "ubuntu-latest", "container": "ubuntu:16.04"},
               {"compiler": "clang-3.7", "cxxstd": "11,14",             "os": "ubuntu-latest", "container": "ubuntu:16.04"},
@@ -176,6 +177,7 @@ jobs:
               {"compiler": "clang-18",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-24.04"},
               {"compiler": "clang-19",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-24.04"},
               {"compiler": "clang-20",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "ubuntu:25.04"},
+              {"compiler": "clang-21",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "ubuntu:26.04"},
               {"compiler": "icpx-2025", "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "intel/oneapi-hpckit:2025.2.2-0-devel-ubuntu24.04"},
             # libc++
               {"stdlib": "libc++",
@@ -367,6 +369,10 @@ jobs:
             if [[ -z "${{matrix.install}}" ]]; then
                 if [[ ! "${{matrix.compiler}}" =~ icpx ]]; then
                     compiler="${{matrix.compiler}}"
+                    # Strip minor GCC version: gcc-15.2 -> gcc-15 for package installation (gcc >= 10)
+                    if [[ "$compiler" =~ ^gcc-[1-9][0-9]+\. ]]; then
+                        compiler="${compiler%.*}"
+                    fi
                     pkgs="${compiler/gcc-/g++-}"
                     [[ -z "${{matrix.gcc_toolchain}}" ]] || pkgs+=" g++-${{matrix.gcc_toolchain}}"
                     if [[ "${{matrix.stdlib}}" == "libc++" && $compiler == "clang-"* ]]; then
