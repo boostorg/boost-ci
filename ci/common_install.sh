@@ -229,6 +229,13 @@ if [ -n "${B2_COMPILER:-}" ]; then
         CXX="${B2_COMPILER/gcc/g++}"
     fi
 
+    # Handle versioned GCC with minor version (e.g., gcc-15.2 -> gcc-15)
+    if [[ "$B2_COMPILER" =~ ^gcc-[1-9][0-9]+\.[0-9]+$ ]]; then
+        CXX="${CXX%.*}"
+        { set +x; } &> /dev/null
+        echo "Adjusted compiler for minor version: $CXX"
+        set -x
+    fi
 
     if ! command -v "$CXX"; then
         echo "Error: Compiler $CXX was not installed properly"
@@ -244,6 +251,16 @@ if [ -n "${B2_COMPILER:-}" ]; then
         version=$($CXX --version)
     fi
     echo "Compiler version: $version"
+
+    # Verify that the installed compiler version matches what was requested if a minor version was specified
+    if [[ "$B2_COMPILER" =~ ^gcc-[1-9][0-9]+\.[0-9]+$ ]]; then
+        expected_version="${B2_COMPILER#gcc-}"
+        if [[ ! "$version" == *"$expected_version"* ]]; then
+            echo "Error: Expected GCC version $expected_version but got $version"
+            exit 1
+        fi
+        echo "Verified GCC version: $expected_version"
+    fi
 
     if [ "$B2_USE_CCACHE" == "1" ]; then
         CXX="ccache $CXX"
