@@ -178,6 +178,7 @@ jobs:
               {"compiler": "clang-19",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-24.04"},
               {"compiler": "clang-20",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "ubuntu:25.04"},
               {"compiler": "clang-21",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "ubuntu:26.04"},
+              {"compiler": "clang-22",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "ubuntu:26.04"},
               {"compiler": "icpx-2025", "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "intel/oneapi-hpckit:2025.2.2-0-devel-ubuntu24.04"},
             # libc++
               {"stdlib": "libc++",
