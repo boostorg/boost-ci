@@ -38,7 +38,7 @@ on:
 jobs:
   call-boost-ci:
     name: Run Boost.CI
-    uses: boostorg/boost-ci/.github/workflows/reusable.yml@master
+    uses: boostorg/boost-ci/.github/workflows/reusable.yml@node24
     # Customization:
     with:
       enable_reflection: true
