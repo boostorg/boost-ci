@@ -75,7 +75,7 @@ on:
         type: boolean
         default: true
       enable_reflection:
-        description: "When enabled, clang-p2996 jobs will be added. Disabled by default."
+        description: "When enabled, jobs with reflection enabled will be added. Disabled by default."
         required: false
         type: boolean
         default: false
@@ -153,7 +153,8 @@ jobs:
               {"name": "sanitize-gcc-linux", "sanitize": "yes",
                "compiler": "gcc-13",    "cxxstd": "11,14,17,20",       "os": "ubuntu-24.04"},
               {"compiler": "gcc-14",    "cxxstd": "11,14,17,20,23",    "os": "ubuntu-24.04"},
-              {"compiler": "gcc-15",    "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "ubuntu:25.04"},
+              {"compiler": "gcc-15",    "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "ubuntu:26.04"},
+              {"compiler": "gcc-16",    "cxxstd": "11,14,17,20,23,26", "os": "ubuntu-latest", "container": "ubuntu:26.04"},
               {"compiler": "clang-3.5", "cxxstd": "11",                "os": "ubuntu-latest", "container": "ubuntu:16.04"},
               {"compiler": "clang-3.6", "cxxstd": "11,14",             "os": "ubuntu-latest", "container": "ubuntu:16.04"},
               {"compiler": "clang-3.7", "cxxstd": "11,14",             "os": "ubuntu-latest", "container": "ubuntu:16.04"},
@@ -176,6 +177,8 @@ jobs:
               {"compiler": "clang-18",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-24.04"},
               {"compiler": "clang-19",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-24.04"},
               {"compiler": "clang-20",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "ubuntu:25.04"},
+              {"compiler": "clang-21",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "ubuntu:26.04"},
+              {"compiler": "clang-22",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "ubuntu:26.04"},
               {"compiler": "icpx-2025", "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "intel/oneapi-hpckit:2025.2.2-0-devel-ubuntu24.04"},
             # libc++
               {"stdlib": "libc++",
@@ -197,8 +200,8 @@ jobs:
               {"name": "bigendian-s390x", "multiarch": "yes",
                "compiler": "clang",     "cxxstd": "17",                "os": "ubuntu-22.04", "ccache": "no", "distro": "fedora", "edition": "34", "arch": "s390x"},
             # Reflection
-              {"name": "Clang-preview w/ reflection",
-               "compiler": "clang",  "cxxstd": "20,23,2c",             "os": "ubuntu-latest", "container": "cppalliance/2404-p2996:1", "reflection": "yes"},
+              {"name": "GCC 16 w/ reflection",
+               "compiler": "gcc-16", "cxxstd": "26",                   "os": "ubuntu-latest", "container": "ubuntu:26.04", "reflection": "yes", "cxxflags": "-freflection"},
           ]
 
           def is_true(env_var):
@@ -367,6 +370,10 @@ jobs:
             if [[ -z "${{matrix.install}}" ]]; then
                 if [[ ! "${{matrix.compiler}}" =~ icpx ]]; then
                     compiler="${{matrix.compiler}}"
+                    # Strip minor GCC version: gcc-15.2 -> gcc-15 for package installation (gcc >= 10)
+                    if [[ "$compiler" =~ ^gcc-[1-9][0-9]+\. ]]; then
+                        compiler="${compiler%.*}"
+                    fi
                     pkgs="${compiler/gcc-/g++-}"
                     [[ -z "${{matrix.gcc_toolchain}}" ]] || pkgs+=" g++-${{matrix.gcc_toolchain}}"
                     if [[ "${{matrix.stdlib}}" == "libc++" && $compiler == "clang-"* ]]; then
@@ -409,7 +416,9 @@ jobs:
         env:
           B2_ADDRESS_MODEL: ${{matrix.address-model}}
           B2_COMPILER: ${{matrix.compiler}}
+          B2_CXXFLAGS: ${{matrix.cxxflags}}
           B2_CXXSTD: ${{matrix.cxxstd}}
+          ENABLE_REFLECTION: ${{ matrix.reflection }}
           B2_SANITIZE: ${{matrix.sanitize}}
           B2_STDLIB: ${{matrix.stdlib}}
           # Optional. Variables set here (to non-empty) will override the top-level environment variables
@@ -441,7 +450,7 @@ jobs:
 
       - name: Upload coverage
         if: matrix.coverage
-        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
+        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
         with:
           fail_ci_if_error: true
           disable_search: true

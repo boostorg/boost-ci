@@ -66,6 +66,7 @@ fi
   [ -z "$B2_TSAN" ] || echo "B2_TSAN=$B2_TSAN"
   [ -z "$B2_UBSAN" ] || echo "B2_UBSAN=$B2_UBSAN"
   [ -z "$B2_FLAGS" ] || echo "B2_FLAGS=$B2_FLAGS"
+  [ -z "$ENABLE_REFLECTION" ] || echo "ENABLE_REFLECTION=$ENABLE_REFLECTION"
   [ -z "$B2_TARGETS" ] || echo "B2_TARGETS=$B2_TARGETS"
  # Filter out (only) the conditions from set -x
  # Write the stdout to the GitHub env file
