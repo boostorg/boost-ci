@@ -7,6 +7,7 @@
 //
 
 // Use some STL components just to quick check compilers
+#include <iostream>
 #include <string>
 #include <map>
 #include <vector>
@@ -32,6 +33,15 @@
     #define BOOST_CI_STRINGIZE(x) BOOST_CI_STRINGIZE_2(x)
 #endif
 
+#ifdef TEST_REFLECTION
+#include <meta>
+
+struct MyStruct {
+    int x;
+    double y;
+};
+#endif
+
 int main()
 {
 #ifdef BOOST_CI_TEST_DEFINES
@@ -51,5 +61,22 @@ int main()
     }
     BOOST_TEST_EQ(map["result"].size(), 1u);
     BOOST_TEST_THROWS(boost::boost_ci::get_answer(-1), boost::boost_ci::example_error);
+
+#ifdef TEST_REFLECTION
+    std::cout << "Reflection enabled - Printing members of MyStruct\n";
+    constexpr static auto members = std::define_static_array(
+        std::meta::nonstatic_data_members_of(^^MyStruct, std::meta::access_context::unchecked())
+    );
+    static_assert(members.size() == 2);
+    static_assert(identifier_of(members[0]) == "x");
+    static_assert(identifier_of(members[1]) == "y");
+
+    template for (constexpr auto member: members){
+        std::cout << identifier_of(member) << "\n";
+    }
+#else
+    std::cout << "Reflection disabled\n";
+#endif
+
     return boost::report_errors();
 }

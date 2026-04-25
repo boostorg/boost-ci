@@ -25,6 +25,8 @@ local B2_THREADING = [ os.environ B2_THREADING ] ;
 local B2_TOOLSET = [ os.environ B2_TOOLSET ] ;
 local B2_VARIANT = [ os.environ B2_VARIANT ] ;
 local BOOST_ROOT = [ os.environ BOOST_ROOT ] ;
+local enable_reflection = [ os.environ ENABLE_REFLECTION ] ;
+
 
 ECHO "Running boostorg/boost-ci environment checks:" ;
 ECHO "  B2_ADDRESS_MODEL:" $(B2_ADDRESS_MODEL) ;
@@ -42,4 +44,13 @@ ECHO "  B2_VARIANT:" $(B2_VARIANT) ;
 ECHO "  BOOST_ROOT:" $(BOOST_ROOT) ;
 ECHO ;
 
-unit-test test : test.cpp ;
+local defs ;
+if $(enable_reflection) = yes
+{
+    defs += <define>TEST_REFLECTION ;
+}
+
+unit-test test : test.cpp :
+      $(defs)
+      <test-info>always_show_run_output
+    ;

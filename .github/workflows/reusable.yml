@@ -420,6 +420,7 @@ jobs:
           B2_COMPILER: ${{matrix.compiler}}
           B2_CXXFLAGS: ${{matrix.cxxflags}}
           B2_CXXSTD: ${{matrix.cxxstd}}
+          ENABLE_REFLECTION: ${{ matrix.reflection }}
           B2_SANITIZE: ${{matrix.sanitize}}
           B2_STDLIB: ${{matrix.stdlib}}
           # Optional. Variables set here (to non-empty) will override the top-level environment variables
