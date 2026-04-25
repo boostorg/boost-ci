@@ -75,7 +75,7 @@ on:
         type: boolean
         default: true
       enable_reflection:
-        description: "When enabled, clang-p2996 jobs will be added. Disabled by default."
+        description: "When enabled, jobs with reflection enabled will be added. Disabled by default."
         required: false
         type: boolean
         default: false
@@ -155,6 +155,7 @@ jobs:
               {"compiler": "gcc-14",    "cxxstd": "11,14,17,20,23",    "os": "ubuntu-24.04"},
               {"compiler": "gcc-15",    "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "ubuntu:25.04"},
               {"compiler": "gcc-15.2",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "ubuntu:26.04"},
+              {"compiler": "gcc-16",    "cxxstd": "11,14,17,20,23,26", "os": "ubuntu-latest", "container": "ubuntu:26.04"},
               {"compiler": "clang-3.5", "cxxstd": "11",                "os": "ubuntu-latest", "container": "ubuntu:16.04"},
               {"compiler": "clang-3.6", "cxxstd": "11,14",             "os": "ubuntu-latest", "container": "ubuntu:16.04"},
               {"compiler": "clang-3.7", "cxxstd": "11,14",             "os": "ubuntu-latest", "container": "ubuntu:16.04"},
@@ -201,7 +202,9 @@ jobs:
                "compiler": "clang",     "cxxstd": "17",                "os": "ubuntu-22.04", "ccache": "no", "distro": "fedora", "edition": "34", "arch": "s390x"},
             # Reflection
               {"name": "Clang-preview w/ reflection",
-               "compiler": "clang",  "cxxstd": "20,23,2c",             "os": "ubuntu-latest", "container": "cppalliance/2404-p2996:1", "reflection": "yes"},
+               "compiler": "clang",  "cxxstd": "26",                   "os": "ubuntu-latest", "container": "cppalliance/2404-p2996:1", "reflection": "yes", "cxxflags": "-freflection"},
+              {"name": "GCC 16 w/ reflection",
+               "compiler": "gcc-16", "cxxstd": "26",                   "os": "ubuntu-latest", "container": "ubuntu:26.04",             "reflection": "yes", "cxxflags": "-freflection"},
           ]
 
           def is_true(env_var):
@@ -416,6 +419,7 @@ jobs:
         env:
           B2_ADDRESS_MODEL: ${{matrix.address-model}}
           B2_COMPILER: ${{matrix.compiler}}
+          B2_CXXFLAGS: ${{matrix.cxxflags}}
           B2_CXXSTD: ${{matrix.cxxstd}}
           B2_SANITIZE: ${{matrix.sanitize}}
           B2_STDLIB: ${{matrix.stdlib}}
