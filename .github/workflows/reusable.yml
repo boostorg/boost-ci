@@ -196,6 +196,9 @@ jobs:
             # Coverity
               {"name": "Coverity Scan w/ Clang on Linux", "coverity": "yes",
                "compiler": "clang-12",  "cxxstd": "20",                "os": "ubuntu-22.04", "ccache": "no"},
+            # Arm64
+              {"name": "ARM64 w/ GCC",
+               "compiler": "gcc-13",   "cxxstd": "11,14,17,20,2b",     "os": "ubuntu-24.04-arm"},
             # Big-Endian
               {"name": "bigendian-s390x", "multiarch": "yes",
                "compiler": "clang",     "cxxstd": "17",                "os": "ubuntu-22.04", "ccache": "no", "distro": "fedora", "edition": "34", "arch": "s390x"},
