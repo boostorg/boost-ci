@@ -90,7 +90,9 @@ def linux_cxx(
   job_env.update(environment)
 
   if not buildscript:
-    buildscript = buildtype
+    # buildscript = buildtype
+    # 2026 default to drone.sh
+    buildscript = "drone"
 
   steps=[
       {
@@ -193,7 +195,10 @@ def windows_cxx(
   job_env.update(environment)
 
   if not buildscript:
-    buildscript = buildtype
+    # buildscript = buildtype
+    # 2026 default to drone.sh
+    buildscript = "drone"
+
   buildscript_to_run = buildscript + '.bat'
 
   return {
@@ -255,7 +260,9 @@ def osx_cxx(
   job_env.update(environment)
 
   if not buildscript:
-    buildscript = buildtype
+    # buildscript = buildtype
+    # 2026 default to drone.sh
+    buildscript = "drone"
 
   if xcode_version:
     job_env["DEVELOPER_DIR"] = "/Applications/Xcode-" + xcode_version +  ".app/Contents/Developer"
@@ -334,7 +341,9 @@ def freebsd_cxx(
   job_env.update(environment)
 
   if not buildscript:
-    buildscript = buildtype
+    # buildscript = buildtype
+    # 2026 default to drone.sh
+    buildscript = "drone"
 
   nodetmp={}
   nodetmp.update(node)
