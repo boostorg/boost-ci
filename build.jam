@@ -1,0 +1,23 @@
+# Copyright (c) 2026 Alexander Grund
+#
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE or www.boost.org/LICENSE_1_0.txt)
+
+require-b2 5.2 ;
+
+constant boost_dependencies :
+    /boost/atomic//boost_atomic ;
+
+project /boost/boost_ci
+    : common-requirements
+        <include>include
+    ;
+
+explicit
+    [ alias boost_boost_ci : build//boost_boost_ci ]
+    [ alias all : boost_boost_ci test ]
+    ;
+
+call-if : boost-library boost_ci
+    : install boost_boost_ci
+    ;
