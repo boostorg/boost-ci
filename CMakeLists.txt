@@ -1,9 +1,9 @@
 # Copyright 2018-2021 Peter Dimov
-# Copyright 2021-2025 Alexander Grund
+# Copyright 2021-2026 Alexander Grund
 # Distributed under the Boost Software License, Version 1.0.
 # See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt
 
-cmake_minimum_required(VERSION 3.5...3.16)
+cmake_minimum_required(VERSION 3.5...3.31)
 
 project(boost_ci VERSION "${BOOST_SUPERPROJECT_VERSION}" LANGUAGES CXX)
 
