@@ -118,9 +118,21 @@ esac
 export BOOST_ROOT="$(pwd)"
 export PATH="$(pwd):$PATH"
 
-git --version
+if ! git_version=$(git --version 2>/dev/null); then
+    unset GIT_FETCH_JOBS
+else
+    # Extract version number from e.g. "git version 2.7.4"
+    version=${git_version##* }
+    echo "Git version: $version"
+    required_git_version="2.9"
+    if [[ ${GIT_FETCH_JOBS:-1} != "1" ]] && [[ "$(printf '%s\n' "$required_git_version" "$version" | sort -V | head -n1)" != "$required_git_version" ]]; then
+        echo "Parallel git fetch requires version $required_git_version, falling back to serial fetch"
+        unset GIT_FETCH_JOBS
+    fi
+fi
+
 DEPINST_ARGS=()
-if [[ -n "$GIT_FETCH_JOBS" ]]; then
+if [[ -n $GIT_FETCH_JOBS ]]; then
     DEPINST_ARGS+=("--git_args" "--jobs $GIT_FETCH_JOBS")
 fi
 
