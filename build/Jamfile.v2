@@ -5,11 +5,9 @@
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE or www.boost.org/LICENSE_1_0.txt)
 
-import configure ;
-
 project
   : source-location ../src
-  : common-requirements <library>$(boost_dependencies)
+  : common-requirements <library>$(boost_dependencies)/<warnings-as-errors>off
  ;
 
 lib boost_boost_ci
