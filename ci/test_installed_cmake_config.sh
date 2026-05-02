@@ -29,17 +29,10 @@ cd "$cmake_test_folder"
 rm -rf __build_cmake_install_test__
 mkdir __build_cmake_install_test__ && cd __build_cmake_install_test__
 
-if [[ $CI_BUILD_SHARED == "ON" ]]; then
-    Boost_USE_STATIC_LIBS=OFF
-else
-    Boost_USE_STATIC_LIBS=ON
-fi
-
 unset BOOST_ROOT # Make sure CMake finds the installed config, not the source tree
 cmake -DBOOST_CI_INSTALL_TEST=ON \
     -G "$CI_GENERATOR" \
     -DBUILD_SHARED_LIBS="$CI_BUILD_SHARED" \
-    -DBoost_USE_STATIC_LIBS="$Boost_USE_STATIC_LIBS" \
     -DCMAKE_BUILD_TYPE="$CI_BUILD_TYPE" \
     -DCMAKE_PREFIX_PATH="$BCM_INSTALL_PATH" \
     -DCMAKE_VERBOSE_MAKEFILE=ON ..

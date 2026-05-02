@@ -866,23 +866,8 @@ jobs:
             BCM_INSTALL_PATH+=_b2
             echo "BCM_INSTALL_PATH=$BCM_INSTALL_PATH" >> "$GITHUB_ENV"
             cd "$BOOST_ROOT"
-            if [[ "${{matrix.build_type}}" == "Debug" ]]; then
-              variant=debug
-            else
-              variant=release
-            fi
-            if [[ "${{matrix.build_shared}}" == "ON" ]]; then
-              link=shared
-            else
-              link=static
-            fi
-            if [[ "$RUNNER_OS" == "Windows" ]]; then
-              toolset="msvc-14.3"
-            else
-              toolset="gcc"
-            fi
             ./bootstrap.sh
-            ./b2 toolset="$toolset" variant="$variant" link="$link" cxxstd="20" --prefix="$BCM_INSTALL_PATH" -j$B2_JOBS install
+            ./b2 cxxstd="20" --prefix="$BCM_INSTALL_PATH" -j$B2_JOBS install
 
       - name: Run CMake install tests w/ B2 installed library
         run: ci/test_installed_cmake_config.sh
