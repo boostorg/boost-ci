@@ -38,12 +38,10 @@ cmake -DBOOST_CI_INSTALL_TEST=ON \
     -DCMAKE_VERBOSE_MAKEFILE=ON ..
 
 cmake --build . --config "$CI_BUILD_TYPE" -j "$B2_JOBS"
-if [[ "$CI_BUILD_SHARED" == "ON" ]]; then
-    # Make sure shared libs can be found at runtime
-    if [ "$RUNNER_OS" == "Windows" ]; then
-        export PATH="$BCM_INSTALL_PATH/bin:$PATH"
-    else
-        export LD_LIBRARY_PATH="$BCM_INSTALL_PATH/lib:${LD_LIBRARY_PATH:-}"
-    fi
+# Make sure shared libs can be found at runtime
+if [ "$RUNNER_OS" == "Windows" ]; then
+    export PATH="$BCM_INSTALL_PATH/bin:$PATH"
+else
+    export LD_LIBRARY_PATH="$BCM_INSTALL_PATH/lib:${LD_LIBRARY_PATH:-}"
 fi
 ctest --output-on-failure --build-config "$CI_BUILD_TYPE"
