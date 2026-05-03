@@ -859,20 +859,31 @@ jobs:
             cmake --build . --target install --config ${{matrix.build_type}} -j$B2_JOBS
 
       - name: Run CMake install tests
-        run: ci/test_installed_cmake_config.sh
-
-      - name: Install with b2
+        run: |
+          ci/test_installed_cmake_config.sh
+      - name: Prepare for B2 installation
         run: |
             BCM_INSTALL_PATH+=_b2
-            echo "BCM_INSTALL_PATH=$BCM_INSTALL_PATH" >> "$GITHUB_ENV"
-            cd "$BOOST_ROOT"
+            if [[ "$RUNNER_OS" == "Windows" ]]; then
+              # Convert path for use in pwsh
+              echo "BCM_INSTALL_PATH=$(cygpath -w "$BCM_INSTALL_PATH")" >> $GITHUB_ENV
+              echo "BOOST_ROOT_WIN=$(cygpath -w "$BOOST_ROOT")" >> $GITHUB_ENV
+            else
+              echo "BCM_INSTALL_PATH=${BCM_INSTALL_PATH}" >> "$GITHUB_ENV"
+            fi
+
+      - name: Install with b2 (Posix)
+        if: runner.os != 'Windows'
+        run: |
             ./bootstrap.sh
             ./b2 cxxstd="20" --prefix="$BCM_INSTALL_PATH" -j$B2_JOBS install
-            echo "BOOST_ROOT_WIN=$(cygpath -w "$BOOST_ROOT")" >> $GITHUB_ENV
+        working-directory: ${{env.BOOST_ROOT}}
       - name: Install with b2 (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
-        run: .\b2 cxxstd=20 --prefix="$env:BCM_INSTALL_PATH" -j$env:B2_JOBS install
+        run: |
+          .\bootstrap.bat
+          .\b2 cxxstd=20 --prefix="$env:BCM_INSTALL_PATH" -j$env:B2_JOBS install
         working-directory: ${{env.BOOST_ROOT_WIN}}
       - name: Run CMake install tests w/ B2 installed library
         run: ci/test_installed_cmake_config.sh
