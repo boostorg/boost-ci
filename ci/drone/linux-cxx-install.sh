@@ -46,7 +46,7 @@ function add_repository_toolchain {
     } > "/etc/apt/sources.list.d/ubuntu-toolchain-r-ubuntu-test-${VERSION_CODENAME}.list"
     key_server="keyserver.boost.org"
     echo "Downloading toolchain gpg key via ${key_server}"
-    curl ${curl_extra_options} --connect-timeout 15 -sSL --retry "${NET_RETRY_COUNT:-5}" "https://${key_server}/pks/lookup?op=get&search=0x1E9377A2BA9EF27F" | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/toolchain-r.gpg
+    curl ${curl_extra_options} --connect-timeout 15 -sSL --retry "${NET_RETRY_COUNT:-5}" "https://${key_server}/pks/lookup?op=get&search=0x2C277A0A352154E5" | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/toolchain-r.gpg
 }
 
 echo ">>>>> APT: REPOSITORIES..."
