@@ -21,9 +21,9 @@ fi
 function do_add_key
 {
     key_url=$1
-    # If a keyserver URL (e.g. http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x1E9377A2BA9EF27F)
+    # If a keyserver URL (e.g. http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2C277A0A352154E5)
     # use the hash as the filename,
-    # if it is an ID, e.g. 0x1E9377A2BA9EF27F, use it as the filename, and http://keyserver.ubuntu.com/pks/lookup as the URL
+    # if it is an ID, e.g. 0x2C277A0A352154E5, use it as the filename, and http://keyserver.ubuntu.com/pks/lookup as the URL
     # else assume the URL contains a filename, e.g. https://apt.llvm.org/llvm-snapshot.gpg.key
     if [[ "$key_url" =~ .*keyserver.*search=0x([A-F0-9]+) ]]; then
         keyfilename="${BASH_REMATCH[1]}.key"
