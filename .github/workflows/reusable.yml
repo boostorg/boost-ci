@@ -845,25 +845,42 @@ jobs:
       - name: Install Library
         run: |
             BCM_INSTALL_PATH=/tmp/boost_install
+            # Variables expected by test_installed_cmake_config.sh
             echo "BCM_INSTALL_PATH=$BCM_INSTALL_PATH" >> "$GITHUB_ENV"
+            echo "CI_GENERATOR=${{matrix.generator}}" >> "$GITHUB_ENV"
+            echo "CI_BUILD_TYPE=${{matrix.build_type}}" >> "$GITHUB_ENV"
+            echo "CI_BUILD_SHARED=${{matrix.build_shared}}" >> "$GITHUB_ENV"
             cd "$BOOST_ROOT"
             mkdir __build_cmake_install_test__ && cd __build_cmake_install_test__
             cmake -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DBOOST_INCLUDE_LIBRARIES=$SELF -DBUILD_SHARED_LIBS=${{matrix.build_shared}} -DCMAKE_INSTALL_PREFIX="$BCM_INSTALL_PATH" -DBoost_VERBOSE=ON -DBoost_DEBUG=ON ..
             cmake --build . --target install --config ${{matrix.build_type}} -j$B2_JOBS
+
       - name: Run CMake install tests
         run: |
-            cmake_test_folder="$BOOST_ROOT/libs/$SELF/test/cmake_test" # New unified folder
-            [ -d "$cmake_test_folder" ] || cmake_test_folder="$BOOST_ROOT/libs/$SELF/test/cmake_install_test"
-            cd "$cmake_test_folder"
-            mkdir __build_cmake_install_test__ && cd __build_cmake_install_test__
-            cmake -G "${{matrix.generator}}" -DBOOST_CI_INSTALL_TEST=ON -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DBUILD_SHARED_LIBS=${{matrix.build_shared}} -DCMAKE_PREFIX_PATH="$BCM_INSTALL_PATH" ..
-            cmake --build . --config ${{matrix.build_type}} -j$B2_JOBS
-            if [[ "${{matrix.build_shared}}" == "ON" ]]; then
-                # Make sure shared libs can be found at runtime
-                if [ "$RUNNER_OS" == "Windows" ]; then
-                    export PATH="$BCM_INSTALL_PATH/bin:$PATH"
-                else
-                    export LD_LIBRARY_PATH="$BCM_INSTALL_PATH/lib:$LD_LIBRARY_PATH"
-                fi
+          ci/test_installed_cmake_config.sh
+      - name: Prepare for B2 installation
+        run: |
+            BCM_INSTALL_PATH+=_b2
+            if [[ "$RUNNER_OS" == "Windows" ]]; then
+              # Convert path for use in pwsh
+              echo "BCM_INSTALL_PATH=$(cygpath -w "$BCM_INSTALL_PATH")" >> $GITHUB_ENV
+              echo "BOOST_ROOT_WIN=$(cygpath -w "$BOOST_ROOT")" >> $GITHUB_ENV
+            else
+              echo "BCM_INSTALL_PATH=${BCM_INSTALL_PATH}" >> "$GITHUB_ENV"
             fi
-            ctest --output-on-failure --build-config ${{matrix.build_type}}
+
+      - name: Install with b2 (Posix)
+        if: runner.os != 'Windows'
+        run: |
+            ./bootstrap.sh
+            ./b2 cxxstd="20" --prefix="$BCM_INSTALL_PATH" -j$B2_JOBS install
+        working-directory: ${{env.BOOST_ROOT}}
+      - name: Install with b2 (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          .\bootstrap.bat
+          .\b2 cxxstd=20 --prefix="$env:BCM_INSTALL_PATH" -j$env:B2_JOBS install
+        working-directory: ${{env.BOOST_ROOT_WIN}}
+      - name: Run CMake install tests w/ B2 installed library
+        run: ci/test_installed_cmake_config.sh
