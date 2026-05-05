@@ -750,12 +750,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: ubuntu-latest, build_shared: ON,  build_type: Debug, generator: 'Unix Makefiles' }
-          - { os: ubuntu-latest, build_shared: OFF, build_type: Debug, generator: 'Unix Makefiles' }
-          - { os: windows-2025,  build_shared: ON,  build_type: Debug, generator: 'Visual Studio 17 2022' }
-          - { os: windows-2025,  build_shared: OFF, build_type: Debug, generator: 'Visual Studio 17 2022' }
+          - { os: ubuntu-latest,        build_shared: ON,  build_type: Debug, generator: 'Unix Makefiles' }
+          - { os: ubuntu-latest,        build_shared: OFF, build_type: Debug, generator: 'Unix Makefiles' }
+          - { os: windows-2022,         build_shared: ON,  build_type: Debug, generator: 'Visual Studio 17 2022' }
+          - { os: windows-2022,         build_shared: OFF, build_type: Debug, generator: 'Visual Studio 17 2022' }
+          - { os: windows-2025-vs2026,  build_shared: OFF, build_type: Debug, generator: 'Visual Studio 18 2026' }
           - { name: "Min. CMake", cmake_version: '${{inputs.min_cmake_version}}',
-              os: ubuntu-latest, build_shared: ON,  build_type: Debug, generator: 'Unix Makefiles' }
+              os: ubuntu-latest,        build_shared: ON,  build_type: Debug, generator: 'Unix Makefiles' }
 
     steps:
       - name: Cache CMake
