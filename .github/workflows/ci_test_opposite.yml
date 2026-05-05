@@ -40,9 +40,12 @@ jobs:
       branch_coverage: false
       enable_32bit: false
       enable_cygwin: false
+      enable_cmake: false
+      enable_mingw: false
       enable_multiarch: false
+      enable_reflection: true
       enable_sanitizers: false
       exclude_compiler: 'gcc-10,clang-10,msvc-14.2'
       exclude_cxxstd: '98,03,0x,0y,14,2a,20,2b,23,2c,26'  # only do C++11 and C++17 jobs
-      exclude_os: 'ubuntu:16.04,macos,windows-2022,MINGW32'
+      exclude_os: 'ubuntu:16.04,macos,windows-2022'
     # no secrets defined which disables coverage and coverity scan
