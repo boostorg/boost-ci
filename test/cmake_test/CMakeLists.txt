@@ -10,6 +10,12 @@ project(cmake_subdir_test LANGUAGES CXX)
 # while using find_package for the installed Boost avoids the need to manually specify dependencies
 if(BOOST_CI_INSTALL_TEST)
     find_package(Boost COMPONENTS boost_ci REQUIRED)
+    # Header-only libraries can use the following instead until B2 also installs targets for them
+    if(BOOST_CI_INSTALLED_BY STREQUAL "B2")
+        find_package(Boost COMPONENTS headers REQUIRED)
+        # To avoid changing the target name compared to the installed-by-CMake case, a hack like this can be used:
+        # add_library(Boost::boost_ci ALIAS Boost::headers)
+    endif()
 else()
     add_subdirectory(../.. boostorg/boost-ci)
 

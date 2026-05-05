@@ -858,6 +858,7 @@ jobs:
       - name: Run CMake install tests
         run: |
           ci/test_installed_cmake_config.sh
+        env: {BOOST_CI_INSTALLED_BY: CMake}
       - name: Prepare for B2 installation
         run: |
             BCM_INSTALL_PATH+=_b2
@@ -884,3 +885,4 @@ jobs:
         working-directory: ${{env.BOOST_ROOT_WIN}}
       - name: Run CMake install tests w/ B2 installed library
         run: ci/test_installed_cmake_config.sh
+        env: {BOOST_CI_INSTALLED_BY: B2}

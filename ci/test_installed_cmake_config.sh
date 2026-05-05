@@ -31,6 +31,7 @@ mkdir __build_cmake_install_test__ && cd __build_cmake_install_test__
 
 unset BOOST_ROOT # Make sure CMake finds the installed config, not the source tree
 cmake -DBOOST_CI_INSTALL_TEST=ON \
+    -DBOOST_CI_INSTALLED_BY="$BOOST_CI_INSTALLED_BY" \
     -G "$CI_GENERATOR" \
     -DBUILD_SHARED_LIBS="$CI_BUILD_SHARED" \
     -DCMAKE_BUILD_TYPE="$CI_BUILD_TYPE" \
