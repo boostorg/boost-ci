@@ -9,7 +9,7 @@
 # As the yaml syntax for Drone CI is rather limited.
 
 # Base environment for all jobs
-globalenv={'B2_VARIANT': 'release'}
+globalenv={'UBUNTU_TOOLCHAIN_DISABLE': 'true', 'B2_VARIANT': 'release'}
 
 # Wrapper function to apply the globalenv to all jobs
 def job(
