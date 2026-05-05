@@ -490,9 +490,10 @@ jobs:
 
           all_jobs = [
             {"toolset": "msvc-14.3", "cxxstd": "14,17,20,latest", "address-model": "32,64", "os": "windows-2022"},
+            {"toolset": "msvc-14.5", "cxxstd": "14,17,20,latest", "address-model": "32,64", "os": "windows-2025-vs2026"},
             {"toolset": "msvc-14.3", "cxxstd": "14,17,20,latest", "address-model": "64", "os": "windows-11-arm"},
             {"name": "Collect coverage", "coverage": "yes",
-             "toolset": "msvc-14.3", "cxxstd": "latest",          "address-model": "64",    "os": "windows-2025"},
+             "toolset": "msvc-14.5", "cxxstd": "latest",          "address-model": "64",    "os": "windows-2025-vs2026"},
             {"toolset": "clang-win", "cxxstd": "14,17,latest",    "address-model": "32,64", "os": "windows-2025"},
             {"toolset": "gcc",       "cxxstd": "11,14,17,2a",     "address-model": "64",    "os": "windows-2022"},
             {"toolset": "gcc",       "cxxstd": "11,14,17,2a",     "address-model": "32",    "os": "windows-2025", "target-os": "cygwin"},
