@@ -72,7 +72,7 @@ parameters:
       - { compiler: clang-13,  cxxstd: '14,17,20',       os: ubuntu-22.04 }
       - { compiler: clang-14,  cxxstd: '14,17,20',       os: ubuntu-22.04 }
       - { compiler: clang-16,  cxxstd: '14,17,20,23',    os: ubuntu-24.04 }
-      - { compiler: clang-17,  cxxstd: '14,17,20,23',    os: ubuntu-24.04 }
+      - { compiler: clang-17,  cxxstd: '14,17,20,23',    os: ubuntu-latest, container: 'ubuntu:24.04' }
       - { compiler: clang-18,  cxxstd: '14,17,20,23,2c', os: ubuntu-24.04 }
       - { compiler: clang-19,  cxxstd: '14,17,20,23,2c', os: ubuntu-24.04 }
       - { name: Linux_clang_6_libcxx,
