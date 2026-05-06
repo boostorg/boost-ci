@@ -129,10 +129,21 @@ stages:
                 target: host
               - bash: |
                   set -ex
+                  osver=$(lsb_release -sr | cut -f1 -d.)
+                  pkgs="g++ git"
+                  # Ubuntu 22+ has only Python 3 in the repos
+                  if [ -n "$osver" ] && [ "$osver" -ge "22" ]; then
+                    pkgs+=" python-is-python3 libpython3-dev"
+                  elif [ -n "$osver" ] && [ "$osver" -eq "20" ]; then
+                    pkgs+=" python libpython2-dev"
+                  else
+                    pkgs+=" python libpython-dev"
+                  fi
+
                   # Need (newer) git
                   sudo add-apt-repository ppa:git-core/ppa
                   sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT update
-                  sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT -y -q --no-install-suggests --no-install-recommends install g++ python libpython-dev git
+                  sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT -y -q --no-install-suggests --no-install-recommends install $pkgs
                 displayName: 'Install required sw for containers'
             - task: Cache@2
               condition: eq(variables.B2_USE_CCACHE, '1')
