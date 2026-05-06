@@ -127,6 +127,7 @@ stages:
                   /usr/bin/docker exec -u0 "$AGENT_CONTAINERID" /bin/sh -c \
                      "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confold' -y install sudo software-properties-common"
                 target: host
+                displayName: Install sudo in container
               - bash: |
                   set -ex
                   osver=$(lsb_release -sr | cut -f1 -d.)
@@ -144,7 +145,8 @@ stages:
                   sudo add-apt-repository ppa:git-core/ppa
                   sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT update
                   sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT -y -q --no-install-suggests --no-install-recommends install $pkgs
-                displayName: 'Install required sw for containers'
+                displayName: Install required SW for containers
+
             - task: Cache@2
               condition: eq(variables.B2_USE_CCACHE, '1')
               inputs:
@@ -161,7 +163,7 @@ stages:
                 [[ $(basename "$BUILD_REPOSITORY_NAME") = "boost-ci" ]] || cp -prf boost-ci-cloned/ci .
                 rm -rf boost-ci-cloned
                 source ci/azure-pipelines/install.sh
-              displayName: 'Install'
+              displayName: Setup build environment
             - bash: |
                 set -ex
                 echo "SELF=$SELF"
@@ -169,6 +171,7 @@ stages:
 
                 cd $BOOST_ROOT/libs/$SELF
                 ci/azure-pipelines/build.sh
+              displayName: Build
 
       - job: Windows
         timeoutInMinutes: 120
@@ -188,6 +191,6 @@ stages:
               if "%BUILD_REPOSITORY_NAME%" == "%BUILD_REPOSITORY_NAME:boost-ci=%" xcopy /s /e /q /i /y boost-ci-cloned\ci .\ci
               rmdir /s /q boost-ci-cloned
               ci\azure-pipelines\install.bat
-            displayName: 'Install'
+            displayName: Install
           - script: ci\build.bat
-            displayName: 'Build'
+            displayName: Build
