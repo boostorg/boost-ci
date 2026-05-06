@@ -75,7 +75,7 @@ parameters:
       - { compiler: clang-18,  cxxstd: '14,17,20,23,2c', os: ubuntu-24.04 }
       - { compiler: clang-19,  cxxstd: '14,17,20,23,2c', os: ubuntu-24.04 }
       - { name: Linux_clang_6_libcxx,
-          compiler: clang-6.0, cxxstd: '11,14,17', os: ubuntu-20.04, container: 'ubuntu:18.04', install: 'clang-6.0 libc++-dev libc++abi-dev', env: {B2_STDLIB: libc++ } }
+          compiler: clang-6.0, cxxstd: '11,14,17', os: ubuntu-latest, container: 'ubuntu:18.04', install: 'clang-6.0 libc++-dev libc++abi-dev', env: {B2_STDLIB: libc++ } }
       # OSX
       - { compiler: clang, cxxstd: '14,17,20',    os: macOS-14, xcode: '15.3' }
       - { compiler: clang, cxxstd: '14,17,20',    os: macOS-14, xcode: '15.4' }
@@ -161,10 +161,10 @@ stages:
         timeoutInMinutes: 120
         strategy:
           matrix:
-            VS_2019:        { B2_TOOLSET: msvc-14.2, B2_CXXSTD: '14,17,20', B2_ADDRESS_MODEL: '32,64', VM_IMAGE: windows-2019 }
-            VS_2019_strict: { B2_TOOLSET: msvc-14.2, B2_CXXSTD: '14,17,20', B2_ADDRESS_MODEL: '32,64', VM_IMAGE: windows-2019, B2_CXXFLAGS: -permissive- }
-            VS_2022:        { B2_TOOLSET: msvc-14.3, B2_CXXSTD: '14,17,20', B2_ADDRESS_MODEL: '32,64', VM_IMAGE: windows-2022 }
-            VS_2022_strict: { B2_TOOLSET: msvc-14.3, B2_CXXSTD: '14,17,20', B2_ADDRESS_MODEL: '32,64', VM_IMAGE: windows-2022, B2_CXXFLAGS: -permissive- }
+            VS_2022:        { B2_TOOLSET: msvc-14.3, B2_CXXSTD: '14,17,20',        B2_ADDRESS_MODEL: '32,64', VM_IMAGE: windows-2022 }
+            VS_2022_strict: { B2_TOOLSET: msvc-14.3, B2_CXXSTD: '14,17,20',        B2_ADDRESS_MODEL: '32,64', VM_IMAGE: windows-2022, B2_CXXFLAGS: -permissive- }
+            VS_2026:        { B2_TOOLSET: msvc-14.5, B2_CXXSTD: '14,17,20,latest', B2_ADDRESS_MODEL: '32,64', VM_IMAGE: windows-2025-vs2026 }
+            VS_2026_struct: { B2_TOOLSET: msvc-14.5, B2_CXXSTD: '14,17,20,latest', B2_ADDRESS_MODEL: '32,64', VM_IMAGE: windows-2025-vs2026, B2_CXXFLAGS: -permissive- }
 
         pool:
           vmImage: $(VM_IMAGE)
