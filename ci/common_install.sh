@@ -81,6 +81,8 @@ else
     export BOOST_BRANCH="develop"
 fi
 
+# CI cache might have restored the boost-root folder in the current directory
+[ ! -d boost-root ] || mv boost-root ..
 cd ..
 
 if [ ! -d boost-root ]; then
@@ -314,7 +316,7 @@ if [[ "${B2_DONT_BOOTSTRAP:0}" != "1" ]]; then
     # Check if b2 already exists. This would (only) happen in a caching scenario. The purpose of caching is to save time by not recompiling everything.
     # The user may clear cache or delete b2 beforehand if they wish to rebuild.
     if [ ! -f b2 ] || ! b2_version_output=$(./b2 --version); then
-        ${B2_WRAPPER:-} ./bootstrap.sh
+        time ${B2_WRAPPER:-} ./bootstrap.sh
     else
         # b2 expects versions to match
         engineversion=$(echo "$b2_version_output" | tr -s ' ' | cut -d' ' -f2 | cut -d'-' -f1)
@@ -325,7 +327,12 @@ if [[ "${B2_DONT_BOOTSTRAP:0}" != "1" ]]; then
         if [[ "${enginemajorversion}" == "${coremajorversion}" ]] && [[ "${engineminorversion}" == "${coreminorversion}" ]]; then
             echo "b2 already exists and has the same version number"
         else
-            ${B2_WRAPPER:-} ./bootstrap.sh
+            if [[ "$engineversion" =~ ^[0-9]\.[0-9]\. ]]; then
+                echo "b2 binary version: $enginemajorversion:$engineminorversion vs source version $coremajorversion:$coreminorversion"
+            else
+                echo "Unable to extract B2 version from $b2_version_output"
+            fi
+            time ${B2_WRAPPER:-} ./bootstrap.sh
         fi
     fi
     trap - ERR
