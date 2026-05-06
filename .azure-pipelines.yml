@@ -105,8 +105,6 @@ stages:
           ${{ if item.container }}:
             container:
               image: ${{ item.container }}
-              # Workaround for missing sudo: https://github.com/microsoft/azure-pipelines-agent/issues/2043
-              options: --name ci-container -v /usr/bin/docker:/tmp/docker:ro
           variables:
             B2_COMPILER: ${{ item.compiler }}
             B2_CXXSTD: ${{ item.cxxstd }}
@@ -123,10 +121,13 @@ stages:
               ${{var.Key}}: ${{var.Value}}
           steps:
             - ${{ if item.container }}:
+              # Workaround for missing sudo: https://github.com/microsoft/azure-pipelines-agent/issues/2043
+              - bash: |
+                  /usr/bin/docker exec -u0 "$AGENT_CONTAINERID" /bin/sh -c \
+                     "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confold' -y install sudo software-properties-common"
+                target: host
               - bash: |
                   set -ex
-                  /tmp/docker exec -t -u 0 ci-container \
-                    sh -c "apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -o Dpkg::Options::='--force-confold' -y install sudo software-properties-common"
                   # Need (newer) git
                   sudo add-apt-repository ppa:git-core/ppa
                   sudo apt-get -o Acquire::Retries=$NET_RETRY_COUNT update
