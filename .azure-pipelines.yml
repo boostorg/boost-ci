@@ -43,47 +43,51 @@ parameters:
   - name: jobs
     type: object
     default:
-      - { compiler: gcc-4.8,   cxxstd: '11',       os: ubuntu-20.04, container: 'ubuntu:16.04' }
-      - { compiler: gcc-4.9,   cxxstd: '11',       os: ubuntu-20.04, container: 'ubuntu:16.04' }
-      - { compiler: gcc-5,     cxxstd: '11',       os: ubuntu-20.04, container: 'ubuntu:18.04' }
-      - { compiler: gcc-6,     cxxstd: '11,14',    os: ubuntu-20.04, container: 'ubuntu:18.04' }
-      - { compiler: gcc-7,     cxxstd: '11,14,17', os: ubuntu-20.04 }
-      - { compiler: gcc-8,     cxxstd: '14,17,2a', os: ubuntu-20.04 }
-      - { compiler: gcc-9,     cxxstd: '14,17,2a', os: ubuntu-20.04 }
-      - { compiler: gcc-10,    cxxstd: '14,17,20', os: ubuntu-20.04 }
-      - { compiler: gcc-11,    cxxstd: '14,17,20', os: ubuntu-20.04 }
-      - { compiler: clang-3.5, cxxstd: '11',       os: ubuntu-20.04, container: 'ubuntu:16.04' }
-      - { compiler: clang-3.6, cxxstd: '11',       os: ubuntu-20.04, container: 'ubuntu:16.04' }
-      - { compiler: clang-3.7, cxxstd: '11',       os: ubuntu-20.04, container: 'ubuntu:16.04' }
-      - { compiler: clang-3.8, cxxstd: '11,14',    os: ubuntu-20.04, container: 'ubuntu:16.04' }
-      - { compiler: clang-3.9, cxxstd: '11,14',    os: ubuntu-20.04, container: 'ubuntu:16.04' }
-      - { compiler: clang-4.0, cxxstd: '11,14',    os: ubuntu-20.04, container: 'ubuntu:16.04' }
-      - { compiler: clang-5.0, cxxstd: '11,14,17', os: ubuntu-20.04, container: 'ubuntu:16.04' }
-      - { compiler: clang-6.0, cxxstd: '11,14,17', os: ubuntu-20.04 }
-      - { compiler: clang-7,   cxxstd: '14,17',    os: ubuntu-20.04 }
-      - { compiler: clang-8,   cxxstd: '14,17',    os: ubuntu-20.04 }
-      - { compiler: clang-9,   cxxstd: '14,17,2a', os: ubuntu-20.04 }
-      - { compiler: clang-10,  cxxstd: '14,17,20', os: ubuntu-20.04 }
-      - { compiler: clang-11,  cxxstd: '14,17,20', os: ubuntu-20.04 }
-      - { compiler: clang-12,  cxxstd: '14,17,20', os: ubuntu-22.04, gcc_toolchain: 12 }
-      - { compiler: clang-13,  cxxstd: '14,17,20', os: ubuntu-22.04, gcc_toolchain: 12 }
-      - { compiler: clang-14,  cxxstd: '14,17,20', os: ubuntu-22.04, gcc_toolchain: 12 }
+      - { compiler: gcc-4.8,   cxxstd: '11',             os: ubuntu-latest, container: 'ubuntu:16.04' }
+      - { compiler: gcc-4.9,   cxxstd: '11',             os: ubuntu-latest, container: 'ubuntu:16.04' }
+      - { compiler: gcc-5,     cxxstd: '11',             os: ubuntu-latest, container: 'ubuntu:18.04' }
+      - { compiler: gcc-6,     cxxstd: '11,14',          os: ubuntu-latest, container: 'ubuntu:18.04' }
+      - { compiler: gcc-7,     cxxstd: '11,14,17',       os: ubuntu-latest, container: 'ubuntu:20.04' }
+      - { compiler: gcc-8,     cxxstd: '14,17,2a',       os: ubuntu-latest, container: 'ubuntu:20.04' }
+      - { compiler: gcc-9,     cxxstd: '14,17,2a',       os: ubuntu-latest, container: 'ubuntu:20.04' }
+      - { compiler: gcc-10,    cxxstd: '14,17,20',       os: ubuntu-latest, container: 'ubuntu:20.04' }
+      - { compiler: gcc-11,    cxxstd: '14,17,20',       os: ubuntu-latest, container: 'ubuntu:20.04' }
+      - { compiler: gcc-13,    cxxstd: '14,17,20',       os: ubuntu-24.04 }
+      - { compiler: gcc-14,    cxxstd: '14,17,20,23',    os: ubuntu-24.04 }
+      - { compiler: clang-3.5, cxxstd: '11',             os: ubuntu-latest, container: 'ubuntu:16.04' }
+      - { compiler: clang-3.6, cxxstd: '11',             os: ubuntu-latest, container: 'ubuntu:16.04' }
+      - { compiler: clang-3.7, cxxstd: '11',             os: ubuntu-latest, container: 'ubuntu:16.04' }
+      - { compiler: clang-3.8, cxxstd: '11,14',          os: ubuntu-latest, container: 'ubuntu:16.04' }
+      - { compiler: clang-3.9, cxxstd: '11,14',          os: ubuntu-latest, container: 'ubuntu:16.04' }
+      - { compiler: clang-4.0, cxxstd: '11,14',          os: ubuntu-latest, container: 'ubuntu:16.04' }
+      - { compiler: clang-5.0, cxxstd: '11,14,17',       os: ubuntu-latest, container: 'ubuntu:16.04' }
+      - { compiler: clang-6.0, cxxstd: '11,14,17',       os: ubuntu-latest, container: 'ubuntu:20.04' }
+      - { compiler: clang-7,   cxxstd: '14,17',          os: ubuntu-latest, container: 'ubuntu:20.04' }
+      - { compiler: clang-8,   cxxstd: '14,17',          os: ubuntu-latest, container: 'ubuntu:20.04' }
+      - { compiler: clang-9,   cxxstd: '14,17,2a',       os: ubuntu-latest, container: 'ubuntu:20.04' }
+      - { compiler: clang-10,  cxxstd: '14,17,20',       os: ubuntu-latest, container: 'ubuntu:20.04' }
+      - { compiler: clang-11,  cxxstd: '14,17,20',       os: ubuntu-latest, container: 'ubuntu:20.04' }
+      - { compiler: clang-12,  cxxstd: '14,17,20',       os: ubuntu-22.04 }
+      - { compiler: clang-13,  cxxstd: '14,17,20',       os: ubuntu-22.04 }
+      - { compiler: clang-14,  cxxstd: '14,17,20',       os: ubuntu-22.04 }
+      - { compiler: clang-16,  cxxstd: '14,17,20,23',    os: ubuntu-24.04 }
+      - { compiler: clang-17,  cxxstd: '14,17,20,23',    os: ubuntu-24.04 }
+      - { compiler: clang-18,  cxxstd: '14,17,20,23,2c', os: ubuntu-24.04 }
+      - { compiler: clang-19,  cxxstd: '14,17,20,23,2c', os: ubuntu-24.04 }
       - { name: Linux_clang_6_libcxx,
           compiler: clang-6.0, cxxstd: '11,14,17', os: ubuntu-20.04, container: 'ubuntu:18.04', install: 'clang-6.0 libc++-dev libc++abi-dev', env: {B2_STDLIB: libc++ } }
       # OSX
-      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-12, xcode: '13.1' }
-      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-12, xcode: '13.2.1' }
-      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-12, xcode: '13.3.1' }
-      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-12, xcode: '13.4' }
-      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-12, xcode: '13.4.1' }
-      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-12, xcode: '14.0.1' }
-      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-13, xcode: '14.1' }
-      - { compiler: clang, cxxstd: '14,17,2a',    os: macOS-13, xcode: '14.3.1' }
-      - { compiler: clang, cxxstd: '14,17,20',    os: macOS-13, xcode: '15.1' }
-      - { compiler: clang, cxxstd: '14,17,20',    os: macOS-13, xcode: '15.2' }
       - { compiler: clang, cxxstd: '14,17,20',    os: macOS-14, xcode: '15.3' }
       - { compiler: clang, cxxstd: '14,17,20',    os: macOS-14, xcode: '15.4' }
       - { compiler: clang, cxxstd: '14,17,20,23', os: macOS-14, xcode: '16.0' }
+      - { compiler: clang, cxxstd: '14,17,20,23', os: macOS-14, xcode: '16.2' }
+      - { compiler: clang, cxxstd: '14,17,20,23', os: macOS-15, xcode: '16.3' }
+      - { compiler: clang, cxxstd: '14,17,20,23', os: macOS-15, xcode: '16.4' }
+      - { compiler: clang, cxxstd: '14,17,20,23', os: macOS-26, xcode: '26.0.1' }
+      - { compiler: clang, cxxstd: '14,17,20,23', os: macOS-26, xcode: '26.2' }
+      - { compiler: clang, cxxstd: '14,17,20,23', os: macOS-26, xcode: '26.3' }
+      - { compiler: clang, cxxstd: '14,17,20,23', os: macOS-26, xcode: '26.4.1' }
+      - { compiler: clang, cxxstd: '14,17,20,23', os: macOS-26, xcode: '26.5' }
 
 stages:
   - stage: Test
