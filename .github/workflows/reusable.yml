@@ -611,9 +611,18 @@ jobs:
           B2_TOOLSET: ${{matrix.toolset}}
           SELF: ${{inputs.library_folder}}
 
-      - name: Run tests
-        if: '!matrix.coverage'
-        run: ci\build.bat
+      - name: Determine B2 arguments
+        run: |
+          # Use Bash which is more flexible than CMD and we can reuse the logic
+          . ci/enforce.sh
+          echo "B2_FULL_ARGS=${B2_ARGS[@]}" >> "$GITHUB_ENV"
+          echo "SELF=$SELF" >> "$GITHUB_ENV"
+          if [[ -z "$B2_TARGETS" ]]; then
+            B2_TARGETS=libs/$SELF/test
+          fi
+          echo "B2_TARGETS=$B2_TARGETS" >> "$GITHUB_ENV"
+          echo "SELF=$SELF" >> "$GITHUB_ENV"
+        shell: bash
         env:
           B2_TOOLSET: ${{matrix.toolset}}
           B2_TARGET_OS: ${{matrix.target-os}}
@@ -622,23 +631,17 @@ jobs:
           B2_DEFINES: ${{inputs.b2_defines}}
           B2_LINK: ${{inputs.b2_link}}
           B2_VARIANT: ${{inputs.b2_variant}}
-          SELF: ${{inputs.library_folder}}
           B2_TARGETS: ${{inputs.b2_targets}}
+          SELF: ${{inputs.library_folder}}
+
+      - name: Run tests
+        if: '!matrix.coverage'
+        run: ci\build.bat
 
       - name: Collect coverage
         shell: powershell
         if: matrix.coverage
         run: ci\opencppcoverage.ps1
-        env:
-          B2_TOOLSET: ${{matrix.toolset}}
-          B2_TARGET_OS: ${{matrix.target-os}}
-          B2_CXXSTD: ${{matrix.cxxstd}}
-          B2_ADDRESS_MODEL: ${{matrix.address-model}}
-          B2_DEFINES: ${{inputs.b2_defines}}
-          B2_LINK: ${{inputs.b2_link}}
-          B2_VARIANT: ${{inputs.b2_variant}}
-          SELF: ${{inputs.library_folder}}
-          B2_TARGETS: ${{inputs.b2_targets}}
 
       - name: Upload coverage
         if: matrix.coverage
