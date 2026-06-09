@@ -140,7 +140,10 @@ elif [[ "$coverage_action" == "collect" ]] || [[ "$coverage_action" == "upload" 
 
         # Verify Download
         if command -v gpg &> /dev/null && command -v gpgv &> /dev/null; then
-            curl https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --no-default-keyring --keyring trustedkeys.gpg --import
+            # 2026-06-07: Codecov bricked the legacy keybase account `codecovsecurity`
+            # and migrated the PGP key to `codecovsecops`. See
+            # https://github.com/codecov/codecov-action/issues/1956
+            curl https://keybase.io/codecovsecops/pgp_keys.asc | gpg --no-default-keyring --keyring trustedkeys.gpg --import
 
             curl -Os https://uploader.codecov.io/latest/linux/codecov.SHA256SUM
             curl -Os https://uploader.codecov.io/latest/linux/codecov.SHA256SUM.sig

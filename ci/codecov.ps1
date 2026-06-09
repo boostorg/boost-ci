@@ -12,7 +12,10 @@ Invoke-WebRequest -Uri https://uploader.codecov.io/latest/windows/codecov.exe -O
 # Verify integrity
 if (Get-Command "gpg.exe" -ErrorAction SilentlyContinue){
     $ProgressPreference = 'SilentlyContinue'
-    Invoke-WebRequest -Uri https://keybase.io/codecovsecurity/pgp_keys.asc -OutFile codecov.asc
+    # 2026-06-07: Codecov bricked the legacy keybase account `codecovsecurity`
+    # and migrated the PGP key to `codecovsecops`. See
+    # https://github.com/codecov/codecov-action/issues/1956
+    Invoke-WebRequest -Uri https://keybase.io/codecovsecops/pgp_keys.asc -OutFile codecov.asc
     Invoke-WebRequest -Uri https://uploader.codecov.io/latest/windows/codecov.exe.SHA256SUM -Outfile codecov.exe.SHA256SUM
     Invoke-WebRequest -Uri https://uploader.codecov.io/latest/windows/codecov.exe.SHA256SUM.sig -Outfile codecov.exe.SHA256SUM.sig
 
