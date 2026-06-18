@@ -122,7 +122,6 @@ env:
   B2_LINK: shared,static
   LCOV_BRANCH_COVERAGE: ${{ inputs.branch_coverage && '1' || '0' }}
   CODECOV_NAME: Github Actions
-  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
   DEPINST: ${{ inputs.depinst_args }}
 
 jobs:
@@ -432,8 +431,10 @@ jobs:
     container:
       image: ${{matrix.container}}
       volumes:
-        - /node20217:/node20217:rw,rshared
-        - ${{ startsWith(matrix.container, 'ubuntu:1') && '/node20217:/__e/node20:ro,rshared' || ' ' }}
+        - /node20_217:/node20_217:rw,rshared
+        - /node24_217:/node24_217:rw,rshared
+        - ${{ startsWith(matrix.container, 'ubuntu:1') && '/node20_217:/__e/node20:ro,rshared' || ' ' }}
+        - ${{ startsWith(matrix.container, 'ubuntu:1') && '/node24_217:/__e/node24:ro,rshared' || ' ' }}
 
     env: {B2_USE_CCACHE: 1}
 
@@ -502,8 +503,13 @@ jobs:
             fi
             git config --global pack.threads 0
             if [[ "${{matrix.container}}" == "ubuntu:1"* ]]; then
-              # Node 20 doesn't work with Ubuntu 16/18  glibc: https://github.com/actions/checkout/issues/1590
-              curl -sL https://archives.boost.io/misc/node/node-v20.9.0-linux-x64-glibc-217.tar.xz | tar -xJ --strip-components 1 -C /node20217
+              echo "::group::Update node"
+              # Install a node version that works with the glibc 2.17 of Ubuntu 16/18: https://github.com/actions/checkout/issues/1590
+              curl -sL https://archives.boost.io/misc/node/node-v20.9.0-linux-x64-glibc-217.tar.xz | tar -xJ --strip-components 1 -C /node20_217
+              curl -sL https://archives.boost.io/misc/node/node-v24.15.0-linux-x64-glibc-217.tar.xz | tar -xJ --strip-components 1 -C /node24_217
+              /node20_217/bin/node --version || true
+              /node24_217/bin/node --version || true
+              echo "::endgroup::"
             fi
 
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
