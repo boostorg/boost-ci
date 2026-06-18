@@ -315,7 +315,7 @@ jobs:
                 version=${git_version##* }
                 echo "Git version: $version"
                 required_git_version="2.18" # actions/checkout requires git 2.18
-                if [[ "$(printf '%s\n' "$required" "$version" | sort -V | head -n1)" != "$required" ]]; then
+                if [[ "$(printf '%s\n' "$required_git_version" "$version" | sort -V | head -n1)" != "$required_git_version" ]]; then
                     # Need (newer) git, and the older Ubuntu container may require requesting the key manually using port 80
                     key_server="keyserver.boost.org"
                     echo "Downloading key from $key_server"
