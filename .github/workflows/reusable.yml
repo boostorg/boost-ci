@@ -766,6 +766,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # Keep in sync with job output below
           - { os: ubuntu-latest,        build_shared: ON,  build_type: Debug, generator: 'Unix Makefiles' }
           - { os: ubuntu-latest,        build_shared: OFF, build_type: Debug, generator: 'Unix Makefiles' }
           - { os: windows-2022,         build_shared: ON,  build_type: Debug, generator: 'Visual Studio 17 2022' }
@@ -904,3 +905,118 @@ jobs:
       - name: Run CMake install tests w/ B2 installed library
         run: ci/test_installed_cmake_config.sh
         env: {BOOST_CI_INSTALLED_BY: B2}
+
+  ci-summary:
+    needs: [generate-posix-matrix, generate-windows-matrix, generate-mingw-matrix]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Generate CI summary
+        run: |
+          import json
+          import os
+
+          def get_props(entry):
+              props = []
+              if entry.get('sanitize') == 'yes':
+                  props.append('ASAN/UBSAN')
+              if entry.get('coverage') == 'yes':
+                  props.append('Coverage')
+              if entry.get('coverity') == 'yes':
+                  props.append('Coverity')
+              if entry.get('multiarch') == 'yes':
+                  props.append('Big-endian')
+              if entry.get('reflection') == 'yes':
+                  props.append('Reflection')
+              if entry.get('stdlib') == 'libc++':
+                  props.append('libc++')
+              return props
+
+          summary = "# Tested Configurations\n\n"
+
+          windows_entries = json.loads(os.environ['WINDOWS_MATRIX_ENTRIES'])['include']
+          mingw_entries = json.loads(os.environ['MINGW_MATRIX_ENTRIES'])['include']
+          posix_entries = json.loads(os.environ['POSIX_MATRIX_ENTRIES'])['include']
+          linux_entries = [e for e in posix_entries if 'ubuntu' in e.get('os', '') or 'ubuntu' in e.get('container', '') or 'arm' in e.get('os', '')]
+          macos_entries = [e for e in posix_entries if 'macos' in e.get('os', '')]
+
+          if linux_entries:
+              summary += "## Linux\n\n"
+              summary += "| Compiler | C++ std | Arch | Properties |\n"
+              summary += "|----------|---------|------|------------|\n"
+              for e in linux_entries:
+                  compiler = e['compiler']
+                  stdlib = e.get('stdlib', '')
+                  if stdlib:
+                      compiler += f" ({stdlib})"
+                  cxxstd = e.get('cxxstd', '[default]')
+                  arch = e.get('address-model', '[default]')
+                  props = get_props(e)
+                  summary += f"| {compiler} | {cxxstd} | {arch} | {', '.join(props) if props else '-'} |\n"
+              summary += "\n"
+
+          if macos_entries:
+              summary += "## macOS\n\n"
+              summary += "| Compiler | C++ std | Properties |\n"
+              summary += "|----------|---------|------------|\n"
+              for e in macos_entries:
+                  compiler = e['compiler']
+                  cxxstd = e.get('cxxstd', '[default]')
+                  props = get_props(e)
+                  summary += f"| {compiler} | {cxxstd} | {', '.join(props) if props else '-'} |\n"
+              summary += "\n"
+
+          if windows_entries or mingw_entries:
+              summary += "## Windows\n\n"
+              summary += "| Toolset | C++ std | Arch | Properties |\n"
+              summary += "|---------|---------|------|------------|\n"
+              for e in windows_entries:
+                  toolset = e['toolset']
+                  cxxstd = e.get('cxxstd', '[default]')
+                  arch = e.get('address-model', '[default]')
+                  props = get_props(e)
+                  if e.get('target-os') == 'cygwin':
+                      props.append('Cygwin')
+                  summary += f"| {toolset} | {cxxstd} | {arch} | {', '.join(props) if props else '-'} |\n"
+              summary += "\n"
+
+              if mingw_entries:
+                  for e in mingw_entries:
+                      compiler = e['compiler']
+                      cxxstd = e.get('cxxstd', '[default]')
+                      arch = e['sys']
+                      props = get_props(e)
+                      summary += f"| {compiler} | {cxxstd} | {arch} | {', '.join(props) if props else '-'} |\n"
+                  summary += "\n"
+
+          if (os.environ.get('ENABLE_CMAKE') or 'false') not in ('false', '0'):
+              summary += "## CMake\n\n"
+              summary += "| OS | Generator | Build Type | Shared | |\n"
+              summary += "|----|-----------|------------|--------| |\n"
+
+              # Keep in sync with job matrix above
+              cmake_configs = [
+                  { os: ubuntu-latest,        build_shared: ON,  build_type: Debug, generator: 'Unix Makefiles' },
+                  { os: ubuntu-latest,        build_shared: OFF, build_type: Debug, generator: 'Unix Makefiles' },
+                  { os: windows-2022,         build_shared: ON,  build_type: Debug, generator: 'Visual Studio 17 2022' },
+                  { os: windows-2022,         build_shared: OFF, build_type: Debug, generator: 'Visual Studio 17 2022' },
+                  { os: windows-2025-vs2026,  build_shared: OFF, build_type: Debug, generator: 'Visual Studio 18 2026' },
+                  { name: "Min. CMake", cmake_version: os.environ['MIN_CMAKE_VERSION'],
+                    os: ubuntu-latest,        build_shared: ON,  build_type: Debug, generator: 'Unix Makefiles' },
+              ]
+              for c in cmake_configs:
+                  summary += f"| {c['os']} | {c['generator']} | {c['build_type']} | {c['build_shared']} |"
+                  cmake_version = c.get('cmake_version')
+                  if cmake_version:
+                      summary += f" CMake {cmake_version} "
+                  summary += "|\n"
+
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as fh:
+              fh.write(summary)
+        shell: python
+        env:
+          POSIX_MATRIX_ENTRIES: ${{needs.generate-posix-matrix.outputs.matrix}}
+          WINDOWS_MATRIX_ENTRIES: ${{needs.generate-windows-matrix.outputs.matrix}}
+          MINGW_MATRIX_ENTRIES: ${{needs.generate-mingw-matrix.outputs.matrix}}
+          ENABLE_CMAKE: ${{inputs.enable_cmake}}
+          MIN_CMAKE_VERSION: ${{inputs.min_cmake_version}}
