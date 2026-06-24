@@ -19,6 +19,11 @@ permissions:
 on:
   workflow_call:
     inputs:
+      depinst_args:
+        description: "Additional arguments to pass to depinst.py, e.g. '--include dirname1 --include dirname2'"
+        required: false
+        type: string
+        default: ''
       branch_coverage:
         description: "Collect branch coverage instead of line coverage. Enabled by default."
         required: false
@@ -118,6 +123,7 @@ env:
   LCOV_BRANCH_COVERAGE: ${{ inputs.branch_coverage && '1' || '0' }}
   CODECOV_NAME: Github Actions
   ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+  DEPINST: ${{ inputs.depinst_args }}
 
 jobs:
   generate-posix-matrix:
