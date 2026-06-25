@@ -15,6 +15,10 @@ if(BOOST_CI_INSTALL_TEST)
         find_package(Boost REQUIRED)
         # To avoid changing the target name compared to the installed-by-CMake case, a hack like this can be used:
         # add_library(Boost::boost_ci ALIAS Boost::headers)
+        # For CMake < 3.18 use this:
+        # add_library(Boost_boost_ci INTERFACE)
+        # target_link_libraries(Boost_boost_ci INTERFACE Boost::headers)
+        # add_library(Boost::boost_ci ALIAS Boost_boost_ci)
 
         # Check for Boost.CI only to ensure that add_library call would work.
         # Do NOT copy to actual code, "REQUIRED" already takes care of this!
