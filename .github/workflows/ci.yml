@@ -34,7 +34,9 @@ on:
       - LICENSE
       - meta/**
       - README.md
-
+env:
+  ACTIONS_STEP_DEBUG: true
+  ACTIONS_RUNNER_DEBUG: true
 jobs:
   call-boost-ci:
     name: Run Boost.CI
