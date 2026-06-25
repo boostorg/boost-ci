@@ -303,16 +303,19 @@ jobs:
                 export DEBIAN_FRONTEND=noninteractive
             fi
             if [ -n "${{matrix.container}}" ] && [ -f "/etc/debian_version" ]; then
+                echo "::group::Install core tools"
                 apt-get -o Acquire::Retries=$NET_RETRY_COUNT update
                 apt-get -o Acquire::Retries=$NET_RETRY_COUNT -y -q --no-install-suggests --no-install-recommends install sudo software-properties-common curl
+                echo "::endgroup::"
+                echo "::group::Check & setup git version"
                 if ! git_version=$(git --version 2>/dev/null); then
                     git_version=0.0.0
                 fi
                 # Extract version number from e.g. "git version 2.7.4"
                 version=${git_version##* }
                 echo "Git version: $version"
-                required_git_version="2.9"
-                if [[ ${GIT_FETCH_JOBS:-1} != "1" ]] && [[ "$(printf '%s\n' "$required" "$version" | sort -V | head -n1)" != "$required" ]]; then
+                required_git_version="2.18" # actions/checkout requires git 2.18
+                if [[ "$(printf '%s\n' "$required_git_version" "$version" | sort -V | head -n1)" != "$required_git_version" ]]; then
                     # Need (newer) git, and the older Ubuntu container may require requesting the key manually using port 80
                     key_server="keyserver.boost.org"
                     echo "Downloading key from $key_server"
@@ -321,16 +324,22 @@ jobs:
                         sudo -E add-apt-repository -y ppa:git-core/ppa && break || sleep 10
                     done
                 fi
+                echo "::endgroup::"
+                echo "::group::Update APT cache"
                 apt-get -o Acquire::Retries=$NET_RETRY_COUNT update
-                osver=$(lsb_release -sr | cut -f1 -d.)
+                echo "::endgroup::"
                 pkgs="g++ git xz-utils"
+                osver=$(lsb_release -sr | cut -f1 -d.)
+                echo "OS version: $osver"
                 # Ubuntu 22+ has only Python 3 in the repos
                 if [ -n "$osver" ] && [ "$osver" -ge "20" ]; then
                   pkgs+=" python-is-python3 libpython3-dev"
                 else
                   pkgs+=" python libpython-dev"
                 fi
+                echo "::group::Install $pkgs"
                 apt-get -o Acquire::Retries=$NET_RETRY_COUNT -y -q --no-install-suggests --no-install-recommends install $pkgs
+                echo "::endgroup::"
             fi
             # For jobs not compatible with ccache, use "ccache: no" in the matrix
             if [[ "${{ matrix.ccache }}" == "no" ]]; then
