@@ -136,6 +136,7 @@ jobs:
     steps:
       - id: posix-matrix
         name: Posix
+        if: ${{ inputs.enable_posix }}
         run: |
           import json, os
 
@@ -279,6 +280,7 @@ jobs:
 
       - id: windows-matrix
         name: Windows
+        if: ${{ inputs.enable_windows }}
         run: |
           import json, os
 
@@ -342,6 +344,7 @@ jobs:
 
       - id: mingw-matrix
         name: MinGW
+        if: ${{ inputs.enable_mingw }}
         run: |
           import json, os
 
@@ -391,6 +394,7 @@ jobs:
 
       - id: cmake-matrix
         name: CMake
+        if: ${{ inputs.enable_cmake }}
         run: |
           import json, os
 
@@ -999,7 +1003,7 @@ jobs:
                       summary += f"| {compiler} | {cxxstd} | {arch} | {', '.join(props) if props else '-'} |\n"
                   summary += "\n"
 
-          if (os.environ.get('ENABLE_CMAKE') or 'false') not in ('false', '0'):
+          if cmake_entries:
               summary += "## CMake\n\n"
               summary += "| OS | Generator | Build Type | Shared | |\n"
               summary += "|----|-----------|------------|--------| |\n"
@@ -1019,5 +1023,4 @@ jobs:
           WINDOWS_MATRIX_ENTRIES: ${{needs.generate-job-matrix.outputs.windows-matrix}}
           MINGW_MATRIX_ENTRIES: ${{needs.generate-job-matrix.outputs.mingw-matrix}}
           CMAKE_MATRIX_ENTRIES: ${{needs.generate-job-matrix.outputs.cmake-matrix}}
-          ENABLE_CMAKE: ${{inputs.enable_cmake}}
           MIN_CMAKE_VERSION: ${{inputs.min_cmake_version}}
