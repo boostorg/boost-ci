@@ -126,12 +126,16 @@ env:
   DEPINST: ${{ inputs.depinst_args }}
 
 jobs:
-  generate-posix-matrix:
+  generate-job-matrix:
     runs-on: ubuntu-latest
     outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      posix-matrix: ${{ steps.posix-matrix.outputs.matrix }}
+      windows-matrix: ${{ steps.windows-matrix.outputs.matrix }}
+      mingw-matrix: ${{ steps.mingw-matrix.outputs.matrix }}
+      cmake-matrix: ${{ steps.cmake-matrix.outputs.matrix }}
     steps:
-      - id: set-matrix
+      - id: posix-matrix
+        name: Posix
         run: |
           import json, os
 
@@ -273,9 +277,143 @@ jobs:
           EXCLUDE_CXXSTD: ${{ inputs.exclude_cxxstd }}
           EXCLUDE_OS: ${{ inputs.exclude_os }}
 
+      - id: windows-matrix
+        name: Windows
+        run: |
+          import json, os
+
+          all_jobs = [
+            {"toolset": "msvc-14.3", "cxxstd": "14,17,20,latest", "address-model": "32,64", "os": "windows-2022"},
+            {"toolset": "msvc-14.5", "cxxstd": "14,17,20,latest", "address-model": "32,64", "os": "windows-2025-vs2026"},
+            {"toolset": "msvc-14.3", "cxxstd": "14,17,20,latest", "address-model": "64", "os": "windows-11-arm"},
+            {"name": "Collect coverage", "coverage": "yes",
+             "toolset": "msvc-14.5", "cxxstd": "latest",          "address-model": "64",    "os": "windows-2025-vs2026"},
+            {"toolset": "clang-win", "cxxstd": "14,17,latest",    "address-model": "32,64", "os": "windows-2025"},
+            {"toolset": "gcc",       "cxxstd": "11,14,17,2a",     "address-model": "64",    "os": "windows-2022"},
+            {"toolset": "gcc",       "cxxstd": "11,14,17,2a",     "address-model": "32",    "os": "windows-2025", "target-os": "cygwin"},
+            {"toolset": "gcc",       "cxxstd": "11,14,17,2a",     "address-model": "64",    "os": "windows-2025", "target-os": "cygwin"},
+          ]
+
+          def is_true(env_var):
+              return os.environ.get(env_var).lower() == 'true'
+
+          def filter_multi_valued(in_list, key_name, excluded):
+              """Remove all entries from the value identified by key_name that are contained in excluded (comma-separated).
+                 Omit the entry when the attribute is empty, keep it if the attribute is not present."""
+              excluded_values = {x.strip() for x in excluded.split(',')}
+              for entry in in_list:
+                  try:
+                      values = [x.strip() for x in entry[key_name].split(',')]
+                  except KeyError:
+                      yield entry
+                  else:
+                      remaining_values = [v for v in values if v and v not in excluded_values]
+                      if remaining_values:
+                          entry[key_name] = ",".join(remaining_values)
+                          yield entry
+
+          def filter_os(in_list, excluded):
+              """Remove all jobs that match any of the excluded OS (comma-separated, supports partial matches)"""
+              excluded_values = [v for v in (x.strip().replace('-', ':') for x in excluded.split(',')) if v]
+              return (job for job in in_list if not any(ev in job.get('container', job['os']).replace('-', ':') for ev in excluded_values))
+
+          def filter_yes_values(in_list, key_name):
+              """Remove all entries with value 'yes' for the key"""
+              return (e for e in in_list if not e.get(key_name) == "yes")
+
+          filtered = all_jobs
+          filtered = filter_multi_valued(filtered, 'cxxstd', os.environ['EXCLUDE_CXXSTD'])
+          filtered = filter_multi_valued(filtered, 'toolset', os.environ['EXCLUDE_COMPILER'])
+          filtered = filter_os(filtered, os.environ['EXCLUDE_OS'])
+          if not is_true('ENABLE_32BIT'):
+              filtered = filter_multi_valued(filtered, 'address-model', '32')
+          if not is_true('ENABLE_CYGWIN'):
+              filtered = filter_multi_valued(filtered, 'target-os', 'cygwin')
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+              print(f"matrix={json.dumps({'include': list(filtered)})}", file=fh)
+        shell: python
+        env:
+          ENABLE_32BIT: ${{ inputs.enable_32bit }}
+          ENABLE_CYGWIN: ${{ inputs.enable_cygwin }}
+          EXCLUDE_CXXSTD: ${{ inputs.exclude_cxxstd }}
+          EXCLUDE_COMPILER: ${{ inputs.exclude_compiler }}
+          EXCLUDE_OS: ${{ inputs.exclude_os }}
+
+      - id: mingw-matrix
+        name: MinGW
+        run: |
+          import json, os
+
+          all_jobs = [
+              {"sys": "MINGW32", "compiler": "gcc", "cxxstd": "11,17,20"},
+              {"sys": "MINGW64", "compiler": "gcc", "cxxstd": "11,17,20"},
+          ]
+
+          def is_true(env_var):
+              return os.environ.get(env_var).lower() == 'true'
+
+          def filter_multi_valued(in_list, key_name, excluded):
+              """Remove all entries from the value identified by key_name that are contained in excluded (comma-separated).
+                 Omit the entry when the attribute is empty, keep it if the attribute is not present."""
+              excluded_values = {x.strip() for x in excluded.split(',')}
+              for entry in in_list:
+                  try:
+                      values = [x.strip() for x in entry[key_name].split(',')]
+                  except KeyError:
+                      yield entry
+                  else:
+                      remaining_values = [v for v in values if v and v not in excluded_values]
+                      if remaining_values:
+                          entry[key_name] = ",".join(remaining_values)
+                          yield entry
+
+          def filter_os(in_list, excluded):
+              """Remove all jobs that match any of the excluded OS (comma-separated, supports partial matches)"""
+              excluded_values = [v for v in (x.strip().replace('-', ':') for x in excluded.split(',')) if v]
+              return (job for job in in_list if not any(ev in job['sys'] for ev in excluded_values))
+
+          def filter_yes_values(in_list, key_name):
+              """Remove all entries with value 'yes' for the key"""
+              return (e for e in in_list if not e.get(key_name) == "yes")
+
+          filtered = all_jobs
+          filtered = filter_multi_valued(filtered, 'cxxstd', os.environ['EXCLUDE_CXXSTD'])
+          if not is_true('ENABLE_32BIT'):
+              filtered = filter_multi_valued(filtered, 'sys', 'MINGW32')
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+              print(f"matrix={json.dumps({'include': list(filtered)})}", file=fh)
+        shell: python
+        env:
+          ENABLE_32BIT: ${{ inputs.enable_32bit }}
+          EXCLUDE_CXXSTD: ${{ inputs.exclude_cxxstd }}
+
+      - id: cmake-matrix
+        name: CMake
+        run: |
+          import json, os
+
+          all_jobs = [
+            { "os": "ubuntu-latest",        "build_shared": "ON",  "build_type": "Debug", "generator": "Unix Makefiles" },
+            { "os": "ubuntu-latest",        "build_shared": "OFF", "build_type": "Debug", "generator": "Unix Makefiles" },
+            { "os": "windows-2022",         "build_shared": "ON",  "build_type": "Debug", "generator": "Visual Studio 17 2022" },
+            { "os": "windows-2022",         "build_shared": "OFF", "build_type": "Debug", "generator": "Visual Studio 17 2022" },
+            { "os": "windows-2025-vs2026",  "build_shared": "OFF", "build_type": "Debug", "generator": "Visual Studio 18 2026" },
+            { "name": "Min. CMake", "cmake_version": os.environ["MIN_CMAKE_VERSION"],
+              "os": "ubuntu-latest",            "build_shared": "ON",  "build_type": "Debug", "generator": "Unix Makefiles" },
+          ]
+          filtered = all_jobs
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+              print(f"matrix={json.dumps({'include': list(filtered)})}", file=fh)
+        shell: python
+        env:
+          MIN_CMAKE_VERSION: ${{ inputs.min_cmake_version }}
+
   posix:
     if: ${{ inputs.enable_posix }}
-    needs: generate-posix-matrix
+    needs: generate-job-matrix
     runs-on: ${{matrix.os}}
     timeout-minutes: 120
 
@@ -285,7 +423,7 @@ jobs:
 
     strategy:
       fail-fast: false
-      matrix: ${{fromJson(needs.generate-posix-matrix.outputs.matrix)}}
+      matrix: ${{fromJson(needs.generate-job-matrix.outputs.posix-matrix)}}
 
     container:
       image: ${{matrix.container}}
@@ -494,77 +632,9 @@ jobs:
           COVERITY_SCAN_NOTIFICATION_EMAIL: ${{ secrets.COVERITY_SCAN_NOTIFICATION_EMAIL }}
           COVERITY_SCAN_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
 
-  generate-windows-matrix:
-    runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
-
-    steps:
-      - id: set-matrix
-        run: |
-          import json, os
-
-          all_jobs = [
-            {"toolset": "msvc-14.3", "cxxstd": "14,17,20,latest", "address-model": "32,64", "os": "windows-2022"},
-            {"toolset": "msvc-14.5", "cxxstd": "14,17,20,latest", "address-model": "32,64", "os": "windows-2025-vs2026"},
-            {"toolset": "msvc-14.3", "cxxstd": "14,17,20,latest", "address-model": "64", "os": "windows-11-arm"},
-            {"name": "Collect coverage", "coverage": "yes",
-             "toolset": "msvc-14.5", "cxxstd": "latest",          "address-model": "64",    "os": "windows-2025-vs2026"},
-            {"toolset": "clang-win", "cxxstd": "14,17,latest",    "address-model": "32,64", "os": "windows-2025"},
-            {"toolset": "gcc",       "cxxstd": "11,14,17,2a",     "address-model": "64",    "os": "windows-2022"},
-            {"toolset": "gcc",       "cxxstd": "11,14,17,2a",     "address-model": "32",    "os": "windows-2025", "target-os": "cygwin"},
-            {"toolset": "gcc",       "cxxstd": "11,14,17,2a",     "address-model": "64",    "os": "windows-2025", "target-os": "cygwin"},
-          ]
-
-          def is_true(env_var):
-              return os.environ.get(env_var).lower() == 'true'
-
-          def filter_multi_valued(in_list, key_name, excluded):
-              """Remove all entries from the value identified by key_name that are contained in excluded (comma-separated).
-                 Omit the entry when the attribute is empty, keep it if the attribute is not present."""
-              excluded_values = {x.strip() for x in excluded.split(',')}
-              for entry in in_list:
-                  try:
-                      values = [x.strip() for x in entry[key_name].split(',')]
-                  except KeyError:
-                      yield entry
-                  else:
-                      remaining_values = [v for v in values if v and v not in excluded_values]
-                      if remaining_values:
-                          entry[key_name] = ",".join(remaining_values)
-                          yield entry
-
-          def filter_os(in_list, excluded):
-              """Remove all jobs that match any of the excluded OS (comma-separated, supports partial matches)"""
-              excluded_values = [v for v in (x.strip().replace('-', ':') for x in excluded.split(',')) if v]
-              return (job for job in in_list if not any(ev in job.get('container', job['os']).replace('-', ':') for ev in excluded_values))
-
-          def filter_yes_values(in_list, key_name):
-              """Remove all entries with value 'yes' for the key"""
-              return (e for e in in_list if not e.get(key_name) == "yes")
-
-          filtered = all_jobs
-          filtered = filter_multi_valued(filtered, 'cxxstd', os.environ['EXCLUDE_CXXSTD'])
-          filtered = filter_multi_valued(filtered, 'toolset', os.environ['EXCLUDE_COMPILER'])
-          filtered = filter_os(filtered, os.environ['EXCLUDE_OS'])
-          if not is_true('ENABLE_32BIT'):
-              filtered = filter_multi_valued(filtered, 'address-model', '32')
-          if not is_true('ENABLE_CYGWIN'):
-              filtered = filter_multi_valued(filtered, 'target-os', 'cygwin')
-
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-              print(f"matrix={json.dumps({'include': list(filtered)})}", file=fh)
-        shell: python
-        env:
-          ENABLE_32BIT: ${{ inputs.enable_32bit }}
-          ENABLE_CYGWIN: ${{ inputs.enable_cygwin }}
-          EXCLUDE_CXXSTD: ${{ inputs.exclude_cxxstd }}
-          EXCLUDE_COMPILER: ${{ inputs.exclude_compiler }}
-          EXCLUDE_OS: ${{ inputs.exclude_os }}
-
   windows:
     if: ${{ inputs.enable_windows }}
-    needs: generate-windows-matrix
+    needs: generate-job-matrix
     runs-on: ${{matrix.os}}
     timeout-minutes: 120
 
@@ -574,7 +644,7 @@ jobs:
 
     strategy:
       fail-fast: false
-      matrix: ${{fromJson(needs.generate-windows-matrix.outputs.matrix)}}
+      matrix: ${{fromJson(needs.generate-job-matrix.outputs.windows-matrix)}}
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -638,62 +708,9 @@ jobs:
           token: ${{secrets.CODECOV_TOKEN}}
           verbose: true
 
-  generate-mingw-matrix:
-    runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
-    steps:
-      - id: set-matrix
-        run: |
-          import json, os
-
-          all_jobs = [
-              {"sys": "MINGW32", "compiler": "gcc", "cxxstd": "11,17,20"},
-              {"sys": "MINGW64", "compiler": "gcc", "cxxstd": "11,17,20"}
-          ]
-
-          def is_true(env_var):
-              return os.environ.get(env_var).lower() == 'true'
-
-          def filter_multi_valued(in_list, key_name, excluded):
-              """Remove all entries from the value identified by key_name that are contained in excluded (comma-separated).
-                 Omit the entry when the attribute is empty, keep it if the attribute is not present."""
-              excluded_values = {x.strip() for x in excluded.split(',')}
-              for entry in in_list:
-                  try:
-                      values = [x.strip() for x in entry[key_name].split(',')]
-                  except KeyError:
-                      yield entry
-                  else:
-                      remaining_values = [v for v in values if v and v not in excluded_values]
-                      if remaining_values:
-                          entry[key_name] = ",".join(remaining_values)
-                          yield entry
-
-          def filter_os(in_list, excluded):
-              """Remove all jobs that match any of the excluded OS (comma-separated, supports partial matches)"""
-              excluded_values = [v for v in (x.strip().replace('-', ':') for x in excluded.split(',')) if v]
-              return (job for job in in_list if not any(ev in job['sys'] for ev in excluded_values))
-
-          def filter_yes_values(in_list, key_name):
-              """Remove all entries with value 'yes' for the key"""
-              return (e for e in in_list if not e.get(key_name) == "yes")
-
-          filtered = all_jobs
-          filtered = filter_multi_valued(filtered, 'cxxstd', os.environ['EXCLUDE_CXXSTD'])
-          if not is_true('ENABLE_32BIT'):
-              filtered = filter_multi_valued(filtered, 'sys', 'MINGW32')
-
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-              print(f"matrix={json.dumps({'include': list(filtered)})}", file=fh)
-        shell: python
-        env:
-          ENABLE_32BIT: ${{ inputs.enable_32bit }}
-          EXCLUDE_CXXSTD: ${{ inputs.exclude_cxxstd }}
-
   mingw:
     if: ${{ inputs.enable_mingw }}
-    needs: generate-mingw-matrix
+    needs: generate-job-matrix
     runs-on: windows-latest
     timeout-minutes: 120
 
@@ -703,7 +720,7 @@ jobs:
 
     strategy:
       fail-fast: false
-      matrix: ${{fromJson(needs.generate-mingw-matrix.outputs.matrix)}}
+      matrix: ${{fromJson(needs.generate-job-matrix.outputs.mingw-matrix)}}
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -755,6 +772,7 @@ jobs:
 
   cmake:
     if: ${{ inputs.enable_cmake }}
+    needs: generate-job-matrix
     runs-on: ${{matrix.os}}
     timeout-minutes: 120
 
@@ -764,16 +782,7 @@ jobs:
 
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          # Keep in sync with job output below
-          - { os: ubuntu-latest,        build_shared: ON,  build_type: Debug, generator: 'Unix Makefiles' }
-          - { os: ubuntu-latest,        build_shared: OFF, build_type: Debug, generator: 'Unix Makefiles' }
-          - { os: windows-2022,         build_shared: ON,  build_type: Debug, generator: 'Visual Studio 17 2022' }
-          - { os: windows-2022,         build_shared: OFF, build_type: Debug, generator: 'Visual Studio 17 2022' }
-          - { os: windows-2025-vs2026,  build_shared: OFF, build_type: Debug, generator: 'Visual Studio 18 2026' }
-          - { name: "Min. CMake", cmake_version: '${{inputs.min_cmake_version}}',
-              os: ubuntu-latest,        build_shared: ON,  build_type: Debug, generator: 'Unix Makefiles' }
+      matrix: ${{fromJson(needs.generate-job-matrix.outputs.cmake-matrix)}}
 
     steps:
       - name: Cache CMake
@@ -907,7 +916,7 @@ jobs:
         env: {BOOST_CI_INSTALLED_BY: B2}
 
   ci-summary:
-    needs: [generate-posix-matrix, generate-windows-matrix, generate-mingw-matrix]
+    needs: generate-job-matrix
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -936,6 +945,7 @@ jobs:
 
           windows_entries = json.loads(os.environ['WINDOWS_MATRIX_ENTRIES'])['include']
           mingw_entries = json.loads(os.environ['MINGW_MATRIX_ENTRIES'])['include']
+          cmake_entries = json.loads(os.environ['CMAKE_MATRIX_ENTRIES'])['include']
           posix_entries = json.loads(os.environ['POSIX_MATRIX_ENTRIES'])['include']
           linux_entries = [e for e in posix_entries if 'ubuntu' in e.get('os', '') or 'ubuntu' in e.get('container', '') or 'arm' in e.get('os', '')]
           macos_entries = [e for e in posix_entries if 'macos' in e.get('os', '')]
@@ -994,17 +1004,7 @@ jobs:
               summary += "| OS | Generator | Build Type | Shared | |\n"
               summary += "|----|-----------|------------|--------| |\n"
 
-              # Keep in sync with job matrix above
-              cmake_configs = [
-                  { os: ubuntu-latest,        build_shared: ON,  build_type: Debug, generator: 'Unix Makefiles' },
-                  { os: ubuntu-latest,        build_shared: OFF, build_type: Debug, generator: 'Unix Makefiles' },
-                  { os: windows-2022,         build_shared: ON,  build_type: Debug, generator: 'Visual Studio 17 2022' },
-                  { os: windows-2022,         build_shared: OFF, build_type: Debug, generator: 'Visual Studio 17 2022' },
-                  { os: windows-2025-vs2026,  build_shared: OFF, build_type: Debug, generator: 'Visual Studio 18 2026' },
-                  { name: "Min. CMake", cmake_version: os.environ['MIN_CMAKE_VERSION'],
-                    os: ubuntu-latest,        build_shared: ON,  build_type: Debug, generator: 'Unix Makefiles' },
-              ]
-              for c in cmake_configs:
+              for c in cmake_entries:
                   summary += f"| {c['os']} | {c['generator']} | {c['build_type']} | {c['build_shared']} |"
                   cmake_version = c.get('cmake_version')
                   if cmake_version:
@@ -1015,8 +1015,9 @@ jobs:
               fh.write(summary)
         shell: python
         env:
-          POSIX_MATRIX_ENTRIES: ${{needs.generate-posix-matrix.outputs.matrix}}
-          WINDOWS_MATRIX_ENTRIES: ${{needs.generate-windows-matrix.outputs.matrix}}
-          MINGW_MATRIX_ENTRIES: ${{needs.generate-mingw-matrix.outputs.matrix}}
+          POSIX_MATRIX_ENTRIES: ${{needs.generate-job-matrix.outputs.posix-matrix}}
+          WINDOWS_MATRIX_ENTRIES: ${{needs.generate-job-matrix.outputs.windows-matrix}}
+          MINGW_MATRIX_ENTRIES: ${{needs.generate-job-matrix.outputs.mingw-matrix}}
+          CMAKE_MATRIX_ENTRIES: ${{needs.generate-job-matrix.outputs.cmake-matrix}}
           ENABLE_CMAKE: ${{inputs.enable_cmake}}
           MIN_CMAKE_VERSION: ${{inputs.min_cmake_version}}
