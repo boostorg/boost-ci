@@ -936,6 +936,13 @@ jobs:
                                for p in re.findall(r'\D+|\d+', entry.get('compiler', entry.get('toolset')))
                          )
               return (compiler, entry.get('name') or '    ') # Named entries after non-named with same compiler
+          def compiler_name(toolset):
+            result = compiler.replace('-', ' ').upper()
+            if toolset.startswith('msvc-'):
+                return {'msvc-14.3': 'Visual Studio 2022',
+                        'msvc-14.5': 'Visual Studio 2026',
+                       }.get(toolset, result)
+            return result.replace('CLANG', 'Clang')
 
           summary = "# Tested Configurations\n\n"
 
@@ -958,7 +965,7 @@ jobs:
                     if stdlib:
                         compiler += f" ({stdlib})"
                   else:
-                      name = compiler.replace('-', ' ').capitalize()
+                      name = compiler_name(compiler)
                       if stdlib:
                           name += f" ({stdlib})"
                   cxxstd = e.get('cxxstd', '[default]')
@@ -973,8 +980,6 @@ jobs:
               for e in sorted(macos_entries, key=sort_key):
                   compiler = e['compiler']
                   name = e.get('name', compiler.replace('-', ' ').capitalize())
-                  if 'arm' in e['os'] and 'arm' not in name.lower():
-                      name = 'ARM: ' + name
                   cxxstd = e.get('cxxstd', '[default]')
                   summary += f"| {name} | {compiler} | {cxxstd} |\n"
               summary += "\n"
@@ -993,6 +998,9 @@ jobs:
                           name = 'Cygwin'
                       else:
                           name = ''
+                      name += ' ' + compiler_name(toolset)
+                  if 'arm' in e['os'] and 'arm' not in name.lower():
+                      name = 'ARM: ' + name
                   summary += f"| {name} | {toolset} | {cxxstd} | {arch} |\n"
 
               if mingw_entries:
