@@ -1005,10 +1005,11 @@ jobs:
 
               if mingw_entries:
                   for e in mingw_entries:
+                      sys = e['sys']
                       compiler = e['compiler']
                       cxxstd = e.get('cxxstd', '[default]')
-                      arch = e.get('address-model', '')
-                      summary += f"| {e['sys']} | {compiler} | {cxxstd} | {arch} |\n"
+                      arch = e.get('address-model', sys.upper().replace('MINGW', '')) # Default: MINGW64 -> 64
+                      summary += f"| {sys} | {compiler} | {cxxstd} | {arch} |\n"
                   summary += "\n"
 
           if cmake_entries:
