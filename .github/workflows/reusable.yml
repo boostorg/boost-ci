@@ -935,7 +935,7 @@ jobs:
               compiler = tuple(int(p) if p.isdigit() else p
                                for p in re.findall(r'\D+|\d+', entry.get('compiler', entry.get('toolset')))
                          )
-              return (compiler, entry.get('name') or 'zzz')
+              return (compiler, entry.get('name') or '    ') # Named entries after non-named with same compiler
 
           summary = "# Tested Configurations\n\n"
 
@@ -962,7 +962,7 @@ jobs:
                       if stdlib:
                           name += f" ({stdlib})"
                   cxxstd = e.get('cxxstd', '[default]')
-                  arch = e.get('address-model', '[default]')
+                  arch = e.get('address-model', '')
                   summary += f"| {name} | {compiler} | {cxxstd} | {arch} |\n"
               summary += "\n"
 
@@ -986,7 +986,7 @@ jobs:
               for e in sorted(windows_entries, key=sort_key):
                   toolset = e['toolset']
                   cxxstd = e.get('cxxstd', '[default]')
-                  arch = e.get('address-model', '[default]')
+                  arch = e.get('address-model', '')
                   name = e.get('name')
                   if not name:
                       if e.get('target-os') == 'cygwin':
@@ -999,17 +999,17 @@ jobs:
                   for e in mingw_entries:
                       compiler = e['compiler']
                       cxxstd = e.get('cxxstd', '[default]')
-                      arch = e.get('address-model', '[default]')
+                      arch = e.get('address-model', '')
                       summary += f"| {e['sys']} | {compiler} | {cxxstd} | {arch} |\n"
                   summary += "\n"
 
           if cmake_entries:
               summary += "## CMake\n\n"
-              summary += "| OS | Generator | Build Type | Shared | |\n"
-              summary += "|----|-----------|------------|--------|-|\n"
+              summary += "| Generator | Build Type | Shared | OS | |\n"
+              summary += "|-----------|------------|--------|----|-|\n"
 
               for c in cmake_entries:
-                  summary += f"| {c['os']} | {c['generator']} | {c['build_type']} | {c['build_shared']} |"
+                  summary += f"| {c['generator']} | {c['build_type']} | {c['build_shared']} | {c['os']} |"
                   cmake_version = c.get('cmake_version')
                   if cmake_version:
                       summary += f" CMake {cmake_version} "
