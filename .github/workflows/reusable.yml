@@ -928,22 +928,14 @@ jobs:
         run: |
           import json
           import os
+          import re
 
-          def get_props(entry):
-              props = []
-              if entry.get('sanitize') == 'yes':
-                  props.append('ASAN/UBSAN')
-              if entry.get('coverage') == 'yes':
-                  props.append('Coverage')
-              if entry.get('coverity') == 'yes':
-                  props.append('Coverity')
-              if entry.get('multiarch') == 'yes':
-                  props.append('Big-endian')
-              if entry.get('reflection') == 'yes':
-                  props.append('Reflection')
-              if entry.get('stdlib') == 'libc++':
-                  props.append('libc++')
-              return props
+          def sort_key(entry):
+              # Natural sort for compiler
+              compiler = tuple(int(p) if p.isdigit() else p
+                               for p in re.findall(r'\D+|\d+', entry.get('compiler', entry.get('toolset')))
+                         )
+              return (compiler, entry.get('name') or 'zzz')
 
           summary = "# Tested Configurations\n\n"
 
@@ -956,57 +948,65 @@ jobs:
 
           if linux_entries:
               summary += "## Linux\n\n"
-              summary += "| Compiler | C++ std | Arch | Properties |\n"
-              summary += "|----------|---------|------|------------|\n"
-              for e in linux_entries:
+              summary += "| Job | Compiler | C++ std | Arch |\n"
+              summary += "|-----|----------|---------|------|\n"
+              for e in sorted(linux_entries, key=sort_key):
                   compiler = e['compiler']
                   stdlib = e.get('stdlib', '')
-                  if stdlib:
-                      compiler += f" ({stdlib})"
+                  name = e.get('name')
+                  if name:
+                    if stdlib:
+                        compiler += f" ({stdlib})"
+                  else:
+                      name = compiler.replace('-', ' ').capitalize()
+                      if stdlib:
+                          name += f" ({stdlib})"
                   cxxstd = e.get('cxxstd', '[default]')
                   arch = e.get('address-model', '[default]')
-                  props = get_props(e)
-                  summary += f"| {compiler} | {cxxstd} | {arch} | {', '.join(props) if props else '-'} |\n"
+                  summary += f"| {name} | {compiler} | {cxxstd} | {arch} |\n"
               summary += "\n"
 
           if macos_entries:
               summary += "## macOS\n\n"
-              summary += "| Compiler | C++ std | Properties |\n"
-              summary += "|----------|---------|------------|\n"
-              for e in macos_entries:
+              summary += "| Job | Compiler | C++ std |\n"
+              summary += "|-----|----------|---------|\n"
+              for e in sorted(macos_entries, key=sort_key):
                   compiler = e['compiler']
+                  name = e.get('name', compiler.replace('-', ' ').capitalize())
+                  if 'arm' in e['os'] and 'arm' not in name.lower():
+                      name = 'ARM: ' + name
                   cxxstd = e.get('cxxstd', '[default]')
-                  props = get_props(e)
-                  summary += f"| {compiler} | {cxxstd} | {', '.join(props) if props else '-'} |\n"
+                  summary += f"| {name} | {compiler} | {cxxstd} |\n"
               summary += "\n"
 
           if windows_entries or mingw_entries:
               summary += "## Windows\n\n"
-              summary += "| Toolset | C++ std | Arch | Properties |\n"
-              summary += "|---------|---------|------|------------|\n"
-              for e in windows_entries:
+              summary += "| Job | Toolset | C++ std | Arch |\n"
+              summary += "|-----|---------|---------|------|\n"
+              for e in sorted(windows_entries, key=sort_key):
                   toolset = e['toolset']
                   cxxstd = e.get('cxxstd', '[default]')
                   arch = e.get('address-model', '[default]')
-                  props = get_props(e)
-                  if e.get('target-os') == 'cygwin':
-                      props.append('Cygwin')
-                  summary += f"| {toolset} | {cxxstd} | {arch} | {', '.join(props) if props else '-'} |\n"
-              summary += "\n"
+                  name = e.get('name')
+                  if not name:
+                      if e.get('target-os') == 'cygwin':
+                          name = 'Cygwin'
+                      else:
+                          name = ''
+                  summary += f"| {name} | {toolset} | {cxxstd} | {arch} |\n"
 
               if mingw_entries:
                   for e in mingw_entries:
                       compiler = e['compiler']
                       cxxstd = e.get('cxxstd', '[default]')
-                      arch = e['sys']
-                      props = get_props(e)
-                      summary += f"| {compiler} | {cxxstd} | {arch} | {', '.join(props) if props else '-'} |\n"
+                      arch = e.get('address-model', '[default]')
+                      summary += f"| {e['sys']} | {compiler} | {cxxstd} | {arch} |\n"
                   summary += "\n"
 
           if cmake_entries:
               summary += "## CMake\n\n"
               summary += "| OS | Generator | Build Type | Shared | |\n"
-              summary += "|----|-----------|------------|--------| |\n"
+              summary += "|----|-----------|------------|--------|-|\n"
 
               for c in cmake_entries:
                   summary += f"| {c['os']} | {c['generator']} | {c['build_type']} | {c['build_shared']} |"
