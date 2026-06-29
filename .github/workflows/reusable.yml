@@ -320,9 +320,16 @@ jobs:
                     key_server="keyserver.boost.org"
                     echo "Downloading key from $key_server"
                     curl -sSL --retry ${NET_RETRY_COUNT:-5} "https://$key_server/pks/lookup?op=get&search=0xE1DD270288B4E6030699E45FA1715D88E1DF1F24" | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/git-core_ubuntu_ppa.gpg
-                    for ((i=1; i <= ${NET_RETRY_COUNT:-3}; i++)); do
-                        sudo -E add-apt-repository -y ppa:git-core/ppa && break || sleep 10
-                    done
+                    VERSION_CODENAME=$(grep -ioP '^VERSION_CODENAME=\K.+' /etc/os-release || true)
+                    if [[ -z $VERSION_CODENAME ]]; then
+                        if grep -i trusty /etc/os-release; then
+                            VERSION_CODENAME=trusty
+                        elif grep -i precise /etc/os-release; then
+                            VERSION_CODENAME=precise
+                        fi
+                    fi
+                    echo "VERSION_CODENAME is ${VERSION_CODENAME}"
+                    echo "deb http://ppa.launchpadcontent.net/git-core/ppa/ubuntu ${VERSION_CODENAME} main" | sudo tee /etc/apt/sources.list.d/git-core-ppa.list > /dev/null
                 fi
                 echo "::endgroup::"
                 echo "::group::Update APT cache"
