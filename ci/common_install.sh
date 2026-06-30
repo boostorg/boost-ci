@@ -329,6 +329,6 @@ if [[ "${B2_DONT_BOOTSTRAP:0}" != "1" ]]; then
         fi
     fi
     trap - ERR
-    ${B2_WRAPPER:-} ./b2 -d0 headers
+    ${B2_WRAPPER:-} ./b2 -d0 headers ${B2_HEADERS_FLAGS:-}
     print_on_gha "::endgroup::"
 fi
