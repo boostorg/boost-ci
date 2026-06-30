@@ -104,12 +104,6 @@ if ((${B2_CI_VERSION:-1} > 0)); then
       ${B2_TOOLSET:+"toolset=$B2_TOOLSET"}
       "cxxstd=$B2_CXXSTD"
       ${B2_CXXFLAGS:+"cxxflags=$B2_CXXFLAGS"}
-  )
-  append_b2_args B2_DEFINES define
-  append_b2_args B2_INCLUDE include
-  # shellcheck disable=SC2206
-  B2_ARGS=(
-      "${B2_ARGS[@]}"
       ${B2_LINKFLAGS:+"linkflags=$B2_LINKFLAGS"}
       ${B2_TESTFLAGS:-}
       ${B2_ADDRESS_MODEL:+address-model=$B2_ADDRESS_MODEL}
@@ -122,8 +116,12 @@ if ((${B2_CI_VERSION:-1} > 0)); then
       ${B2_TSAN:+thread-sanitizer=norecover}
       ${B2_UBSAN:+undefined-sanitizer=norecover}
       -j"${B2_JOBS}"
-      ${B2_FLAGS:-}
   )
+  append_b2_args B2_DEFINES define
+  append_b2_args B2_INCLUDE include
+
+  # shellcheck disable=SC2206
+  B2_ARGS+=(${B2_FLAGS:-})
 else
   # Legacy codepath for compatibility for for old versions of the .github/*.yml files:
   # In (most) variables the prefix (such as "cxxflags=" for B2_CXXFLAGS) was included in the value, so it isn't added (again) here
