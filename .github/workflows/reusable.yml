@@ -970,7 +970,7 @@ jobs:
 
           def load_from_env(name):
             value = os.environ.get(name)
-            return json.loads(value)['include'] if value else None
+            return json.loads(value)['include'] if value else []
           def sort_key(entry):
               # Natural sort for compiler
               compiler = tuple(int(p) if p.isdigit() else p
