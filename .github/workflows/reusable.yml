@@ -968,6 +968,9 @@ jobs:
           import os
           import re
 
+          def load_from_env(name):
+            value = os.environ.get(name)
+            return json.loads(value)['include'] if value else None
           def sort_key(entry):
               # Natural sort for compiler
               compiler = tuple(int(p) if p.isdigit() else p
@@ -984,10 +987,10 @@ jobs:
 
           summary = "# Tested Configurations\n\n"
 
-          windows_entries = json.loads(os.environ['WINDOWS_MATRIX_ENTRIES'])['include']
-          mingw_entries = json.loads(os.environ['MINGW_MATRIX_ENTRIES'])['include']
-          cmake_entries = json.loads(os.environ['CMAKE_MATRIX_ENTRIES'])['include']
-          posix_entries = json.loads(os.environ['POSIX_MATRIX_ENTRIES'])['include']
+          windows_entries = load_from_env('WINDOWS_MATRIX_ENTRIES')
+          mingw_entries = load_from_env('MINGW_MATRIX_ENTRIES')
+          cmake_entries = load_from_env('CMAKE_MATRIX_ENTRIES')
+          posix_entries = load_from_env('POSIX_MATRIX_ENTRIES')
           linux_entries = [e for e in posix_entries if 'ubuntu' in e.get('os', '') or 'ubuntu' in e.get('container', '') or 'arm' in e.get('os', '')]
           macos_entries = [e for e in posix_entries if 'macos' in e.get('os', '')]
 
