@@ -167,14 +167,6 @@ jobs:
           all_jobs = [
               {"compiler": "gcc-4.9",   "cxxstd": "03",             "os": "ubuntu-latest", "container": "ubuntu:16.04", "cache": 1},
               {"compiler": "gcc-4.9",   "cxxstd": "03",             "os": "ubuntu-latest", "container": "ubuntu:16.04", "cache": 2},
-              {"compiler": "gcc-4.9",   "cxxstd": "03",             "os": "ubuntu-latest", "container": "ubuntu:16.04", "cache": 3},
-              {"compiler": "gcc-4.9",   "cxxstd": "03",             "os": "ubuntu-latest", "container": "ubuntu:16.04", "cache": 4},
-              {"compiler": "gcc-4.9",   "cxxstd": "03",             "os": "ubuntu-latest", "container": "ubuntu:16.04", "cache": 5},
-              {"compiler": "gcc-4.9",   "cxxstd": "03",             "os": "ubuntu-latest", "container": "ubuntu:16.04", "cache": 6},
-              {"compiler": "gcc-4.9",   "cxxstd": "03",             "os": "ubuntu-latest", "container": "ubuntu:16.04", "cache": 7},
-              {"compiler": "gcc-4.9",   "cxxstd": "03",             "os": "ubuntu-latest", "container": "ubuntu:16.04", "cache": 8},
-              {"compiler": "gcc-4.9",   "cxxstd": "03",             "os": "ubuntu-latest", "container": "ubuntu:16.04", "cache": 9},
-              {"compiler": "gcc-4.9",   "cxxstd": "03",             "os": "ubuntu-latest", "container": "ubuntu:16.04", "cache": 10},
           ]
           filtered = all_jobs
 
@@ -424,15 +416,8 @@ jobs:
           fetch-depth: ${{ matrix.coverage && '0' || '1' }}
 
 
-      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
-        with:
-          path: ~/.ccache
-          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}99
-          restore-keys: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-
-
       - name: Cache ccache
-        uses: actions/cache@ffd11d22fee05d47b0b50eb8e4722f24e2bb6005
-        #uses: actions/cache@2c8a9bd7457de244a408f35966fab2fb45fda9c8 # v6.0.0
+        uses: flamefire/cache@7be44725e6f2c6e6f8a298c5bc7378a70ce44175
         if: ${{matrix.cache == '1'}}
         with:
           path: ~/.ccache
@@ -440,72 +425,8 @@ jobs:
           restore-keys: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-
 
       - name: Cache ccache
-        uses: actions/cache@a7833574556fa59680c1b7cb190c1735db73ebf0
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         if: ${{matrix.cache == '2'}}
-        with:
-          path: ~/.ccache
-          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}${{matrix.cache}}
-          restore-keys: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-
-
-      - name: Cache ccache
-        uses: actions/cache@b0f846b50b6061d7a2ca6f1a2fea61d4a65d1a16
-        if: ${{matrix.cache == '3'}}
-        with:
-          path: ~/.ccache
-          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}${{matrix.cache}}
-          restore-keys: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-
-
-      - name: Cache ccache
-        uses: actions/cache@ac7f1152ead02e89c14b5456d14ab17591e74cfb
-        if: ${{matrix.cache == '4'}}
-        with:
-          path: ~/.ccache
-          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}${{matrix.cache}}
-          restore-keys: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-
-
-      - name: Cache ccache
-        uses: actions/cache@74de208dcfcbe85c0e7154e7b17e4105fe2554ff
-        if: ${{matrix.cache == '5'}}
-        with:
-          path: ~/.ccache
-          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}${{matrix.cache}}
-          restore-keys: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-
-
-      - name: Cache ccache
-        uses: actions/cache@4803712a909139552a1495e776ae7b06d378f902
-        if: ${{matrix.cache == '6'}}
-        with:
-          path: ~/.ccache
-          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}${{matrix.cache}}
-          restore-keys: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-
-
-      - name: Cache ccache
-        uses: actions/cache@5650dc9d27635b299881e920b5c0d0fce750ee3b
-        if: ${{matrix.cache == '7'}}
-        with:
-          path: ~/.ccache
-          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}${{matrix.cache}}
-          restore-keys: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-
-
-      - name: Cache ccache
-        uses: actions/cache@249f0e6cee911df3b4b93070a95bd5d962d24604
-        if: ${{matrix.cache == '8'}}
-        with:
-          path: ~/.ccache
-          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}${{matrix.cache}}
-          restore-keys: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-
-
-      - name: Cache ccache
-        uses: actions/cache@2c8a9bd7457de244a408f35966fab2fb45fda9c8 # v6.0.0
-        if: ${{matrix.cache == '9'}}
-        with:
-          path: ~/.ccache
-          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}${{matrix.cache}}
-          restore-keys: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-
-
-      - name: Cache ccache
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        if: ${{matrix.cache == '10'}}
         with:
           path: ~/.ccache
           key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}${{matrix.cache}}
