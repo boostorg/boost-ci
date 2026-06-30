@@ -430,7 +430,7 @@ jobs:
         if: ${{matrix.cache == '1'}}
         with:
           path: ~/.ccache
-          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}
+          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}${{matrix.cache}}
           restore-keys: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-
 
       - name: Cache ccache
@@ -438,7 +438,7 @@ jobs:
         if: ${{matrix.cache == '2'}}
         with:
           path: ~/.ccache
-          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}
+          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}${{matrix.cache}}
           restore-keys: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-
 
       - name: Cache ccache
@@ -446,7 +446,7 @@ jobs:
         if: ${{matrix.cache == '3'}}
         with:
           path: ~/.ccache
-          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}
+          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}${{matrix.cache}}
           restore-keys: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-
 
       - name: Cache ccache
@@ -454,7 +454,7 @@ jobs:
         if: ${{matrix.cache == '4'}}
         with:
           path: ~/.ccache
-          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}
+          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}${{matrix.cache}}
           restore-keys: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-
 
       - name: Cache ccache
@@ -462,7 +462,7 @@ jobs:
         if: ${{matrix.cache == '5'}}
         with:
           path: ~/.ccache
-          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}
+          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}${{matrix.cache}}
           restore-keys: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-
 
       - name: Cache ccache
@@ -470,7 +470,7 @@ jobs:
         if: ${{matrix.cache == '6'}}
         with:
           path: ~/.ccache
-          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}
+          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}${{matrix.cache}}
           restore-keys: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-
 
       - name: Cache ccache
@@ -478,7 +478,7 @@ jobs:
         if: ${{matrix.cache == '7'}}
         with:
           path: ~/.ccache
-          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}
+          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}${{matrix.cache}}
           restore-keys: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-
 
       - name: Cache ccache
@@ -486,7 +486,7 @@ jobs:
         if: ${{matrix.cache == '8'}}
         with:
           path: ~/.ccache
-          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}
+          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}${{matrix.cache}}
           restore-keys: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-
 
       - name: Cache ccache
@@ -494,7 +494,7 @@ jobs:
         if: ${{matrix.cache == '9'}}
         with:
           path: ~/.ccache
-          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}
+          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}${{matrix.cache}}
           restore-keys: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-
 
       - name: Cache ccache
@@ -502,7 +502,7 @@ jobs:
         if: ${{matrix.cache == '10'}}
         with:
           path: ~/.ccache
-          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}
+          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}${{matrix.cache}}
           restore-keys: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-
 
       - name: Fetch Boost.CI
