@@ -102,7 +102,7 @@ if ((${B2_CI_VERSION:-1} > 0)); then
 
   B2_ARGS=(
       ${B2_TOOLSET:+"toolset=$B2_TOOLSET"}
-      "cxxstd=$B2_CXXSTD"
+      ${B2_CXXSTD:+"cxxstd=$B2_CXXSTD"}
       ${B2_CXXFLAGS:+"cxxflags=$B2_CXXFLAGS"}
       ${B2_LINKFLAGS:+"linkflags=$B2_LINKFLAGS"}
       ${B2_TESTFLAGS:-}
