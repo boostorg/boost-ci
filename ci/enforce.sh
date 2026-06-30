@@ -120,6 +120,10 @@ if ((${B2_CI_VERSION:-1} > 0)); then
   )
   append_b2_args B2_DEFINES define
   append_b2_args B2_INCLUDE include
+  # clang-win requires to use the linker for the manifest
+  if [[ ${B2_TOOLSET:-} == "clang-win" ]]; then
+    B2_ARGS+=(embed-manifest-via=linker)
+  fi
 
   # shellcheck disable=SC2206
   B2_ARGS+=(${B2_FLAGS:-})
