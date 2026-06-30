@@ -424,6 +424,12 @@ jobs:
           fetch-depth: ${{ matrix.coverage && '0' || '1' }}
 
 
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ~/.ccache
+          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}99
+          restore-keys: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-
+
       - name: Cache ccache
         uses: actions/cache@ffd11d22fee05d47b0b50eb8e4722f24e2bb6005
         #uses: actions/cache@2c8a9bd7457de244a408f35966fab2fb45fda9c8 # v6.0.0
