@@ -319,7 +319,7 @@ jobs:
                     # Need (newer) git, and the older Ubuntu container may require requesting the key manually using port 80
                     key_server="keyserver.boost.org"
                     echo "Downloading key from $key_server"
-                    curl -sSL --retry ${NET_RETRY_COUNT:-5} "https://$key_server/pks/lookup?op=get&search=0xE1DD270288B4E6030699E45FA1715D88E1DF1F24" | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/git-core_ubuntu_ppa.gpg
+                    curl -sSL --retry ${NET_RETRY_COUNT:-5} "https://$key_server/pks/lookup?op=get&search=0xF911AB184317630C59970973E363C90F8F1B6217" | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/git-core_ubuntu_ppa.gpg
                     VERSION_CODENAME=$(grep -ioP '^VERSION_CODENAME=\K.+' /etc/os-release || true)
                     if [[ -z $VERSION_CODENAME ]]; then
                         if grep -i trusty /etc/os-release; then
