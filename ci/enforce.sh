@@ -104,6 +104,7 @@ if ((${B2_CI_VERSION:-1} > 0)); then
       ${B2_TOOLSET:+"toolset=$B2_TOOLSET"}
       ${B2_CXXSTD:+"cxxstd=$B2_CXXSTD"}
       ${B2_CXXFLAGS:+"cxxflags=$B2_CXXFLAGS"}
+      ${B2_TARGET_OS:+"target-os=$B2_TARGET_OS"}
       ${B2_LINKFLAGS:+"linkflags=$B2_LINKFLAGS"}
       ${B2_TESTFLAGS:-}
       ${B2_ADDRESS_MODEL:+address-model=$B2_ADDRESS_MODEL}
