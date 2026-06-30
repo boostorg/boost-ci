@@ -15,11 +15,6 @@ IF "%B2_CI_VERSION%" == "0" (
 
 IF DEFINED ADDPATH (SET "PATH=%ADDPATH%%PATH%")
 
-cd %BOOST_ROOT%
-
-set SELF_S=%SELF:\=/%
-IF NOT DEFINED B2_TARGETS (SET B2_TARGETS=libs/!SELF_S!/test)
-
 SET B2_TOOLCXX=toolset=%B2_TOOLSET%
 
 IF DEFINED B2_CXXSTD (SET B2_CXXSTD=cxxstd=%B2_CXXSTD%)
@@ -31,6 +26,8 @@ IF DEFINED B2_TARGET_OS (SET B2_TARGET_OS=target-os=%B2_TARGET_OS%)
 IF DEFINED B2_LINK (SET B2_LINK=link=%B2_LINK%)
 IF DEFINED B2_VARIANT (SET B2_VARIANT=variant=%B2_VARIANT%)
 
+set SELF_S=%SELF:\=/%
+IF NOT DEFINED B2_TARGETS (SET B2_TARGETS=libs/!SELF_S!/test)
 IF NOT DEFINED B2_JOBS (SET B2_JOBS=3)
 
 REM clang-win requires to use the linker for the manifest
@@ -42,13 +39,10 @@ IF "%B2_TOOLSET%" == "clang-win" (
     )
 )
 
+cd %BOOST_ROOT%
+
 IF DEFINED SCRIPT (
     call libs\%SELF%\%SCRIPT%
-) ELSE IF DEFINED B2_FULL_ARGS (
-    REM Echo the complete build command to the build log
-    ECHO b2 --abbreviate-paths %B2_TARGETS% %B2_FULL_ARGS%
-    REM Now go build...
-    b2 --abbreviate-paths %B2_TARGETS% %B2_FULL_ARGS%
 ) ELSE (
     REM Echo the complete build command to the build log
     ECHO b2 --abbreviate-paths %B2_TARGETS% %B2_TOOLCXX% %B2_CXXSTD% %B2_CXXFLAGS% %B2_DEFINES% %B2_INCLUDE% %B2_THREADING% %B2_ADDRESS_MODEL% %B2_TARGET_OS% %B2_LINK% %B2_VARIANT% -j%B2_JOBS% %B2_FLAGS%
