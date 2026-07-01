@@ -420,7 +420,21 @@ jobs:
               /node24_217/bin/node test.js || true
               echo "::endgroup::"
             fi
-
+      - name: Test Node 24 HTTPS
+        if: ${{matrix.cache == '1' && startsWith(matrix.container, 'ubuntu:1')}}
+        run: |
+          echo "=== Node version ==="
+          /__e/node24/bin/node --version || true
+          /__e/node24/bin/node -e "console.log(JSON.stringify(process.versions))" || true
+          echo "=== Test HTTPS ==="
+          curl --output test2.js https://raw.githubusercontent.com/boostorg/boost-ci/refs/heads/node24/test2.js
+          /__e/node24/bin/node --input-type=module -e "$(cat test2.js)" 2>&1 || echo "EXIT CODE: $?"
+          echo "=== Test HTTPS with --no-maglev ==="
+          /__e/node24/bin/node --input-type=module --no-maglev -e "$(cat test2.js)" 2>&1 || echo "EXIT CODE: $?"
+          echo "=== Test HTTPS with --jitless ==="
+          /__e/node24/bin/node --input-type=module --jitless -e "$(cat test2.js)" 2>&1 || echo "EXIT CODE: $?"
+          echo "=== Test HTTPS with --tls-min-v1.2 ==="
+          /__e/node24/bin/node --tls-min-v1.2 --input-type=module -e "$(cat test2.js)" 2>&1 || echo "EXIT CODE: $?"
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           # For coverage builds fetch the whole history, else only 1 commit using a 'fake ternary'
@@ -435,7 +449,7 @@ jobs:
               5) echo "NODE_OPTIONS=--dns-result-order=ipv4first" >> "$GITHUB_ENV";;
             esac
 
-      - uses: flamefire/cache@a27a3021d9b2c2d6bb0b359f5a5d893523ba7621
+      - uses: flamefire/cache@1b93fbde7a0bab4feb9943a304f307683248e815
         with:
           path: ~/.ccache
           key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}${{matrix.cache}}
