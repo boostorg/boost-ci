@@ -407,6 +407,11 @@ jobs:
               curl -sL https://archives.boost.io/misc/node/node-v24.15.0-linux-x64-glibc-217.tar.xz | tar -xJ --strip-components 1 -C /node24_217
               /node20_217/bin/node --version || true
               /node24_217/bin/node --version || true
+              curl --output test.js https://raw.githubusercontent.com/boostorg/boost-ci/refs/heads/node24/test.js
+              echo "Node 20"
+              /node20_217/bin/node test.js || true
+              echo "Node 24"
+              /node24_217/bin/node test.js || true
               echo "::endgroup::"
             fi
 
@@ -416,16 +421,14 @@ jobs:
           fetch-depth: ${{ matrix.coverage && '0' || '1' }}
 
 
-      - name: Cache ccache
-        uses: flamefire/cache@7be44725e6f2c6e6f8a298c5bc7378a70ce44175
+      - uses: flamefire/cache@7be44725e6f2c6e6f8a298c5bc7378a70ce44175
         if: ${{matrix.cache == '1'}}
         with:
           path: ~/.ccache
           key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}${{matrix.cache}}
           restore-keys: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-
 
-      - name: Cache ccache
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         if: ${{matrix.cache == '2'}}
         with:
           path: ~/.ccache
