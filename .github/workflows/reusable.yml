@@ -122,8 +122,8 @@ env:
   B2_LINK: shared,static
   LCOV_BRANCH_COVERAGE: ${{ inputs.branch_coverage && '1' || '0' }}
   CODECOV_NAME: Github Actions
-  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
   DEPINST: ${{ inputs.depinst_args }}
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
 
 jobs:
   generate-job-matrix:
@@ -142,141 +142,14 @@ jobs:
 
           # All jobs
           all_jobs = [
-            # libstdc++ (by default: disabled (see exclude_cxxstd, exclude_compiler),
-            #            tests are pre-C++11 standard; gcc-4.7 is not fully compliant)
-              {"compiler": "gcc-4.4",   "cxxstd": "98",                "os": "ubuntu-latest", "container": "ubuntu:16.04", "source_keys": "0x2C277A0A352154E5", "sources": "ppa:ubuntu-toolchain-r/test"},
-              {"compiler": "gcc-4.6",   "cxxstd": "03,0x",             "os": "ubuntu-latest", "container": "ubuntu:16.04", "source_keys": "0x2C277A0A352154E5", "sources": "ppa:ubuntu-toolchain-r/test"},
-              {"compiler": "gcc-4.7",   "cxxstd": "03,11",             "os": "ubuntu-latest", "container": "ubuntu:16.04"},
-            # libstdc++
-              {"compiler": "gcc-4.7",   "cxxstd": "11",                "os": "ubuntu-latest", "container": "ubuntu:16.04"},
-              {"compiler": "gcc-4.8",   "cxxstd": "11",                "os": "ubuntu-latest", "container": "ubuntu:16.04"},
-              {"compiler": "gcc-4.9",   "cxxstd": "11",                "os": "ubuntu-latest", "container": "ubuntu:16.04"},
-              {"compiler": "gcc-5",     "cxxstd": "11,14,1z",          "os": "ubuntu-latest", "container": "ubuntu:18.04"},
-              {"compiler": "gcc-6",     "cxxstd": "11,14,17",          "os": "ubuntu-latest", "container": "ubuntu:18.04"},
-              {"compiler": "gcc-7",     "cxxstd": "11,14,17",          "os": "ubuntu-latest", "container": "ubuntu:20.04"},
-              {"compiler": "gcc-8",     "cxxstd": "11,14,17,2a",       "os": "ubuntu-latest", "container": "ubuntu:20.04"},
-              {"compiler": "gcc-9",     "cxxstd": "11,14,17,2a",       "os": "ubuntu-22.04"},
-              {"compiler": "gcc-10",    "cxxstd": "11,14,17,20",       "os": "ubuntu-22.04"},
-              {"compiler": "gcc-11",    "cxxstd": "11,14,17,20",       "os": "ubuntu-22.04"},
-              {"compiler": "gcc-12",    "cxxstd": "11,14,17,20",       "os": "ubuntu-22.04"},
-              {"compiler": "gcc-13",    "cxxstd": "11,14,17,20,2b",    "os": "ubuntu-24.04"},
-              {"name": "coverage-gcc-linux", "coverage": "yes",
-               "compiler": "gcc-13",    "cxxstd": "2b",                "os": "ubuntu-24.04", "install": "g++-13-multilib gcc-multilib", "address-model": "32,64" },
-              {"name": "sanitize-gcc-linux", "sanitize": "yes",
-               "compiler": "gcc-13",    "cxxstd": "11,14,17,20",       "os": "ubuntu-24.04"},
-              {"compiler": "gcc-14",    "cxxstd": "11,14,17,20,23",    "os": "ubuntu-24.04"},
-              {"compiler": "gcc-15",    "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "ubuntu:26.04"},
-              {"compiler": "gcc-16",    "cxxstd": "11,14,17,20,23,26", "os": "ubuntu-latest", "container": "ubuntu:26.04"},
-              {"compiler": "clang-3.5", "cxxstd": "11",                "os": "ubuntu-latest", "container": "ubuntu:16.04"},
-              {"compiler": "clang-3.6", "cxxstd": "11,14",             "os": "ubuntu-latest", "container": "ubuntu:16.04"},
-              {"compiler": "clang-3.7", "cxxstd": "11,14",             "os": "ubuntu-latest", "container": "ubuntu:16.04"},
-              {"compiler": "clang-3.8", "cxxstd": "11,14",             "os": "ubuntu-latest", "container": "ubuntu:16.04"},
-              {"compiler": "clang-3.9", "cxxstd": "11,14",             "os": "ubuntu-latest", "container": "ubuntu:18.04"},
-              {"compiler": "clang-4.0", "cxxstd": "11,14",             "os": "ubuntu-latest", "container": "ubuntu:18.04"},
-              {"compiler": "clang-5.0", "cxxstd": "11,14,1z",          "os": "ubuntu-latest", "container": "ubuntu:18.04"},
-              {"compiler": "clang-6.0", "cxxstd": "11,14,17",          "os": "ubuntu-latest", "container": "ubuntu:20.04"},
-              {"compiler": "clang-7",   "cxxstd": "11,14,17",          "os": "ubuntu-latest", "container": "ubuntu:20.04"},
-              {"compiler": "clang-8",   "cxxstd": "11,14,17",          "os": "ubuntu-latest", "container": "ubuntu:20.04"},
-              {"compiler": "clang-9",   "cxxstd": "11,14,17,2a",       "os": "ubuntu-latest", "container": "ubuntu:20.04"},
-              {"compiler": "clang-10",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:20.04"},
-              {"compiler": "clang-11",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:20.04"},
-              {"compiler": "clang-12",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:20.04"},
-              {"compiler": "clang-13",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:22.04"},
-              {"compiler": "clang-14",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:22.04"},
-              {"compiler": "clang-15",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:22.04"},
-              {"compiler": "clang-16",  "cxxstd": "11,14,17,20,2b",    "os": "ubuntu-24.04"},
-              {"compiler": "clang-17",  "cxxstd": "11,14,17,20,23",    "os": "ubuntu-latest", "container": "ubuntu:24.04"},
-              {"compiler": "clang-18",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-24.04"},
-              {"compiler": "clang-19",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-24.04"},
-              {"compiler": "clang-20",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "ubuntu:25.04"},
-              {"compiler": "clang-21",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "ubuntu:26.04"},
-              {"compiler": "clang-22",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "ubuntu:26.04"},
-              {"compiler": "icpx-2025", "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "intel/oneapi-hpckit:2025.2.2-0-devel-ubuntu24.04"},
-            # libc++
-              {"stdlib": "libc++",
-               "compiler": "clang-6.0", "cxxstd": "11,14",             "os": "ubuntu-latest", "container": "ubuntu:18.04", "install": "clang-6.0 libc++-dev libc++abi-dev"},
-              {"stdlib": "libc++",
-               "compiler": "clang-7",   "cxxstd": "11,14,17",          "os": "ubuntu-latest", "container": "ubuntu:20.04"},
-              {"name": "Clang w/ sanitizers", "sanitize": "yes", "stdlib": "libc++",
-               "compiler": "clang-12",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:20.04"}, 
-            # MacOS
-              {"name": "MacOS sanitize w/ clang",
-               "os": "macos-14", "compiler": "clang",     "cxxstd": "11,14,17,20,2b",    "sanitize": "yes"},
-              {"os": "macos-15", "compiler": "clang-16",  "cxxstd": "11,14,17,20,2b",    "xcode_app": "Xcode_16.2"},
-              {"os": "macos-15", "compiler": "clang-18",  "cxxstd": "11,14,17,20,2b"},
-              {"os": "macos-26", "compiler": "clang-20",  "cxxstd": "11,14,17,20,23,2c"},
-            # Coverity
-              {"name": "Coverity Scan w/ Clang on Linux", "coverity": "yes",
-               "compiler": "clang-12",  "cxxstd": "20",                "os": "ubuntu-22.04", "ccache": "no"},
-            # Arm64
-              {"name": "ARM64 w/ GCC",
-               "compiler": "gcc-13",   "cxxstd": "11,14,17,20,2b",     "os": "ubuntu-24.04-arm"},
-            # Big-Endian
-              {"name": "bigendian-s390x", "multiarch": "yes",
-               "compiler": "clang",     "cxxstd": "17",                "os": "ubuntu-22.04", "ccache": "no", "distro": "fedora", "edition": "34", "arch": "s390x"},
-            # Reflection
-              {"name": "GCC 16 w/ reflection",
-               "compiler": "gcc-16", "cxxstd": "26",                   "os": "ubuntu-latest", "container": "ubuntu:26.04", "reflection": "yes", "cxxflags": "-freflection"},
+              {"compiler": "gcc-4.9",   "cxxstd": "03",             "os": "ubuntu-latest", "container": "ubuntu:16.04", "cache": 1},
           ]
-
-          def is_true(env_var):
-              return os.environ.get(env_var).lower() == 'true'
-
-          def filter_multi_valued(in_list, key_name, excluded):
-              """Remove all entries from the value identified by key_name that are contained in excluded (comma-separated).
-                 Omit the entry when the attribute is empty, keep it if the attribute is not present."""
-              excluded_values = {x.strip() for x in excluded.split(',')}
-              for entry in in_list:
-                  try:
-                      values = [x.strip() for x in entry[key_name].split(',')]
-                  except KeyError:
-                      yield entry
-                  else:
-                      remaining_values = [v for v in values if v and v not in excluded_values]
-                      if remaining_values:
-                          entry[key_name] = ",".join(remaining_values)
-                          yield entry
-
-          def filter_os(in_list, excluded):
-              """Remove all jobs that match any of the excluded OS (comma-separated, supports partial matches)"""
-              excluded_values = [v for v in (x.strip().replace('-', ':') for x in excluded.split(',')) if v]
-              return (job for job in in_list if not any(ev in job.get('container', job['os']).replace('-', ':') for ev in excluded_values))
-
-          def filter_yes_values(in_list, key_name):
-              """Remove all entries with value 'yes' for the key"""
-              return (e for e in in_list if not e.get(key_name) == "yes")
-
           filtered = all_jobs
-          filtered = filter_multi_valued(filtered, 'cxxstd', os.environ['EXCLUDE_CXXSTD'])
-          filtered = filter_multi_valued(filtered, 'compiler', os.environ['EXCLUDE_COMPILER'])
-          filtered = filter_os(filtered, os.environ['EXCLUDE_OS'])
-          if not is_true('ENABLE_32BIT'):
-              filtered = filter_multi_valued(filtered, 'address-model', '32')
-          if not is_true('ENABLE_MULTIARCH'):
-              filtered = filter_yes_values(filtered, 'multiarch')
-          if not is_true('ENABLE_SANITIZERS'):
-              filtered = filter_yes_values(filtered, 'sanitize')
-          if not os.environ.get('CODECOV_TOKEN') and os.environ.get('$ENABLE_PR_COVERAGE') != 'true':
-              filtered = filter_yes_values(filtered, 'coverage')
-          if not os.environ.get('COVERITY_SCAN_TOKEN'):
-              filtered = filter_yes_values(filtered, 'coverity')
-          if not is_true('ENABLE_REFLECTION'):
-              filtered = filter_yes_values(filtered, 'reflection')
 
           with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
               print(f"matrix={json.dumps({'include': list(filtered)})}", file=fh)
         shell: python
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-          COVERITY_SCAN_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
-          ENABLE_32BIT: ${{ inputs.enable_32bit }}
-          ENABLE_MULTIARCH: ${{ inputs.enable_multiarch }}
-          ENABLE_SANITIZERS: ${{ inputs.enable_sanitizers }}
-          ENABLE_REFLECTION: ${{ inputs.enable_reflection }}
-          ENABLE_PR_COVERAGE: ${{inputs.enable_pr_coverage}}
-          EXCLUDE_COMPILER: ${{ inputs.exclude_compiler }}
-          EXCLUDE_CXXSTD: ${{ inputs.exclude_cxxstd }}
-          EXCLUDE_OS: ${{ inputs.exclude_os }}
+
 
       - id: windows-matrix
         name: Windows
@@ -432,8 +305,10 @@ jobs:
     container:
       image: ${{matrix.container}}
       volumes:
-        - /node20217:/node20217:rw,rshared
-        - ${{ startsWith(matrix.container, 'ubuntu:1') && '/node20217:/__e/node20:ro,rshared' || ' ' }}
+        - /node20_217:/node20_217:rw,rshared
+        - /node24_217:/node24_217:rw,rshared
+        - ${{ startsWith(matrix.container, 'ubuntu:1') && '/node20_217:/__e/node20:ro,rshared' || ' ' }}
+        - ${{ startsWith(matrix.container, 'ubuntu:1') && '/node24_217:/__e/node24:ro,rshared' || ' ' }}
 
     env: {B2_USE_CCACHE: 1}
 
@@ -502,25 +377,58 @@ jobs:
             fi
             git config --global pack.threads 0
             if [[ "${{matrix.container}}" == "ubuntu:1"* ]]; then
-              # Node 20 doesn't work with Ubuntu 16/18  glibc: https://github.com/actions/checkout/issues/1590
-              curl -sL https://archives.boost.io/misc/node/node-v20.9.0-linux-x64-glibc-217.tar.xz | tar -xJ --strip-components 1 -C /node20217
+              echo "::group::Update node"
+              # Install a node version that works with the glibc 2.17 of Ubuntu 16/18: https://github.com/actions/checkout/issues/1590
+              curl -sL https://archives.boost.io/misc/node/node-v20.9.0-linux-x64-glibc-217.tar.xz | tar -xJ --strip-components 1 -C /node20_217
+              curl -sL https://archives.boost.io/misc/node/node-v24.15.0-linux-x64-glibc-217.tar.xz | tar -xJ --strip-components 1 -C /node24_217
+              /node20_217/bin/node --version || true
+              /node20_217/bin/node -p "process.versions" || true
+              /node24_217/bin/node --version || true
+              /node24_217/bin/node -p "process.versions" || true
+              curl --output test.js https://raw.githubusercontent.com/boostorg/boost-ci/refs/heads/node24/test.js
+              echo "Node 20"
+              /node20_217/bin/node test.js || true
+              echo "Node 24"
+              /node24_217/bin/node test.js || true
+              echo "::endgroup::"
             fi
-
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - name: Test Node 24 HTTPS
+        if: ${{matrix.cache == '1' && startsWith(matrix.container, 'ubuntu:1')}}
+        run: |
+          echo "=== Node version ==="
+          /__e/node24/bin/node --version || true
+          /__e/node24/bin/node -e "console.log(JSON.stringify(process.versions))" || true
+          echo "=== Test HTTPS ==="
+          curl --output test2.js https://raw.githubusercontent.com/boostorg/boost-ci/refs/heads/node24/test2.js
+          /__e/node24/bin/node --input-type=module -e "$(cat test2.js)" 2>&1 || echo "EXIT CODE: $?"
+          echo "=== Test HTTPS with --no-maglev ==="
+          /__e/node24/bin/node --input-type=module --no-maglev -e "$(cat test2.js)" 2>&1 || echo "EXIT CODE: $?"
+          echo "=== Test HTTPS with --jitless ==="
+          /__e/node24/bin/node --input-type=module --jitless -e "$(cat test2.js)" 2>&1 || echo "EXIT CODE: $?"
+          echo "=== Test HTTPS with --tls-min-v1.2 ==="
+          /__e/node24/bin/node --tls-min-v1.2 --input-type=module -e "$(cat test2.js)" 2>&1 || echo "EXIT CODE: $?"
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           # For coverage builds fetch the whole history, else only 1 commit using a 'fake ternary'
           fetch-depth: ${{ matrix.coverage && '0' || '1' }}
+      - run: |
+            i="${{matrix.cache}}"
+            case $i in
+              1) echo "NODE_OPTIONS=--no-maglev" >> "$GITHUB_ENV";;
+              2) echo "NODE_OPTIONS=--jitless" >> "$GITHUB_ENV";;
+              3) echo "NODE_OPTIONS=--no-turbofan" >> "$GITHUB_ENV";;
+              4) echo "NODE_OPTIONS=--tls-min-v1.2" >> "$GITHUB_ENV";;
+              5) echo "NODE_OPTIONS=--dns-result-order=ipv4first" >> "$GITHUB_ENV";;
+            esac
 
-      - name: Cache ccache
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
-        if: env.B2_USE_CCACHE
+      - uses: flamefire/cache@1b93fbde7a0bab4feb9943a304f307683248e815
         with:
           path: ~/.ccache
-          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}
+          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{github.sha}}${{matrix.cache}}
           restore-keys: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-
 
       - name: Fetch Boost.CI
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           repository: boostorg/boost-ci
           ref: master
@@ -658,10 +566,10 @@ jobs:
       matrix: ${{fromJson(needs.generate-job-matrix.outputs.windows-matrix)}}
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Fetch Boost.CI
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           repository: boostorg/boost-ci
           ref: master
@@ -674,7 +582,7 @@ jobs:
 
       - name: Setup cygwin
         if: ${{ matrix.target-os == 'cygwin' }}
-        uses: cygwin/cygwin-install-action@711d29f3da23c9f4a1798e369a6f01198c13b11a # v6.1
+        uses: cygwin/cygwin-install-action@3f0a3f9f988f7e96b8c18098ae05eaec175f5b52 # v6.1
         with:
           site: ${{ matrix.address-model == '64' && 'https://www.mirrorservice.org/sites/sourceware.org/pub/cygwin' || 'https://ftp-stud.hs-esslingen.de/pub/Mirrors/sources.redhat.com/cygwin-archive/20221123' }}
           packages: coreutils, gcc-g++, libstdc++6, make, moreutils, openssl, libbz2-devel, libgmp-devel, libicu-devel, libjpeg-devel, libmpfr-devel, libpng-devel, libssl-devel, libtiff-devel, libxslt-devel, libzstd-devel
@@ -734,10 +642,10 @@ jobs:
       matrix: ${{fromJson(needs.generate-job-matrix.outputs.mingw-matrix)}}
 
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Setup MSYS2 environment for MinGW
-        uses: msys2/setup-msys2@4f806de0a5a7294ffabaff804b38a9b435a73bda # v2.30.0
+        uses: msys2/setup-msys2@66cd2cce69caa17b53920067426061ca1de3a884 # v2.32.0
         with:
           msystem: ${{matrix.sys}}
           update: true
@@ -745,7 +653,7 @@ jobs:
           pacboy: gcc:p cmake:p ninja:p
 
       - name: Fetch Boost.CI
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           repository: boostorg/boost-ci
           ref: master
@@ -799,7 +707,7 @@ jobs:
       - name: Cache CMake
         if: matrix.cmake_version
         id: cache-cmake
-        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
+        uses: actions/cache@2c8a9bd7457de244a408f35966fab2fb45fda9c8 # v6.0.0
         with:
           path: /tmp/cmake
           key: ${{runner.os}}-cmake-${{matrix.cmake_version}}
@@ -832,17 +740,17 @@ jobs:
             cmake --build __build -- -j 3
             cmake --build __build --target install
 
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Cache ccache
-        uses: hendrikmuhs/ccache-action@5ebbd400eff9e74630f759d94ddd7b6c26299639 # v1.2.20
+        uses: hendrikmuhs/ccache-action@d62db5f07c26379fc4b4e0916f098a92573c3b03 # v1.2.23
         if: runner.os == 'Linux'
         with:
           create-symlink: true
           key: ${{matrix.os}}-${{matrix.build_shared}}
 
       - name: Fetch Boost.CI
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           repository: boostorg/boost-ci
           ref: master
