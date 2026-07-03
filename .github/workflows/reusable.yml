@@ -509,16 +509,6 @@ jobs:
               curl -sL https://archives.boost.io/misc/node/node-v24.15.0-linux-x64-glibc-217.tar.xz | tar -xJ --strip-components 1 -C /node24_217
               /node20_217/bin/node --version || true
               /node24_217/bin/node --version || true
-              # Node 24 triggers a bug in GLIBC 2.17 inside libnss_files.so.2 (around _nss_files_gethostbyname3_r) leading to a SIGSEGV
-              # Workaround: Swap 'dns' & 'files' in /etc/nsswitch.conf to avoid that code path
-              echo "Old nsswitch.conf:"
-              cat /etc/nsswitch.conf
-              sed -i '/^hosts:/d' /etc/nsswitch.conf
-              echo 'hosts: dns files' >> /etc/nsswitch.conf
-              echo "New content:"
-              cat /etc/nsswitch.conf
-              sed '/::/d' /etc/hosts > /tmp/hosts
-              cat /tmp/hosts > /etc/hosts
               echo "::endgroup::"
             fi
 
