@@ -100,6 +100,11 @@ on:
         required: false
         type: string
         default: ''
+      b2_headers_flags:
+        description: "Extra flags to pass to the `b2 headers` command during setup"
+        required: false
+        type: string
+        default: ''
       b2_targets:
         description: "B2 targets to build, e.g. 'libs/foo/test//bar'. Defaults to auto-detecting the tests"
         required: false
@@ -632,6 +637,7 @@ jobs:
           ENABLE_REFLECTION: ${{ matrix.reflection }}
           XCODE_APP: ${{matrix.xcode_app}}
           B2_JOBS: ${{inputs.parallelism}}
+          B2_HEADERS_FLAGS: ${{inputs.b2_headers_flags}}
           B2_ADDRESS_MODEL: ${{matrix.address-model}}
           B2_COMPILER: ${{matrix.compiler}}
           B2_CXXFLAGS: ${{matrix.cxxflags}}
@@ -722,6 +728,7 @@ jobs:
         run: ci\github\install.bat
         env:
           B2_JOBS: ${{inputs.parallelism}}
+          B2_HEADERS_FLAGS: ${{inputs.b2_headers_flags}}
           B2_TOOLSET: ${{matrix.toolset}}
           SELF: ${{inputs.library_folder}}
 
@@ -806,6 +813,7 @@ jobs:
         run: ci/github/install.sh
         env:
           B2_JOBS: ${{inputs.parallelism}}
+          B2_HEADERS_FLAGS: ${{inputs.b2_headers_flags}}
           B2_COMPILER: ${{matrix.compiler}}
           B2_CXXSTD: ${{matrix.cxxstd}}
           B2_SANITIZE: ${{matrix.sanitize}}
@@ -1042,6 +1050,9 @@ jobs:
               targets = os.environ.get('B2_TARGETS')
               if targets:
                   options.append(("Targets", targets))
+              b2_headers_flags = os.environ.get('B2_HEADERS_FLAGS')
+              if b2_headers_flags:
+                  options.append(("Extra flags for `b2 headers`", b2_headers_flags))
               parallelism = os.environ.get('B2_JOBS')
               if parallelism:
                   options.append(("Parallelism (`-j`)", parallelism))
@@ -1133,6 +1144,7 @@ jobs:
           CMAKE_MATRIX_ENTRIES: ${{needs.generate-job-matrix.outputs.cmake-matrix}}
           MIN_CMAKE_VERSION: ${{inputs.min_cmake_version}}
           B2_JOBS: ${{inputs.parallelism}}
+          B2_HEADERS_FLAGS: ${{inputs.b2_headers_flags}}
           B2_VARIANT: ${{inputs.b2_variant}}
           B2_LINK: ${{inputs.b2_link}}
           B2_DEFINES: ${{inputs.b2_defines}}
