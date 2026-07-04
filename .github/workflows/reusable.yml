@@ -957,12 +957,13 @@ jobs:
                          )
               return (compiler, entry.get('name') or '    ') # Named entries after non-named with same compiler
           def compiler_name(toolset):
-            result = compiler.replace('-', ' ').upper()
-            if toolset.startswith('msvc-'):
-                return {'msvc-14.3': 'Visual Studio 2022',
-                        'msvc-14.5': 'Visual Studio 2026',
-                       }.get(toolset, result)
-            return result.replace('CLANG', 'Clang')
+            result = toolset.replace('-', ' ').upper()
+            result = result.replace('CLANG', 'Clang')
+            result = result.replace('ICPX', 'Intel OneAPI')
+            return {'msvc-14.3': 'Visual Studio 2022',
+                    'msvc-14.5': 'Visual Studio 2026',
+                    'clang-win': 'Clang',
+                   }.get(toolset, result)
 
           summary = "# Tested Configurations\n\n"
 
