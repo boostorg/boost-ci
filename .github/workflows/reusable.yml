@@ -100,6 +100,41 @@ on:
         required: false
         type: string
         default: ''
+      b2_headers_flags:
+        description: "Extra flags to pass to the `b2 headers` command during setup"
+        required: false
+        type: string
+        default: ''
+      b2_targets:
+        description: "B2 targets to build, e.g. 'libs/foo/test//bar'. Defaults to auto-detecting the tests"
+        required: false
+        type: string
+        default: ''
+      b2_defines:
+        description: "Preprocessor defines to add"
+        required: false
+        type: string
+        default: ''
+      b2_link:
+        description: "Build shared and/or static"
+        required: false
+        type: string
+        default: 'shared,static'
+      b2_variant:
+        description: "Variants/Optimization level(s) to build"
+        required: false
+        type: string
+        default: 'debug,release'
+      library_folder:
+        description: "Name of the subfolder of the Boost tree the library should be. Will be determined by the value of 'key' in meta/libraries.json."
+        required: false
+        type: string
+        default: ''
+      parallelism:
+        description: "Number of parallel processes to use for building. Will be automatically determined by the number of cores if not specified."
+        required: false
+        type: string
+        default: ''
     secrets:
       CODECOV_TOKEN:
         description: "The token for covecov.io; if defined then coverage will be collected."
@@ -118,8 +153,6 @@ concurrency:
 env:
   GIT_FETCH_JOBS: 8
   NET_RETRY_COUNT: 5
-  B2_VARIANT: debug,release
-  B2_LINK: shared,static
   LCOV_BRANCH_COVERAGE: ${{ inputs.branch_coverage && '1' || '0' }}
   CODECOV_NAME: Github Actions
   DEPINST: ${{ inputs.depinst_args }}
@@ -601,22 +634,21 @@ jobs:
       - name: Setup Boost
         run: source ci/github/install.sh
         env:
+          ENABLE_REFLECTION: ${{ matrix.reflection }}
+          XCODE_APP: ${{matrix.xcode_app}}
+          B2_JOBS: ${{inputs.parallelism}}
+          B2_HEADERS_FLAGS: ${{inputs.b2_headers_flags}}
           B2_ADDRESS_MODEL: ${{matrix.address-model}}
           B2_COMPILER: ${{matrix.compiler}}
           B2_CXXFLAGS: ${{matrix.cxxflags}}
           B2_CXXSTD: ${{matrix.cxxstd}}
-          ENABLE_REFLECTION: ${{ matrix.reflection }}
           B2_SANITIZE: ${{matrix.sanitize}}
           B2_STDLIB: ${{matrix.stdlib}}
-          # Optional. Variables set here (to non-empty) will override the top-level environment variables
-          B2_DEFINES: ${{matrix.defines}}
-          B2_VARIANT: ${{matrix.variant}}
-          B2_LINK: ${{matrix.link}}
-          XCODE_APP: ${{matrix.xcode_app}}
-          # More entries can be added in the same way, see the B2_ARGS assignment in ci/enforce.sh for the possible keys.
-          # Set the (B2) target(s) to build, defaults to the test folder of the current library
-          # Can alternatively be done like this in the build step or in the build command of the build step, e.g. `run: B2_TARGETS=libs/$SELF/doc ci/build.sh`
-          # B2_TARGETS: libs/foo/test//bar
+          B2_DEFINES: ${{inputs.b2_defines}}
+          B2_LINK: ${{inputs.b2_link}}
+          B2_VARIANT: ${{inputs.b2_variant}}
+          SELF: ${{inputs.library_folder}}
+
 
       - name: Setup coverage collection
         if: matrix.coverage
@@ -625,6 +657,8 @@ jobs:
       - name: Run tests
         if: '!matrix.coverity'
         run: ci/build.sh
+        env:
+          B2_TARGETS: ${{inputs.b2_targets}}
         # inherits environment from install.sh step
 
       - name: Show config.log
@@ -693,31 +727,40 @@ jobs:
       - name: Setup Boost
         run: ci\github\install.bat
         env:
+          B2_JOBS: ${{inputs.parallelism}}
+          B2_HEADERS_FLAGS: ${{inputs.b2_headers_flags}}
           B2_TOOLSET: ${{matrix.toolset}}
+          SELF: ${{inputs.library_folder}}
 
-      - name: Run tests
-        if: '!matrix.coverage'
-        run: ci\build.bat
+      - name: Determine B2 arguments
+        run: |
+          # Use Bash which is more flexible than CMD and we can reuse the logic
+          . ci/enforce.sh
+          echo "B2_FULL_ARGS=${B2_ARGS[@]}" >> "$GITHUB_ENV"
+          if [[ -z "$B2_TARGETS" ]]; then
+            B2_TARGETS=libs/$SELF/test
+          fi
+          echo "B2_TARGETS=$B2_TARGETS" >> "$GITHUB_ENV"
+        shell: bash
         env:
           B2_TOOLSET: ${{matrix.toolset}}
           B2_TARGET_OS: ${{matrix.target-os}}
           B2_CXXSTD: ${{matrix.cxxstd}}
           B2_ADDRESS_MODEL: ${{matrix.address-model}}
-          B2_DEFINES: ${{matrix.defines}}
-          B2_VARIANT: ${{matrix.variant}}
-          B2_LINK: ${{matrix.link}}
+          B2_DEFINES: ${{inputs.b2_defines}}
+          B2_LINK: ${{inputs.b2_link}}
+          B2_VARIANT: ${{inputs.b2_variant}}
+          B2_TARGETS: ${{inputs.b2_targets}}
+          SHELLOPTS: igncr # Ignore \r in line endings, required for Cygwins Bash
+
+      - name: Run tests
+        if: '!matrix.coverage'
+        run: ci\build.bat
 
       - name: Collect coverage
         shell: powershell
         if: matrix.coverage
         run: ci\opencppcoverage.ps1
-        env:
-          B2_TOOLSET: ${{matrix.toolset}}
-          B2_CXXSTD: ${{matrix.cxxstd}}
-          B2_ADDRESS_MODEL: ${{matrix.address-model}}
-          B2_DEFINES: ${{matrix.defines}}
-          B2_VARIANT: ${{matrix.variant}}
-          B2_LINK: ${{matrix.link}}
 
       - name: Upload coverage
         if: matrix.coverage
@@ -769,13 +812,15 @@ jobs:
       - name: Setup Boost
         run: ci/github/install.sh
         env:
+          B2_JOBS: ${{inputs.parallelism}}
+          B2_HEADERS_FLAGS: ${{inputs.b2_headers_flags}}
           B2_COMPILER: ${{matrix.compiler}}
           B2_CXXSTD: ${{matrix.cxxstd}}
           B2_SANITIZE: ${{matrix.sanitize}}
           B2_STDLIB: ${{matrix.stdlib}}
-          B2_DEFINES: ${{matrix.defines}}
-          B2_VARIANT: ${{matrix.variant}}
-          B2_LINK: ${{matrix.link}}
+          B2_DEFINES: ${{inputs.b2_defines}}
+          B2_LINK: ${{inputs.b2_link}}
+          B2_VARIANT: ${{inputs.b2_variant}}
 
       - name: Run tests
         run: ci/build.sh
@@ -866,7 +911,9 @@ jobs:
 
       - name: Setup Boost
         run: source ci/github/install.sh
-        env: {B2_DONT_BOOTSTRAP: 1}
+        env:
+          B2_JOBS: ${{inputs.parallelism}}
+          B2_DONT_BOOTSTRAP: 1
 
       - name: Run CMake tests
         run: |
@@ -941,6 +988,20 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     steps:
+      - name: Determine library name
+        run: |
+          if [[ -z "$SELF" ]]; then
+            REF="${GITHUB_WORKFLOW_REF#*@}" # Extract version of this workflow used
+            mkdir meta
+            wget -q -O meta/libraries.json "https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${GITHUB_SHA}/meta/libraries.json" && \
+            wget -q -O get_libname.py "https://raw.githubusercontent.com/boostorg/boost-ci/${REF:-master}/ci/get_libname.py" && \
+            SELF=$(BOOST_CI_SRC_FOLDER="$GITHUB_WORKSPACE" python3 get_libname.py) ||
+            SELF='(failed to extract)'
+          fi
+          echo "SELF=$SELF" >> "$GITHUB_ENV"
+        env:
+          SELF: ${{inputs.library_folder}}
+          
       - name: Generate CI summary
         run: |
           import json
@@ -973,6 +1034,34 @@ jobs:
           posix_entries = load_from_env('POSIX_MATRIX_ENTRIES')
           linux_entries = [e for e in posix_entries if 'ubuntu' in e.get('os', '') or 'ubuntu' in e.get('container', '') or 'arm' in e.get('os', '')]
           macos_entries = [e for e in posix_entries if 'macos' in e.get('os', '')]
+
+          # B2 build options (apply to all B2 jobs)
+          if posix_entries or windows_entries or mingw_entries:
+              options = []
+              library_folder = os.environ.get('LIBRARY_FOLDER')
+              if not library_folder:
+                  library_folder = os.environ.get('SELF') + " (default)"
+              options.append(("Library folder", library_folder))
+              options.append(("Variant", os.environ.get('B2_VARIANT') or '[default]'))
+              options.append(("Link", os.environ.get('B2_LINK') or '[default]'))
+              defines = os.environ.get('B2_DEFINES')
+              if defines:
+                  options.append(("Defines", defines))
+              targets = os.environ.get('B2_TARGETS')
+              if targets:
+                  options.append(("Targets", targets))
+              b2_headers_flags = os.environ.get('B2_HEADERS_FLAGS')
+              if b2_headers_flags:
+                  options.append(("Extra flags for `b2 headers`", b2_headers_flags))
+              parallelism = os.environ.get('B2_JOBS')
+              if parallelism:
+                  options.append(("Parallelism (`-j`)", parallelism))
+              summary += "## B2 Build Options\n\n"
+              summary += "| Option | Value |\n"
+              summary += "|--------|-------|\n"
+              for name, value in options:
+                  summary += f"| {name} | {value} |\n"
+              summary += "\n"
 
           if linux_entries:
               summary += "## Linux\n\n"
@@ -1054,3 +1143,10 @@ jobs:
           MINGW_MATRIX_ENTRIES: ${{needs.generate-job-matrix.outputs.mingw-matrix}}
           CMAKE_MATRIX_ENTRIES: ${{needs.generate-job-matrix.outputs.cmake-matrix}}
           MIN_CMAKE_VERSION: ${{inputs.min_cmake_version}}
+          B2_JOBS: ${{inputs.parallelism}}
+          B2_HEADERS_FLAGS: ${{inputs.b2_headers_flags}}
+          B2_VARIANT: ${{inputs.b2_variant}}
+          B2_LINK: ${{inputs.b2_link}}
+          B2_DEFINES: ${{inputs.b2_defines}}
+          B2_TARGETS: ${{inputs.b2_targets}}
+          LIBRARY_FOLDER: ${{inputs.library_folder}}
