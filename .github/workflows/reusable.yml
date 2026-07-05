@@ -180,7 +180,7 @@ jobs:
           def filter_multi_valued(in_list, key_name, excluded):
               """Remove all entries from the value identified by key_name that are contained in excluded (comma-separated).
                  Omit the entry when the attribute is empty, keep it if the attribute is not present."""
-              excluded_values = {x.strip() for x in excluded.split(',')}
+              excluded_values = {x.strip() for x in excluded.split(',')} if isinstance(excluded, str) else excluded
               for entry in in_list:
                   try:
                       values = [x.strip() for x in entry[key_name].split(',')]
@@ -232,9 +232,9 @@ jobs:
                   {"compiler": "gcc-11",    "cxxstd": "11,14,17,20",       "os": "ubuntu-22.04"},
                   {"compiler": "gcc-12",    "cxxstd": "11,14,17,20",       "os": "ubuntu-22.04"},
                   {"compiler": "gcc-13",    "cxxstd": "11,14,17,20,2b",    "os": "ubuntu-24.04"},
-                  {"name": "coverage-gcc-linux", "coverage": "yes",
+                  {"name": "Coverage w/ GCC on Linux", "coverage": "yes",
                    "compiler": "gcc-13",    "cxxstd": "2b",                "os": "ubuntu-24.04", "install": "g++-13-multilib gcc-multilib", "address-model": "32,64" },
-                  {"name": "sanitize-gcc-linux", "sanitize": "yes",
+                  {"name": "GCC w/ sanitizers", "sanitize": "yes",
                    "compiler": "gcc-13",    "cxxstd": "11,14,17,20",       "os": "ubuntu-24.04"},
                   {"compiler": "gcc-14",    "cxxstd": "11,14,17,20,23",    "os": "ubuntu-24.04"},
                   {"compiler": "gcc-15",    "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "ubuntu:26.04"},
@@ -366,8 +366,14 @@ jobs:
                 { "name": "Min. CMake", "cmake_version": os.environ["MIN_CMAKE_VERSION"],
                   "os": "ubuntu-latest",            "build_shared": "ON",  "build_type": "Debug", "generator": "Unix Makefiles" },
               ]
+              filtered = all_jobs
+              compiler_map = {
+                "msvc-14.3": "Visual Studio 17 2022",
+                "msvc-14.5": "Visual Studio 18 2026",
+              }
+              filtered = filter_multi_valued(filtered, 'generator', [compiler_map.get(x.strip(), x.strip()) for x in os.environ['EXCLUDE_COMPILER'].split(',')])
 
-              write_matrix('cmake-matrix', all_jobs)
+              write_matrix('cmake-matrix', filtered)
         shell: python
         env:
           ENABLE_POSIX: ${{ inputs.enable_posix }}
