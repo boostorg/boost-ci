@@ -135,6 +135,11 @@ on:
         required: false
         type: string
         default: ''
+      max_cxx_stds_per_job:
+        description: "Maximum number of C++ standards per job. When set, jobs with more C++ standards are split into multiple jobs."
+        required: false
+        type: string
+        default: ''
     secrets:
       CODECOV_TOKEN:
         description: "The token for covecov.io; if defined then coverage will be collected."
@@ -169,7 +174,7 @@ jobs:
       - id: generate-matrix
         name: Generate job matrices
         run: |
-          import json, os
+          import json, math, os
 
           # ═══════════════════════════════════════════════════════════════
           # Helper functions
@@ -205,7 +210,26 @@ jobs:
               """Remove all entries with value 'yes' for the key"""
               return (job for job in in_list if not job.get(key_name) == "yes")
 
+          def split_jobs_by_cxxstd(jobs, max_cxx_stds):
+              """Split jobs whose cxxstd exceeds max_cxx_stds into multiple copies,
+                 distributing the values as evenly as possible."""
+              if max_cxx_stds <= 0:
+                  return jobs
+              for job in jobs:
+                  stds = job.get('cxxstd', '').split(',')
+                  if len(stds) > max_cxx_stds:
+                      num_jobs = math.ceil(len(stds) / max_cxx_stds)
+                      per_job = math.ceil(len(stds) / num_jobs)
+                      for i in range(0, len(stds), per_job):
+                          new_job = dict(job)
+                          new_job['cxxstd'] = ','.join(stds[i:i + per_job])
+                          yield new_job
+                  else:
+                      yield job
+
           def write_matrix(name, jobs):
+              max_cxx_stds = int(os.environ.get('MAX_CXX_STDS_PER_JOB') or '0')
+              jobs = split_jobs_by_cxxstd(jobs, max_cxx_stds)
               with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
                   print(f"{name}={json.dumps({'include': list(jobs)})}", file=fh)
 
@@ -396,6 +420,7 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
           COVERITY_SCAN_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
           MIN_CMAKE_VERSION: ${{ inputs.min_cmake_version }}
+          MAX_CXX_STDS_PER_JOB: ${{ inputs.max_cxx_stds_per_job }}
 
   posix:
     if: ${{ inputs.enable_posix }}
