@@ -318,6 +318,8 @@ jobs:
                 {"toolset": "msvc-14.3", "cxxstd": "14,17,20,latest", "address-model": "32,64", "os": "windows-2022"},
                 {"toolset": "msvc-14.5", "cxxstd": "14,17,20,latest", "address-model": "32,64", "os": "windows-2025-vs2026"},
                 {"toolset": "msvc-14.3", "cxxstd": "14,17,20,latest", "address-model": "64", "os": "windows-11-arm"},
+                {"name": "Collect coverage w/ VS 2022", "coverage": "yes",
+                 "toolset": "msvc-14.3", "cxxstd": "latest",          "address-model": "64",    "os": "windows-2022"},
                 {"name": "Collect coverage w/ VS 2026", "coverage": "yes",
                  "toolset": "msvc-14.5", "cxxstd": "latest",          "address-model": "64",    "os": "windows-2025-vs2026"},
                 {"toolset": "clang-win", "cxxstd": "14,17,latest",    "address-model": "32,64", "os": "windows-2025"},
