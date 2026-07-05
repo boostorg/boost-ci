@@ -332,6 +332,8 @@ jobs:
               filtered = filter_multi_valued(filtered, 'cxxstd', os.environ['EXCLUDE_CXXSTD'])
               filtered = filter_multi_valued(filtered, 'toolset', os.environ['EXCLUDE_COMPILER'])
               filtered = filter_os(filtered, os.environ['EXCLUDE_OS'])
+              if not os.environ.get('CODECOV_TOKEN') and not is_true('ENABLE_PR_COVERAGE'):
+                  filtered = filter_yes_values(filtered, 'coverage')
               if not is_true('ENABLE_32BIT'):
                   filtered = filter_multi_valued(filtered, 'address-model', '32')
               if not is_true('ENABLE_CYGWIN'):
