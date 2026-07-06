@@ -174,7 +174,7 @@ jobs:
       - id: generate-matrix
         name: Generate job matrices
         run: |
-          import json, math, os
+          import json, math, os, sys
 
           # ═══════════════════════════════════════════════════════════════
           # Helper functions
@@ -214,12 +214,14 @@ jobs:
               """Split jobs whose cxxstd exceeds max_cxx_stds into multiple copies,
                  distributing the values as evenly as possible."""
               if max_cxx_stds <= 0:
-                  return jobs
+                  yield from jobs
+                  return
               for job in jobs:
                   stds = job.get('cxxstd', '').split(',')
                   if len(stds) > max_cxx_stds:
                       num_jobs = math.ceil(len(stds) / max_cxx_stds)
                       per_job = math.ceil(len(stds) / num_jobs)
+                      print(f"Splitting job {job} into {num_jobs} jobs with {per_job} C++ standards each")
                       for i in range(0, len(stds), per_job):
                           new_job = dict(job)
                           new_job['cxxstd'] = ','.join(stds[i:i + per_job])
@@ -228,10 +230,17 @@ jobs:
                       yield job
 
           def write_matrix(name, jobs):
+              if not isinstance(jobs, list):
+                  jobs = list(jobs)
+              num_jobs = len(jobs)
               max_cxx_stds = int(os.environ.get('MAX_CXX_STDS_PER_JOB') or '0')
-              jobs = split_jobs_by_cxxstd(jobs, max_cxx_stds)
+              jobs = list(split_jobs_by_cxxstd(jobs, max_cxx_stds))
+              if len(jobs) < num_jobs:
+                  print(f"Splitting jobs encountered an error: {len(jobs)} jobs after splitting, expected at least {num_jobs}")
+                  sys.exit(1)
+              print(f"Writing {len(jobs)} jobs ({num_jobs} unique) to matrix '{name}'")
               with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-                  print(f"{name}={json.dumps({'include': list(jobs)})}", file=fh)
+                  print(f"{name}={json.dumps({'include': jobs})}", file=fh)
 
           # ═══════════════════════════════════════════════════════════════
           # Posix matrix
