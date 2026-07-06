@@ -983,9 +983,22 @@ jobs:
           import os
           import re
 
+          def merge_cxxstd_duplicates(entries):
+              """Merge consecutive entries identical except for 'cxxstd', concatenating cxxstd.
+                 Works because jobs split by C++ std are emitted consecutively by the matrix generator."""
+              merged = []
+              for e in entries:
+                  if merged:
+                      prev = merged[-1]
+                      if {k: v for k, v in prev.items() if k != 'cxxstd'} == {k: v for k, v in e.items() if k != 'cxxstd'}:
+                          a, b = prev.get('cxxstd', ''), e.get('cxxstd', '')
+                          prev['cxxstd'] = f"{a},{b}" if a and b else (a or b)
+                          continue
+                  merged.append(e)
+              return merged
           def load_from_env(name):
             value = os.environ.get(name)
-            return json.loads(value)['include'] if value else []
+            return merge_cxxstd_duplicates(json.loads(value)['include']) if value else []
           def sort_key(entry):
               # Natural sort for compiler
               compiler = tuple(int(p) if p.isdigit() else p
