@@ -140,6 +140,11 @@ on:
         required: false
         type: string
         default: ''
+      slow_sanitizer_jobs:
+        description: "When enabled, sanitizer jobs will be split so they don't run into timeouts when testing too many configurations at once. Disabled by default."
+        required: false
+        type: boolean
+        default: false
     secrets:
       CODECOV_TOKEN:
         description: "The token for covecov.io; if defined then coverage will be collected."
@@ -213,11 +218,13 @@ jobs:
           def split_jobs_by_cxxstd(jobs, max_cxx_stds):
               """Split jobs whose cxxstd exceeds max_cxx_stds into multiple copies,
                  distributing the values as evenly as possible."""
-              if max_cxx_stds <= 0:
+              slow_sanitizer_jobs = is_true('SLOW_SANITIZER_JOBS')
+              if max_cxx_stds <= 0 and not slow_sanitizer_jobs:
                   yield from jobs
                   return
               for job in jobs:
                   stds = job.get('cxxstd', '').split(',')
+                  cur_max = 1 if slow_sanitizer_jobs and job.get('sanitize') == 'yes' else max_cxx_stds
                   if len(stds) > max_cxx_stds:
                       num_jobs = math.ceil(len(stds) / max_cxx_stds)
                       per_job = math.ceil(len(stds) / num_jobs)
@@ -430,6 +437,7 @@ jobs:
           COVERITY_SCAN_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
           MIN_CMAKE_VERSION: ${{ inputs.min_cmake_version }}
           MAX_CXX_STDS_PER_JOB: ${{ inputs.max_cxx_stds_per_job }}
+          SLOW_SANITIZER_JOBS: ${{ inputs.slow_sanitizer_jobs }}
 
   posix:
     if: ${{ inputs.enable_posix }}
