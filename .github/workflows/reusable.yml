@@ -100,6 +100,20 @@ on:
         required: false
         type: string
         default: ''
+      exclude_jobs:
+        description: |
+          Filters to remove jobs. Each non-empty line (after stripping comments) is a JSON object of job attributes with comma-separated values.
+          Matching values are removed; the job is removed if all filtered attributes become empty.
+            'os':'ubuntu-22.04'                   # Remove all jobs running on this OS
+            'compiler':'gcc-7,clang-12'           # Remove all jobs using either GCC 7 OR Clang 12
+            'os':'macos-14', sanitize:'yes'       # Remove sanitizer job on MacOS 14
+            'compiler': 'clang-22', cxxstd: '17'  # Remove C++17 test on Clang 22
+            'cxxstd': '17', 'address-model': '32' # Remove C++17 AND 32bit test, only if both are specified for a job.
+                                                  # E.g.    {"toolset": "msvc", "cxxstd": "11,17", "address-model": "32,64"}
+                                                  # Becomes {"toolset": "msvc", "cxxstd": "11",    "address-model": "64"}
+        required: false
+        type: string
+        default: ''
       b2_headers_flags:
         description: "Extra flags to pass to the `b2 headers` command during setup"
         required: false
@@ -184,7 +198,7 @@ jobs:
       - id: generate-matrix
         name: Generate job matrices
         run: |
-          import json, math, os, sys
+          import json, math, os, sys, re
 
           # ═══════════════════════════════════════════════════════════════
           # Helper functions
@@ -192,17 +206,21 @@ jobs:
           def is_true(env_var):
               return os.environ.get(env_var).lower() in ('true', '1')
 
+          def parse_csv(value):
+              """Split a comma-separated string into a list of stripped, non-empty values."""
+              return [v.strip() for v in str(value).split(',') if v.strip()]
+
           def filter_multi_valued(in_list, key_name, excluded):
               """Remove all entries from the value identified by key_name that are contained in excluded (comma-separated).
                  Omit the entry when the attribute is empty, keep it if the attribute is not present."""
-              excluded_values = {x.strip() for x in excluded.split(',')} if isinstance(excluded, str) else excluded
+              excluded_values = set(parse_csv(excluded)) if isinstance(excluded, str) else excluded
               for entry in in_list:
                   try:
-                      values = [x.strip() for x in entry[key_name].split(',')]
+                      values = parse_csv(entry[key_name])
                   except KeyError:
                       yield entry
                   else:
-                      remaining_values = [v for v in values if v and v not in excluded_values]
+                      remaining_values = [v for v in values if v not in excluded_values]
                       if remaining_values:
                           entry[key_name] = ",".join(remaining_values)
                           yield entry
@@ -211,14 +229,72 @@ jobs:
               """Extract OS from job"""
               # "sys": MinGW; "os" doesn't matter if "container" is set; unify "ubuntu-22.04|ubuntu:22.04"
               return job.get('sys', job.get('container', job.get('os', ''))).replace('-', ':')
+          def os_matches(job, os_patterns):
+              """Check if job's OS matches any of the given patterns (substring, dash normalized to colon)."""
+              job_os = get_os(job)
+              return any(p.replace('-', ':') in job_os for p in os_patterns)
           def filter_os(in_list, excluded):
               """Remove all jobs that match any of the excluded OS (comma-separated, supports partial matches)"""
-              excluded_values = [v for v in (x.strip().replace('-', ':') for x in excluded.split(',')) if v]
-              return (job for job in in_list if not any(ev in get_os(job) for ev in excluded_values))
+              excluded_values = parse_csv(excluded)
+              return (job for job in in_list if not os_matches(job, excluded_values))
 
           def filter_yes_values(in_list, key_name):
               """Remove all entries with value 'yes' for the key"""
               return (job for job in in_list if not job.get(key_name) == "yes")
+
+          job_filters = []
+          for line in os.environ['EXCLUDE_JOBS'].split('\n'):
+              line = re.sub('#.*', '', line).strip().replace("'", '"')
+              if not line:
+                  continue
+              try:
+                  f = json.loads('{' + line + '}')
+              except json.JSONDecodeError:
+                   sys.exit(f"Error: Invalid filter line (not valid JSON): {line}")
+              if not isinstance(f, dict):
+                  sys.exit(f"Error: Filter line is not a dict: {line}")
+              job_filters.append(f)
+
+          job_filter_matched = [False] * len(job_filters)
+          def apply_job_filters(jobs, filters):
+              """Filter jobs by multi-line conditions, each a (Python) dict w/o braces.
+                 A job matches a filter if ALL conditions overlap.
+                 Reduce matched attributes if that doesn't yield an empty list,
+                 except when all matched attributes turn up empty it will remove the job completely."""
+              if not filters:
+                  yield from jobs
+                  return
+
+              for job in jobs:
+                  removed = False
+                  for i, f in enumerate(filters):
+                      matched_all = True
+                      remainings = {}
+                      for key, filter_value in f.items():
+                          filter_values = set(parse_csv(filter_value))
+                          if key == 'os':
+                              matched_all &= os_matches(job, filter_values)
+                          else:
+                              job_values = set(parse_csv(job.get(key, '')))
+                              matched_all &= bool(job_values & filter_values)
+                              remainings[key] = job_values - filter_values
+
+                      if not matched_all:
+                          continue
+                      job_filter_matched[i] = True
+                      if not any(remainings.values()):
+                          print(f"Filter '{f}' matched, removing '{job}'")
+                          removed = True
+                          break
+
+                      orig_job = dict(job)
+                      for key, remaining in remainings.items():
+                          if remaining:
+                              original = parse_csv(job[key])
+                              job[key] = ','.join(v for v in original if v in remaining)
+                      print(f"Filter '{f}' matched '{orig_job}', reduced to '{job}'")
+                  if not removed:
+                      yield job
 
           def split_jobs_by_cxxstd(jobs, max_cxx_stds):
               """Split jobs whose cxxstd exceeds max_cxx_stds into multiple copies,
@@ -246,8 +322,7 @@ jobs:
               max_cxx_stds = int(os.environ.get('MAX_CXX_STDS_PER_JOB') or '0')
               jobs = list(split_jobs_by_cxxstd(jobs, max_cxx_stds))
               if len(jobs) < num_jobs:
-                  print(f"Splitting jobs encountered an error: {len(jobs)} jobs after splitting, expected at least {num_jobs}")
-                  sys.exit(1)
+                  sys.exit(f"Splitting jobs encountered an error: {len(jobs)} jobs after splitting, expected at least {num_jobs}")
               print(f"Writing {len(jobs)} jobs ({num_jobs} unique) to matrix '{name}'")
               with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
                   print(f"{name}={json.dumps({'include': jobs})}", file=fh)
@@ -347,6 +422,7 @@ jobs:
                   filtered = filter_yes_values(filtered, 'coverity')
               if not is_true('ENABLE_REFLECTION'):
                   filtered = filter_yes_values(filtered, 'reflection')
+              filtered = apply_job_filters(filtered, job_filters)
 
               write_matrix('posix-matrix', filtered)
 
@@ -378,6 +454,7 @@ jobs:
                   filtered = filter_multi_valued(filtered, 'address-model', '32')
               if not is_true('ENABLE_CYGWIN'):
                   filtered = filter_multi_valued(filtered, 'target-os', 'cygwin')
+              filtered = apply_job_filters(filtered, job_filters)
 
               write_matrix('windows-matrix', filtered)
 
@@ -394,6 +471,7 @@ jobs:
               filtered = filter_multi_valued(filtered, 'cxxstd', os.environ['EXCLUDE_CXXSTD'])
               if not is_true('ENABLE_32BIT'):
                   filtered = filter_multi_valued(filtered, 'sys', 'MINGW32')
+              filtered = apply_job_filters(filtered, job_filters)
 
               write_matrix('mingw-matrix', filtered)
 
@@ -415,9 +493,14 @@ jobs:
                 "msvc-14.3": "Visual Studio 17 2022",
                 "msvc-14.5": "Visual Studio 18 2026",
               }
-              filtered = filter_multi_valued(filtered, 'generator', [compiler_map.get(x.strip(), x.strip()) for x in os.environ['EXCLUDE_COMPILER'].split(',')])
+              filtered = filter_multi_valued(filtered, 'generator', {compiler_map.get(x, x) for x in parse_csv(os.environ['EXCLUDE_COMPILER'])})
+              filtered = apply_job_filters(filtered, job_filters)
 
               write_matrix('cmake-matrix', filtered)
+
+          for (filter, matched) in zip(job_filters, job_filter_matched):
+              if not matched:
+                  print(f"::warning title=Unmatched filters::Filter `{filter}` didn't match any jobs")
         shell: python
         env:
           ENABLE_POSIX: ${{ inputs.enable_posix }}
@@ -433,6 +516,7 @@ jobs:
           EXCLUDE_COMPILER: ${{ inputs.exclude_compiler }}
           EXCLUDE_CXXSTD: ${{ inputs.exclude_cxxstd }}
           EXCLUDE_OS: ${{ inputs.exclude_os }}
+          EXCLUDE_JOBS: ${{ inputs.exclude_jobs }}
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
           COVERITY_SCAN_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
           MIN_CMAKE_VERSION: ${{ inputs.min_cmake_version }}
