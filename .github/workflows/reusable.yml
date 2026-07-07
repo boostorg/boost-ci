@@ -465,6 +465,7 @@ jobs:
 
     steps:
       - name: Setup environment
+        id: setup
         run: |
             if [ -f "/etc/debian_version" ]; then
                 echo "DEBIAN_FRONTEND=noninteractive" >> "$GITHUB_ENV"
@@ -519,6 +520,16 @@ jobs:
             # For jobs not compatible with ccache, use "ccache: no" in the matrix
             if [[ "${{ matrix.ccache }}" == "no" ]]; then
                 echo "B2_USE_CCACHE=0" >> "$GITHUB_ENV"
+            else
+                # Common prefix w/o C++ std (old key)
+                prefix='${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}'
+                echo "legacy-restore-key=${prefix}-" >> "$GITHUB_OUTPUT"
+                # Include C++ standard so caches of split jobs are smaller
+                cxxstd="${{matrix.cxxstd}}"
+                prefix+="-${cxxstd//,/_}"
+                # Restore-key uses the key without the SHA, SHA used to make sure cache gets updated
+                echo "restore-key=${prefix}-" >> "$GITHUB_OUTPUT"
+                echo "key=${prefix}-${{github.sha}}" >> "$GITHUB_OUTPUT"
             fi
             if [[ "${{ matrix.sanitize }}" == "yes" ]]; then
                 suppression_file=${GITHUB_WORKSPACE}/test/suppressions.txt
@@ -551,10 +562,10 @@ jobs:
         if: env.B2_USE_CCACHE
         with:
           path: ~/.ccache
-          key: ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{matrix.cxxstd}}-${{github.sha}}
+          key: ${{steps.setup.outputs.key}}
           restore-keys: |
-              ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-${{matrix.cxxstd}}-
-              ${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}-
+              ${{steps.setup.outputs.restore-key}}
+              ${{steps.setup.outputs.legacy-restore-key}}
 
       - name: Fetch Boost.CI
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
