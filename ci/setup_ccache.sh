@@ -39,9 +39,12 @@ ccache --version
 
 # This also sets the default values
 echo "Using cache directory of size ${B2_CCACHE_SIZE:=500M} at '${B2_CCACHE_DIR:=$HOME/.ccache}'"
-
 ccache --set-config=cache_dir="$B2_CCACHE_DIR"
 ccache --set-config=max_size="$B2_CCACHE_SIZE"
+ccache --cleanup
+if curSize=$(du -sh "$B2_CCACHE_DIR" 2>/dev/null | cut -f1); then
+    echo "Current cache size: $curSize"
+fi
 
 ccache -z
 echo "CCache config: $(ccache -p)"
