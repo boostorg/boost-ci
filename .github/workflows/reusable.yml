@@ -517,7 +517,7 @@ jobs:
             # For jobs not compatible with ccache, use "ccache: no" in the matrix
             if [[ "${{ matrix.ccache }}" == "no" ]]; then
                 echo "B2_USE_CCACHE=0" >> "$GITHUB_ENV"
-            else
+            elif [[ "${B2_USE_CACHE:-1}" != "0" ]]; then
                 # Common prefix w/o C++ std (old key)
                 prefix='${{matrix.os}}-${{matrix.container}}-${{matrix.xcode_app}}${{matrix.compiler}}'
                 echo "legacy-restore-key=${prefix}-" >> "$GITHUB_OUTPUT"
@@ -559,7 +559,7 @@ jobs:
         if: env.B2_USE_CCACHE
         with:
           path: ~/.ccache
-          key: ${{steps.setup.outputs.key}}
+          key: ${{steps.setup.outputs.key || 'cache-disabled'}}
           restore-keys: |
               ${{steps.setup.outputs.restore-key}}
               ${{steps.setup.outputs.legacy-restore-key}}
