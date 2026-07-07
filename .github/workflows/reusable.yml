@@ -254,13 +254,10 @@ jobs:
           # ═══════════════════════════════════════════════════════════════
           if is_true('ENABLE_POSIX'):
               all_jobs = [
-                # libstdc++ (by default: disabled (see exclude_cxxstd, exclude_compiler),
-                #            tests are pre-C++11 standard; gcc-4.7 is not fully compliant)
+                # libstdc++
                   {"compiler": "gcc-4.4",   "cxxstd": "98",                "os": "ubuntu-latest", "container": "ubuntu:16.04", "source_keys": "0x2C277A0A352154E5", "sources": "ppa:ubuntu-toolchain-r/test"},
                   {"compiler": "gcc-4.6",   "cxxstd": "03,0x",             "os": "ubuntu-latest", "container": "ubuntu:16.04", "source_keys": "0x2C277A0A352154E5", "sources": "ppa:ubuntu-toolchain-r/test"},
                   {"compiler": "gcc-4.7",   "cxxstd": "03,11",             "os": "ubuntu-latest", "container": "ubuntu:16.04"},
-                # libstdc++
-                  {"compiler": "gcc-4.7",   "cxxstd": "11",                "os": "ubuntu-latest", "container": "ubuntu:16.04"},
                   {"compiler": "gcc-4.8",   "cxxstd": "11",                "os": "ubuntu-latest", "container": "ubuntu:16.04"},
                   {"compiler": "gcc-4.9",   "cxxstd": "11",                "os": "ubuntu-latest", "container": "ubuntu:16.04"},
                   {"compiler": "gcc-5",     "cxxstd": "11,14,1z",          "os": "ubuntu-latest", "container": "ubuntu:18.04"},
