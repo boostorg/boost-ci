@@ -225,8 +225,8 @@ jobs:
               for job in jobs:
                   stds = job.get('cxxstd', '').split(',')
                   cur_max = 1 if slow_sanitizer_jobs and job.get('sanitize') == 'yes' else max_cxx_stds
-                  if len(stds) > max_cxx_stds:
-                      num_jobs = math.ceil(len(stds) / max_cxx_stds)
+                  if len(stds) > cur_max:
+                      num_jobs = math.ceil(len(stds) / cur_max)
                       per_job = math.ceil(len(stds) / num_jobs)
                       print(f"Splitting job {job} into {num_jobs} jobs with {per_job} C++ standards each")
                       for i in range(0, len(stds), per_job):
