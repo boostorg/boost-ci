@@ -174,7 +174,7 @@ stages:
               displayName: Build
 
       - job: Windows
-        timeoutInMinutes: 120
+        timeoutInMinutes: 240
         strategy:
           matrix:
             VS_2022:        { B2_TOOLSET: msvc-14.3, B2_CXXSTD: '14,17,20',        B2_ADDRESS_MODEL: '32,64', VM_IMAGE: windows-2022 }

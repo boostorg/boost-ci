@@ -135,6 +135,11 @@ on:
         required: false
         type: string
         default: ''
+      timeout:
+        description: "Timeout per job in minutes, defaults to 2h"
+        required: false
+        type: number
+        default: 120
       max_cxx_stds_per_job:
         description: "Maximum number of C++ standards per job. When set, jobs with more C++ standards are split into multiple jobs."
         required: false
@@ -440,7 +445,7 @@ jobs:
     if: ${{ inputs.enable_posix }}
     needs: generate-job-matrix
     runs-on: ${{matrix.os}}
-    timeout-minutes: 120
+    timeout-minutes: ${{inputs.timeout}}
 
     defaults:
       run:
@@ -693,7 +698,7 @@ jobs:
     if: ${{ inputs.enable_windows }}
     needs: generate-job-matrix
     runs-on: ${{matrix.os}}
-    timeout-minutes: 120
+    timeout-minutes: ${{inputs.timeout}}
 
     defaults:
       run:
@@ -778,7 +783,7 @@ jobs:
     if: ${{ inputs.enable_mingw }}
     needs: generate-job-matrix
     runs-on: windows-latest
-    timeout-minutes: 120
+    timeout-minutes: ${{inputs.timeout}}
 
     defaults:
       run:
@@ -842,7 +847,7 @@ jobs:
     if: ${{ inputs.enable_cmake }}
     needs: generate-job-matrix
     runs-on: ${{matrix.os}}
-    timeout-minutes: 120
+    timeout-minutes: ${{inputs.timeout}}
 
     defaults:
       run:

@@ -60,7 +60,7 @@ jobs:
 
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.runs-on }}
-    timeout-minutes: 120
+    timeout-minutes: 240
 
     steps:
       - name: Checkout code
