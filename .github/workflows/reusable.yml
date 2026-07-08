@@ -256,18 +256,18 @@ jobs:
               job_filters.append(f)
 
           job_filter_matched = [False] * len(job_filters)
-          def apply_job_filters(jobs, filters):
+          def apply_job_filters(jobs):
               """Filter jobs by multi-line conditions, each a (Python) dict w/o braces.
                  A job matches a filter if ALL conditions overlap.
                  Reduce matched attributes if that doesn't yield an empty list,
                  except when all matched attributes turn up empty it will remove the job completely."""
-              if not filters:
+              if not job_filters:
                   yield from jobs
                   return
 
               for job in jobs:
                   removed = False
-                  for i, f in enumerate(filters):
+                  for i, f in enumerate(job_filters):
                       matched_all = True
                       remainings = {}
                       for key, filter_value in f.items():
@@ -315,10 +315,13 @@ jobs:
                   else:
                       yield job
 
-          def write_matrix(name, env_var, jobs):
+          def finalize_and_write_matrix(name, env_var, jobs):
+              enabled = is_true(env_var)
+              if enabled:  # Don't apply filters if explicitely disabled so unmatched filters can be reported properly
+                  jobs = apply_job_filters(jobs)
               if not isinstance(jobs, list):
                   jobs = list(jobs)
-              enabled = is_true(env_var)
+
               if enabled and not jobs:
                   print(f'::warning::tile=${env_var} disabled::All jobs removed, disabling ${env_var}')
               elif not enabled:
@@ -429,10 +432,9 @@ jobs:
                   filtered = filter_yes_values(filtered, 'coverity')
               if not is_true('ENABLE_REFLECTION'):
                   filtered = filter_yes_values(filtered, 'reflection')
-              filtered = apply_job_filters(filtered, job_filters)
           else:
               filtered = ()
-          write_matrix('posix-matrix', 'ENABLE_POSIX', filtered)
+          finalize_and_write_matrix('posix-matrix', 'ENABLE_POSIX', filtered)
 
           # ═══════════════════════════════════════════════════════════════
           # Windows matrix
@@ -462,10 +464,9 @@ jobs:
                   filtered = filter_multi_valued(filtered, 'address-model', '32')
               if not is_true('ENABLE_CYGWIN'):
                   filtered = filter_multi_valued(filtered, 'target-os', 'cygwin')
-              filtered = apply_job_filters(filtered, job_filters)
           else:
               filtered = ()
-          write_matrix('windows-matrix', 'ENABLE_WINDOWS', filtered)
+          finalize_and_write_matrix('windows-matrix', 'ENABLE_WINDOWS', filtered)
 
           # ═══════════════════════════════════════════════════════════════
           # MinGW matrix
@@ -480,10 +481,9 @@ jobs:
               filtered = filter_multi_valued(filtered, 'cxxstd', os.environ['EXCLUDE_CXXSTD'])
               if not is_true('ENABLE_32BIT'):
                   filtered = filter_multi_valued(filtered, 'sys', 'MINGW32')
-              filtered = apply_job_filters(filtered, job_filters)
           else:
               filtered = ()
-          write_matrix('mingw-matrix', 'ENABLE_MINGW', filtered)
+          finalize_and_write_matrix('mingw-matrix', 'ENABLE_MINGW', filtered)
 
           # ═══════════════════════════════════════════════════════════════
           # CMake matrix
@@ -504,10 +504,9 @@ jobs:
                 "msvc-14.5": "Visual Studio 18 2026",
               }
               filtered = filter_multi_valued(filtered, 'generator', {compiler_map.get(x, x) for x in parse_csv(os.environ['EXCLUDE_COMPILER'])})
-              filtered = apply_job_filters(filtered, job_filters)
           else:
               filtered = ()
-          write_matrix('cmake-matrix', 'ENABLE_CMAKE', filtered)
+          finalize_and_write_matrix('cmake-matrix', 'ENABLE_CMAKE', filtered)
 
           for (filter, matched) in zip(job_filters, job_filter_matched):
               if not matched:
