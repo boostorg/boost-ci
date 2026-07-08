@@ -315,9 +315,16 @@ jobs:
                   else:
                       yield job
 
-          def write_matrix(name, jobs):
+          def write_matrix(name, env_var, jobs):
               if not isinstance(jobs, list):
                   jobs = list(jobs)
+              enabled = is_true(env_var)
+              if enabled and not jobs:
+                  print(f'::warning::tile=${env_var} disabled::All jobs removed, disabling ${env_var}')
+              elif not enabled:
+                  jobs = None
+              if not jobs:
+                  return  # Leave matrix output empty
               num_jobs = len(jobs)
               max_cxx_stds = int(os.environ.get('MAX_CXX_STDS_PER_JOB') or '0')
               jobs = list(split_jobs_by_cxxstd(jobs, max_cxx_stds))
@@ -423,8 +430,9 @@ jobs:
               if not is_true('ENABLE_REFLECTION'):
                   filtered = filter_yes_values(filtered, 'reflection')
               filtered = apply_job_filters(filtered, job_filters)
-
-              write_matrix('posix-matrix', filtered)
+          else:
+              filtered = ()
+          write_matrix('posix-matrix', 'ENABLE_POSIX', filtered)
 
           # ═══════════════════════════════════════════════════════════════
           # Windows matrix
@@ -455,8 +463,9 @@ jobs:
               if not is_true('ENABLE_CYGWIN'):
                   filtered = filter_multi_valued(filtered, 'target-os', 'cygwin')
               filtered = apply_job_filters(filtered, job_filters)
-
-              write_matrix('windows-matrix', filtered)
+          else:
+              filtered = ()
+          write_matrix('windows-matrix', 'ENABLE_WINDOWS', filtered)
 
           # ═══════════════════════════════════════════════════════════════
           # MinGW matrix
@@ -472,8 +481,9 @@ jobs:
               if not is_true('ENABLE_32BIT'):
                   filtered = filter_multi_valued(filtered, 'sys', 'MINGW32')
               filtered = apply_job_filters(filtered, job_filters)
-
-              write_matrix('mingw-matrix', filtered)
+          else:
+              filtered = ()
+          write_matrix('mingw-matrix', 'ENABLE_MINGW', filtered)
 
           # ═══════════════════════════════════════════════════════════════
           # CMake matrix
@@ -495,8 +505,9 @@ jobs:
               }
               filtered = filter_multi_valued(filtered, 'generator', {compiler_map.get(x, x) for x in parse_csv(os.environ['EXCLUDE_COMPILER'])})
               filtered = apply_job_filters(filtered, job_filters)
-
-              write_matrix('cmake-matrix', filtered)
+          else:
+              filtered = ()
+          write_matrix('cmake-matrix', 'ENABLE_CMAKE', filtered)
 
           for (filter, matched) in zip(job_filters, job_filter_matched):
               if not matched:
@@ -523,7 +534,7 @@ jobs:
           MAX_CXX_STDS_PER_JOB: ${{ inputs.max_cxx_stds_per_job }}
 
   posix:
-    if: ${{ inputs.enable_posix }}
+    if: ${{needs.generate-job-matrix.outputs.posix-matrix}}
     needs: generate-job-matrix
     runs-on: ${{matrix.os}}
     timeout-minutes: ${{inputs.timeout}}
@@ -776,7 +787,7 @@ jobs:
           COVERITY_SCAN_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
 
   windows:
-    if: ${{ inputs.enable_windows }}
+    if: ${{needs.generate-job-matrix.outputs.windows-matrix}}
     needs: generate-job-matrix
     runs-on: ${{matrix.os}}
     timeout-minutes: ${{inputs.timeout}}
@@ -861,7 +872,7 @@ jobs:
           verbose: true
 
   mingw:
-    if: ${{ inputs.enable_mingw }}
+    if: ${{needs.generate-job-matrix.outputs.mingw-matrix}}
     needs: generate-job-matrix
     runs-on: windows-latest
     timeout-minutes: ${{inputs.timeout}}
@@ -925,7 +936,7 @@ jobs:
             ctest --output-on-failure --build-config Debug
 
   cmake:
-    if: ${{ inputs.enable_cmake }}
+    if: ${{needs.generate-job-matrix.outputs.cmake-matrix}}
     needs: generate-job-matrix
     runs-on: ${{matrix.os}}
     timeout-minutes: ${{inputs.timeout}}
