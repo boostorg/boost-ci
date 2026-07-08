@@ -102,16 +102,18 @@ on:
         default: ''
       exclude_jobs:
         description: |
-          Filters to remove jobs. Each non-empty line (after stripping comments) is a JSON object of job attributes with comma-separated values.
-          Matching values are removed; the job is removed if all filtered attributes become empty.
-            'os':'ubuntu-22.04'                    # Remove all jobs running on this OS
-            'compiler':'gcc-7,clang-12'            # Remove all jobs using either GCC 7 OR Clang 12
-            'os':'macos-14', 'sanitize':'yes'      # Remove sanitizer job on MacOS 14
-            'compiler': 'clang-22', 'cxxstd': '17' # Remove C++17 test on Clang 22
-            'cxxstd': '17', 'address-model': '32'  # Remove C++17 AND 32bit test, only if both are specified for a job.
-                                                   # E.g.    {"toolset": "msvc", "cxxstd": "11,17", "address-model": "32,64"}
-                                                   # Becomes {"toolset": "msvc", "cxxstd": "11",    "address-model": "64"}
-            'type': 'windows', 'compiler': 'gcc'   # Remove GCC jobs on Windows. `type` can be one or more of: posix,windows,mingw,cmake
+          Filters to remove jobs. Each non-empty line (after stripping comments) is an object of job attributes with comma-separated values.
+          Uses YAML(-like) syntax: (Only) values containing `,` or `:` must be quoted using single or double quotes, comments start with '#'.
+          Matching values are removed; the job is removed completely if all filtered attributes become empty.
+          The following block is a complete, valid example input:
+            os: ubuntu-22.04                    # Remove all jobs running on this OS
+            compiler: 'gcc-7,clang-12'          # Remove all jobs using either GCC 7 OR Clang 12
+            os: macos-14, sanitize: yes         # Remove sanitizer job on MacOS 14
+            compiler: clang-22, cxxstd: "14,17" # Remove C++17 test on Clang 22
+            cxxstd: 17, address-model: 32       # Remove C++17 AND 32bit test, only if both are specified for a job.
+                                                # E.g.    {"toolset": "msvc", "cxxstd": "11,17", "address-model": "32,64"}
+                                                # Becomes {"toolset": "msvc", "cxxstd": "11",    "address-model": "64"}
+            type: windows, compiler: gcc        # Remove GCC jobs on Windows. `type` can be one or more of: posix,windows,mingw,cmake
         required: false
         type: string
         default: ''
@@ -220,6 +222,11 @@ jobs:
           job_filters = []
           for line in os.environ['EXCLUDE_JOBS'].split('\n'):
               line = re.sub('#.*', '', line).strip().replace("'", '"')
+              # Convert YAML to JSON by quoting unquoted keys/values for simple tokens.
+              # The regex matches quoted strings first, then excludes structural chars and whitespace from matches that will be replaced.
+              line = re.sub(r'"[^"]*"|[^":,\s]+',
+                            lambda m: m[0] if m[0][0] == '"' else f'"{m[0]}"',
+                            line)
               if not line:
                   continue
               try:

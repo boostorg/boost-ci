@@ -8,9 +8,6 @@
 # (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 # This workflow uses the Boost.CI reusable workflow to test the `exclude_jobs` input.
-# Each line is a Python dict literal (without braces) that filters matching jobs
-# by removing the given values, or removing the job entirely when all filtered
-# attributes would become empty.
 #
 ---
 name: Test.ExcludeJobs.CI
@@ -39,18 +36,18 @@ jobs:
     uses: boostorg/boost-ci/.github/workflows/reusable.yml@master
     with:
       exclude_jobs: |
-        'os': 'ubuntu-1' # Remove Ubuntu 16/18 jobs (substring match)
+        os: ubuntu-1 # Remove Ubuntu 16/18 jobs (substring match)
         # Remove all jobs where compiler is any of those
-        "compiler": "gcc-7,gcc-9,gcc-10,gcc-11,gcc-12"
+        compiler: 'gcc-7,gcc-9,gcc-10,gcc-11,gcc-12'
         # Remove the MacOS sanitizer job
-        "os": "macos-14", "sanitize": "yes"
+        os: macos-14, sanitize: yes
 
         # Empty line and comment
-        # Reduce cxxstd of clang-22 jobs by removing 17
-        "compiler": "clang-22", "cxxstd": "17,20"
+        # Reduce cxxstd of clang-22 jobs by removing C++14 & C++17
+        compiler: 'gcc-7,clang-22', cxxstd: '14,17'
         # Remove all cxxstd -> Job removed
-        "compiler": "clang-6.0", "cxxstd": "11,14,17"
+        compiler: clang-6.0, cxxstd: '11,14,17'
         # No matching cxxstd -> Job unmodified
-        "compiler": "clang-7", "cxxstd": "20,23,26"
-        "coverage": "yes"
-        'type': 'cmake', 'os': "ubuntu" # No CMake tests on Linux
+        compiler: clang-7, cxxstd: '20,23,26'
+        "coverage":"yes" # Missing space after colon -> Requires quoting
+        "type": cmake, os: ubuntu # No CMake tests on Linux
