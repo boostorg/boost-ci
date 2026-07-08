@@ -125,6 +125,11 @@ on:
         required: false
         type: string
         default: 'debug,release'
+      codecov_name:
+        description: "Name (prefix) to use for coverage uploads to codecov.io"
+        required: false
+        type: string
+        default: 'Github Actions'
       library_folder:
         description: "Name of the subfolder of the Boost tree the library should be. Will be determined by the value of 'key' in meta/libraries.json."
         required: false
@@ -164,7 +169,7 @@ env:
   GIT_FETCH_JOBS: 8
   NET_RETRY_COUNT: 5
   LCOV_BRANCH_COVERAGE: ${{ inputs.branch_coverage && '1' || '0' }}
-  CODECOV_NAME: Github Actions
+  CODECOV_NAME: ${{ inputs.codecov_name }}
   DEPINST: ${{ inputs.depinst_args }}
 
 jobs:
