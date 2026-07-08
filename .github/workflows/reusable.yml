@@ -104,13 +104,14 @@ on:
         description: |
           Filters to remove jobs. Each non-empty line (after stripping comments) is a JSON object of job attributes with comma-separated values.
           Matching values are removed; the job is removed if all filtered attributes become empty.
-            'os':'ubuntu-22.04'                   # Remove all jobs running on this OS
-            'compiler':'gcc-7,clang-12'           # Remove all jobs using either GCC 7 OR Clang 12
-            'os':'macos-14', sanitize:'yes'       # Remove sanitizer job on MacOS 14
-            'compiler': 'clang-22', cxxstd: '17'  # Remove C++17 test on Clang 22
-            'cxxstd': '17', 'address-model': '32' # Remove C++17 AND 32bit test, only if both are specified for a job.
-                                                  # E.g.    {"toolset": "msvc", "cxxstd": "11,17", "address-model": "32,64"}
-                                                  # Becomes {"toolset": "msvc", "cxxstd": "11",    "address-model": "64"}
+            'os':'ubuntu-22.04'                    # Remove all jobs running on this OS
+            'compiler':'gcc-7,clang-12'            # Remove all jobs using either GCC 7 OR Clang 12
+            'os':'macos-14', 'sanitize':'yes'      # Remove sanitizer job on MacOS 14
+            'compiler': 'clang-22', 'cxxstd': '17' # Remove C++17 test on Clang 22
+            'cxxstd': '17', 'address-model': '32'  # Remove C++17 AND 32bit test, only if both are specified for a job.
+                                                   # E.g.    {"toolset": "msvc", "cxxstd": "11,17", "address-model": "32,64"}
+                                                   # Becomes {"toolset": "msvc", "cxxstd": "11",    "address-model": "64"}
+            'type': 'windows', 'compiler': 'gcc'   # Remove GCC jobs on Windows. `type` can be one or more of: posix,windows,mingw,cmake
         required: false
         type: string
         default: ''
@@ -262,7 +263,7 @@ jobs:
 
           job_filter_matched = [False] * len(job_filters)
 
-          def apply_job_filters(jobs):
+          def apply_job_filters(jobs, job_type):
               """Filter jobs by multi-line conditions, each a (Python) dict w/o braces.
                  A job matches a filter if ALL conditions overlap.
                  Reduce matched attributes if that doesn't yield an empty list,
@@ -280,6 +281,8 @@ jobs:
                           filter_values = set(parse_csv(filter_value))
                           if key == 'os':
                               matched_all &= os_matches(job, filter_values)
+                          elif key == 'type':
+                              matched_all &= job_type in filter_values
                           else:
                               job_values = set(parse_csv(job.get(key, '')))
                               matched_all &= bool(job_values & filter_values)
@@ -323,8 +326,9 @@ jobs:
 
           def finalize_and_write_matrix(name, env_var, jobs):
               enabled = is_true(env_var)
+              job_type = env_var.removeprefix('ENABLE_').lower()
               if enabled:  # Don't apply filters if explicitely disabled so unmatched filters can be reported properly
-                  jobs = apply_job_filters(jobs)
+                  jobs = apply_job_filters(jobs, job_type)
               if not isinstance(jobs, list):
                   jobs = list(jobs)
 

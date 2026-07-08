@@ -53,3 +53,4 @@ jobs:
         # No matching cxxstd -> Job unmodified
         "compiler": "clang-7", "cxxstd": "20,23,26"
         "coverage": "yes"
+        'type': 'cmake', 'os': "ubuntu" # No CMake tests on Linux
