@@ -1068,13 +1068,13 @@ jobs:
     steps:
       - name: Determine library name
         run: |
+          set -x
           if [[ -z "$SELF" ]]; then
             REF="${GITHUB_WORKFLOW_REF#*@}" # Extract version of this workflow used
             mkdir meta
             wget -q -O meta/libraries.json "https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${GITHUB_SHA}/meta/libraries.json" && \
             wget -q -O get_libname.py "https://raw.githubusercontent.com/boostorg/boost-ci/${REF:-master}/ci/get_libname.py" && \
-            SELF=$(BOOST_CI_SRC_FOLDER="$GITHUB_WORKSPACE" python3 get_libname.py) ||
-            SELF='(failed to extract)'
+            SELF=$(BOOST_CI_SRC_FOLDER="$PWD" python3 get_libname.py) || SELF='(failed to extract)'
           fi
           echo "SELF=$SELF" >> "$GITHUB_ENV"
         env:
