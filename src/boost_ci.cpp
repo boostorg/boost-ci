@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2022 Alexander Grund
+// Copyright (c) 2022-2026 Alexander Grund
 //
 // Use, modification and distribution is subject to the Boost Software License,
 // Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
@@ -30,9 +30,11 @@ namespace boost
 {
   namespace boost_ci
   {
+    void reproducer();
     // Some function to test
     int get_answer(const int isMsvc)
     {
+      reproducer();
       boost::atomic<X> answer;
       // Specifically crafted condition to check for coverage from MSVC and non MSVC builds
       if(isMsvc == 1)
@@ -57,7 +59,7 @@ namespace boost
     void reproducer() {
       std::map<int, float> m{{0, 0.f}, {1, 1.f}};
 
-      // Bind a map element (value_type is pair<const string, float>).
+      // Bind a map element (value_type is pair<const int, float>).
       auto bound = std::bind(f, *m.begin());
 
       // The libstdc++ failure happens during instantiation of the defaulted move constructor of std::_Bind,
@@ -65,6 +67,8 @@ namespace boost
       auto bound2 = std::move(bound);
       (void)bound2;
     }
+#else
+    void reproducer() {}
 #endif
   }
 }
