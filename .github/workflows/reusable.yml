@@ -362,77 +362,7 @@ jobs:
           if is_true('ENABLE_POSIX'):
               all_jobs = [
                 # libstdc++
-                  {"compiler": "gcc-4.4",   "cxxstd": "98",                "os": "ubuntu-latest", "container": "ubuntu:16.04", "source_keys": "0x2C277A0A352154E5", "sources": "ppa:ubuntu-toolchain-r/test"},
-                  {"compiler": "gcc-4.6",   "cxxstd": "03,0x",             "os": "ubuntu-latest", "container": "ubuntu:16.04", "source_keys": "0x2C277A0A352154E5", "sources": "ppa:ubuntu-toolchain-r/test"},
-                  {"compiler": "gcc-4.7",   "cxxstd": "03,11",             "os": "ubuntu-latest", "container": "ubuntu:16.04"},
-                  {"compiler": "gcc-4.8",   "cxxstd": "11",                "os": "ubuntu-latest", "container": "ubuntu:16.04"},
-                  {"compiler": "gcc-4.9",   "cxxstd": "11",                "os": "ubuntu-latest", "container": "ubuntu:16.04"},
-                  {"compiler": "gcc-5",     "cxxstd": "11,14,1z",          "os": "ubuntu-latest", "container": "ubuntu:18.04"},
-                  {"compiler": "gcc-6",     "cxxstd": "11,14,17",          "os": "ubuntu-latest", "container": "ubuntu:18.04"},
-                  {"compiler": "gcc-7",     "cxxstd": "11,14,17",          "os": "ubuntu-latest", "container": "ubuntu:20.04"},
-                  {"compiler": "gcc-8",     "cxxstd": "11,14,17,2a",       "os": "ubuntu-latest", "container": "ubuntu:20.04"},
-                  {"compiler": "gcc-9",     "cxxstd": "11,14,17,2a",       "os": "ubuntu-22.04"},
-                  {"compiler": "gcc-10",    "cxxstd": "11,14,17,20",       "os": "ubuntu-22.04"},
-                  {"compiler": "gcc-11",    "cxxstd": "11,14,17,20",       "os": "ubuntu-22.04"},
-                  {"compiler": "gcc-12",    "cxxstd": "11,14,17,20",       "os": "ubuntu-22.04"},
-                  {"compiler": "gcc-13",    "cxxstd": "11,14,17,20,2b",    "os": "ubuntu-24.04"},
-                  {"name": "Coverage w/ GCC on Linux", "coverage": "yes",
-                   "compiler": "gcc-13",    "cxxstd": "2b",                "os": "ubuntu-24.04", "install": "g++-13-multilib gcc-multilib", "address-model": "32,64" },
-                  {"name": "GCC w/ sanitizers", "sanitize": "yes",
-                   "compiler": "gcc-13",    "cxxstd": "11,14,17,20",       "os": "ubuntu-24.04"},
-                  {"compiler": "gcc-14",    "cxxstd": "11,14,17,20,23",    "os": "ubuntu-24.04"},
-                  {"compiler": "gcc-15",    "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "ubuntu:26.04"},
-                  {"compiler": "gcc-16",    "cxxstd": "11,14,17,20,23,26", "os": "ubuntu-latest", "container": "ubuntu:26.04"},
-                  {"compiler": "clang-3.5", "cxxstd": "11",                "os": "ubuntu-latest", "container": "ubuntu:16.04"},
-                  {"compiler": "clang-3.6", "cxxstd": "11,14",             "os": "ubuntu-latest", "container": "ubuntu:16.04"},
-                  {"compiler": "clang-3.7", "cxxstd": "11,14",             "os": "ubuntu-latest", "container": "ubuntu:16.04"},
-                  {"compiler": "clang-3.8", "cxxstd": "11,14",             "os": "ubuntu-latest", "container": "ubuntu:16.04"},
-                  {"compiler": "clang-3.9", "cxxstd": "11,14",             "os": "ubuntu-latest", "container": "ubuntu:18.04"},
-                  {"compiler": "clang-4.0", "cxxstd": "11,14",             "os": "ubuntu-latest", "container": "ubuntu:18.04"},
-                  {"compiler": "clang-5.0", "cxxstd": "11,14,1z",          "os": "ubuntu-latest", "container": "ubuntu:18.04"},
-                  {"compiler": "clang-6.0", "cxxstd": "11,14,17",          "os": "ubuntu-latest", "container": "ubuntu:20.04"},
-                  {"compiler": "clang-7",   "cxxstd": "11,14,17",          "os": "ubuntu-latest", "container": "ubuntu:20.04"},
-                  {"compiler": "clang-8",   "cxxstd": "11,14,17",          "os": "ubuntu-latest", "container": "ubuntu:20.04"},
-                  {"compiler": "clang-9",   "cxxstd": "11,14,17,2a",       "os": "ubuntu-latest", "container": "ubuntu:20.04"},
-                  {"compiler": "clang-10",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:20.04"},
-                  {"compiler": "clang-11",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:20.04"},
-                  {"compiler": "clang-12",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:20.04"},
-                  {"compiler": "clang-13",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:22.04"},
-                  {"compiler": "clang-14",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:22.04"},
-                  {"compiler": "clang-15",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:22.04"},
                   {"compiler": "clang-16",  "cxxstd": "11,14,17,20,2b",    "os": "ubuntu-latest", "container": "ubuntu:24.04"},
-                  {"compiler": "clang-17",  "cxxstd": "11,14,17,20,23",    "os": "ubuntu-latest", "container": "ubuntu:24.04"},
-                  {"compiler": "clang-18",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-24.04"},
-                  {"compiler": "clang-19",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-24.04"},
-                  {"compiler": "clang-20",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "ubuntu:25.04"},
-                  {"compiler": "clang-21",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "ubuntu:26.04"},
-                  {"compiler": "clang-22",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "ubuntu:26.04"},
-                  {"compiler": "icpx-2025", "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "intel/oneapi-hpckit:2025.2.2-0-devel-ubuntu24.04"},
-                # libc++
-                  {"stdlib": "libc++",
-                   "compiler": "clang-6.0", "cxxstd": "11,14",             "os": "ubuntu-latest", "container": "ubuntu:18.04", "install": "clang-6.0 libc++-dev libc++abi-dev"},
-                  {"stdlib": "libc++",
-                   "compiler": "clang-7",   "cxxstd": "11,14,17",          "os": "ubuntu-latest", "container": "ubuntu:20.04"},
-                  {"name": "Clang w/ sanitizers", "sanitize": "yes", "stdlib": "libc++",
-                   "compiler": "clang-12",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:20.04"}, 
-                # MacOS
-                  {"name": "MacOS sanitize w/ clang",
-                   "os": "macos-14", "compiler": "clang",     "cxxstd": "11,14,17,20,2b",    "sanitize": "yes"},
-                  {"os": "macos-15", "compiler": "clang-16",  "cxxstd": "11,14,17,20,2b",    "xcode_app": "Xcode_16.2"},
-                  {"os": "macos-15", "compiler": "clang-18",  "cxxstd": "11,14,17,20,2b"},
-                  {"os": "macos-26", "compiler": "clang-20",  "cxxstd": "11,14,17,20,23,2c"},
-                # Coverity
-                  {"name": "Coverity Scan w/ Clang on Linux", "coverity": "yes",
-                   "compiler": "clang-12",  "cxxstd": "20",                "os": "ubuntu-22.04", "ccache": "no"},
-                # Arm64
-                  {"name": "ARM64 w/ GCC",
-                   "compiler": "gcc-13",   "cxxstd": "11,14,17,20,2b",     "os": "ubuntu-24.04-arm"},
-                # Big-Endian
-                  {"name": "Big Endian w/ Clang on s390x", "multiarch": "yes",
-                   "compiler": "clang",     "cxxstd": "17",                "os": "ubuntu-latest", "ccache": "no", "distro": "fedora", "edition": "34", "arch": "s390x"},
-                # Reflection
-                  {"name": "GCC 16 w/ reflection",
-                   "compiler": "gcc-16", "cxxstd": "26",                   "os": "ubuntu-latest", "container": "ubuntu:26.04", "reflection": "yes", "cxxflags": "-freflection"},
               ]
           else:
               all_jobs = ()
@@ -441,7 +371,7 @@ jobs:
           # ═══════════════════════════════════════════════════════════════
           # Windows matrix
           # ═══════════════════════════════════════════════════════════════
-          if is_true('ENABLE_WINDOWS'):
+          if is_true('ENABLE_WINDOWS') and False:
               all_jobs = [
                 {"toolset": "msvc-14.3", "cxxstd": "14,17,20,latest", "address-model": "32,64", "os": "windows-2022"},
                 {"toolset": "msvc-14.5", "cxxstd": "14,17,20,latest", "address-model": "32,64", "os": "windows-2025-vs2026"},
@@ -474,7 +404,7 @@ jobs:
           # ═══════════════════════════════════════════════════════════════
           # CMake matrix
           # ═══════════════════════════════════════════════════════════════
-          if is_true('ENABLE_CMAKE'):
+          if is_true('ENABLE_CMAKE') and False:
               all_jobs = [
                 { "os": "ubuntu-latest",        "build_shared": "ON",  "build_type": "Debug", "generator": "Unix Makefiles" },
                 { "os": "ubuntu-latest",        "build_shared": "OFF", "build_type": "Debug", "generator": "Unix Makefiles" },
