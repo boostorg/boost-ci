@@ -400,7 +400,7 @@ jobs:
                   {"compiler": "clang-13",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:22.04"},
                   {"compiler": "clang-14",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:22.04"},
                   {"compiler": "clang-15",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:22.04"},
-                  {"compiler": "clang-16",  "cxxstd": "11,14,17,20,2b",    "os": "ubuntu-24.04"},
+                  {"compiler": "clang-16",  "cxxstd": "11,14,17,20,2b",    "os": "ubuntu-latest", "container": "ubuntu:24.04"},
                   {"compiler": "clang-17",  "cxxstd": "11,14,17,20,23",    "os": "ubuntu-latest", "container": "ubuntu:24.04"},
                   {"compiler": "clang-18",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-24.04"},
                   {"compiler": "clang-19",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-24.04"},
@@ -417,8 +417,8 @@ jobs:
                    "compiler": "clang-12",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:20.04"}, 
                 # MacOS
                   {"name": "MacOS sanitize w/ clang",
-                   "os": "macos-14", "compiler": "clang",     "cxxstd": "11,14,17,20,2b",    "sanitize": "yes"},
-                  {"os": "macos-15", "compiler": "clang-16",  "cxxstd": "11,14,17,20,2b",    "xcode_app": "Xcode_16.2"},
+                   "os": "macos-14", "compiler": "clang",     "cxxstd": "11,14,17,20,2b", "sanitize": "yes"},
+                  {"os": "macos-15", "compiler": "clang-16",  "cxxstd": "11,14,17,20,2b", "xcode_app": "Xcode_16.2"},
                   {"os": "macos-15", "compiler": "clang-18",  "cxxstd": "11,14,17,20,2b"},
                   {"os": "macos-26", "compiler": "clang-20",  "cxxstd": "11,14,17,20,23,2c"},
                 # Coverity
@@ -445,7 +445,7 @@ jobs:
               all_jobs = [
                 {"toolset": "msvc-14.3", "cxxstd": "14,17,20,latest", "address-model": "32,64", "os": "windows-2022"},
                 {"toolset": "msvc-14.5", "cxxstd": "14,17,20,latest", "address-model": "32,64", "os": "windows-2025-vs2026"},
-                {"toolset": "msvc-14.3", "cxxstd": "14,17,20,latest", "address-model": "64", "os": "windows-11-arm"},
+                {"toolset": "msvc-14.3", "cxxstd": "14,17,20,latest", "address-model": "64",    "os": "windows-11-arm"},
                 {"name": "Collect coverage w/ VS 2022", "coverage": "yes",
                  "toolset": "msvc-14.3", "cxxstd": "latest",          "address-model": "64",    "os": "windows-2022"},
                 {"name": "Collect coverage w/ VS 2026", "coverage": "yes",
