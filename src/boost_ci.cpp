@@ -11,6 +11,13 @@
 // Just some dependency on another Boost library
 #include <boost/atomic/atomic.hpp>
 
+#if !(defined(BOOST_NO_CXX11_HDR_FUNCTIONAL) || defined(BOOST_NO_CXX11_RVALUE_REFERENCES) || defined(BOOST_NO_CXX11_AUTO_DECLARATIONS))
+#define BOOST_BOOST_CI_TEST_BIND_ISSUE
+#include <functional>
+#include <map>
+#endif
+#include <utility>
+
 // Some simple struct big enough so that the atomic is forced to use a lock
 // forcing it to call into the library
 struct X
@@ -42,5 +49,22 @@ namespace boost
       return *ptr;
 #endif
     }
+
+#ifdef BOOST_BOOST_CI_TEST_BIND_ISSUE
+    // Reproducer for a bug observed in Clang 16 with libstdc++
+    void f(const std::pair<int, float>&) {}
+
+    void reproducer() {
+      std::map<int, float> m{{0, 0.f}, {1, 1.f}};
+
+      // Bind a map element (value_type is pair<const string, float>).
+      auto bound = std::bind(f, *m.begin());
+
+      // The libstdc++ failure happens during instantiation of the defaulted move constructor of std::_Bind,
+      // when it checks whether std::pair can be constructed from the internal tuple-like storage.
+      auto bound2 = std::move(bound);
+      (void)bound2;
+    }
+#endif
   }
 }
