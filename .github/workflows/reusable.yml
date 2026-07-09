@@ -100,6 +100,23 @@ on:
         required: false
         type: string
         default: ''
+      exclude_jobs:
+        description: |
+          Filters to remove jobs. Each non-empty line (after stripping comments) is an object of job attributes with comma-separated values.
+          Uses YAML(-like) syntax: (Only) values containing `,` or `:` must be quoted using single or double quotes, comments start with '#'.
+          Matching values are removed; the job is removed completely if all filtered attributes become empty.
+          The following block is a complete, valid example input:
+            os: ubuntu-22.04                    # Remove all jobs running on this OS
+            compiler: 'gcc-7,clang-12'          # Remove all jobs using either GCC 7 OR Clang 12
+            os: macos-14, sanitize: yes         # Remove sanitizer job on MacOS 14
+            compiler: clang-22, cxxstd: "14,17" # Remove C++17 test on Clang 22
+            cxxstd: 17, address-model: 32       # Remove C++17 AND 32bit test, only if both are specified for a job.
+                                                # E.g.    {"toolset": "msvc", "cxxstd": "11,17", "address-model": "32,64"}
+                                                # Becomes {"toolset": "msvc", "cxxstd": "11",    "address-model": "64"}
+            type: windows, compiler: gcc        # Remove GCC jobs on Windows. `type` can be one or more of: posix,windows,mingw,cmake
+        required: false
+        type: string
+        default: ''
       b2_headers_flags:
         description: "Extra flags to pass to the `b2 headers` command during setup"
         required: false
@@ -184,7 +201,7 @@ jobs:
       - id: generate-matrix
         name: Generate job matrices
         run: |
-          import json, math, os, sys
+          import json, math, os, sys, re
 
           # ═══════════════════════════════════════════════════════════════
           # Helper functions
@@ -192,33 +209,109 @@ jobs:
           def is_true(env_var):
               return os.environ.get(env_var).lower() in ('true', '1')
 
-          def filter_multi_valued(in_list, key_name, excluded):
-              """Remove all entries from the value identified by key_name that are contained in excluded (comma-separated).
-                 Omit the entry when the attribute is empty, keep it if the attribute is not present."""
-              excluded_values = {x.strip() for x in excluded.split(',')} if isinstance(excluded, str) else excluded
-              for entry in in_list:
-                  try:
-                      values = [x.strip() for x in entry[key_name].split(',')]
-                  except KeyError:
-                      yield entry
-                  else:
-                      remaining_values = [v for v in values if v and v not in excluded_values]
-                      if remaining_values:
-                          entry[key_name] = ",".join(remaining_values)
-                          yield entry
+          def parse_csv(value):
+              """Split a comma-separated string into a list of stripped, non-empty values."""
+              return [v.strip() for v in str(value).split(',') if v.strip()]
 
-          def get_os(job):
-              """Extract OS from job"""
+          def os_matches(job, os_patterns):
+              """Check if job's OS matches (starts with) any of the given patterns."""
               # "sys": MinGW; "os" doesn't matter if "container" is set; unify "ubuntu-22.04|ubuntu:22.04"
-              return job.get('sys', job.get('container', job.get('os', ''))).replace('-', ':')
-          def filter_os(in_list, excluded):
-              """Remove all jobs that match any of the excluded OS (comma-separated, supports partial matches)"""
-              excluded_values = [v for v in (x.strip().replace('-', ':') for x in excluded.split(',')) if v]
-              return (job for job in in_list if not any(ev in get_os(job) for ev in excluded_values))
+              job_os = job.get('sys', job.get('container', job.get('os', ''))).replace('-', ':')
+              return any(job_os.startswith(p.replace('-', ':')) for p in os_patterns)
 
-          def filter_yes_values(in_list, key_name):
-              """Remove all entries with value 'yes' for the key"""
-              return (job for job in in_list if not job.get(key_name) == "yes")
+          job_filters = []
+          for line in os.environ['EXCLUDE_JOBS'].split('\n'):
+              line = re.sub('#.*', '', line).strip().replace("'", '"')
+              # Convert YAML to JSON by quoting unquoted keys/values for simple tokens.
+              # The regex matches quoted strings first, then excludes structural chars and whitespace from matches that will be replaced.
+              line = re.sub(r'"[^"]*"|[^":,\s]+',
+                            lambda m: m[0] if m[0][0] == '"' else f'"{m[0]}"',
+                            line)
+              if not line:
+                  continue
+              try:
+                  f = json.loads('{' + line + '}')
+              except json.JSONDecodeError:
+                   sys.exit(f"Error: Invalid filter line (not valid JSON): {line}")
+              if not isinstance(f, dict):
+                  sys.exit(f"Error: Filter line is not a dict: {line}")
+              job_filters.append(f)
+          num_custom_job_filters = len(job_filters)
+
+          # Transform excludes to filters
+          if excluded_cxxstd := os.environ['EXCLUDE_CXXSTD']:
+              job_filters.append({'cxxstd': excluded_cxxstd})
+          if excluded_compilers := os.environ['EXCLUDE_COMPILER']:
+              job_filters.append({'compiler': excluded_compilers})
+              compiler_map = {
+                "msvc-14.3": "Visual Studio 17 2022",
+                "msvc-14.5": "Visual Studio 18 2026",
+              }
+              job_filters.append({'toolset': excluded_compilers})
+              excluded_generators = ','.join(compiler_map.get(x, x) for x in parse_csv(excluded_compilers))
+              job_filters.append({'generator': excluded_generators})
+          if excluded_os := os.environ['EXCLUDE_OS']:
+              job_filters.append({'os': excluded_os})
+          if not is_true('ENABLE_32BIT'):
+              job_filters.append({'address-model': '32'})
+              job_filters.append({'sys': 'MINGW32'})
+          if not is_true('ENABLE_MULTIARCH'):
+              job_filters.append({'multiarch': 'yes'})
+          if not is_true('ENABLE_SANITIZERS'):
+              job_filters.append({'sanitize': 'yes'})
+          if not os.environ.get('CODECOV_TOKEN') and not is_true('ENABLE_PR_COVERAGE'):
+              job_filters.append({'coverage': 'yes'})
+          if not os.environ.get('COVERITY_SCAN_TOKEN'):
+              job_filters.append({'coverity': 'yes'})
+          if not is_true('ENABLE_REFLECTION'):
+              job_filters.append({'reflection': 'yes'})
+          if not is_true('ENABLE_CYGWIN'):
+              job_filters.append({'target-os': 'cygwin'})
+
+          job_filter_matched = [False] * len(job_filters)
+
+          def apply_job_filters(jobs, job_type):
+              """Filter jobs by multi-line conditions, each a (Python) dict w/o braces.
+                 A job matches a filter if ALL conditions overlap.
+                 Reduce matched attributes if that doesn't yield an empty list,
+                 except when all matched attributes turn up empty it will remove the job completely."""
+              if not job_filters:
+                  yield from jobs
+                  return
+
+              for job in jobs:
+                  removed = False
+                  for i, f in enumerate(job_filters):
+                      filter_type = "Custom filter" if i < num_custom_job_filters else "Filter"
+                      matched_all = True
+                      remainings = {}
+                      for key, filter_value in f.items():
+                          filter_values = set(parse_csv(filter_value))
+                          if key == 'os':
+                              matched_all &= os_matches(job, filter_values)
+                          elif key == 'type':
+                              matched_all &= job_type in filter_values
+                          else:
+                              job_values = set(parse_csv(job.get(key, '')))
+                              matched_all &= bool(job_values & filter_values)
+                              remainings[key] = job_values - filter_values
+
+                      if not matched_all:
+                          continue
+                      job_filter_matched[i] = True
+                      if not any(remainings.values()):
+                          print(f"{filter_type} '{f}' matched, removing '{job}'")
+                          removed = True
+                          break
+
+                      orig_job = dict(job)
+                      for key, remaining in remainings.items():
+                          if remaining:
+                              original = parse_csv(job[key])
+                              job[key] = ','.join(v for v in original if v in remaining)
+                      print(f"{filter_type} '{f}' matched '{orig_job}', reduced to '{job}'")
+                  if not removed:
+                      yield job
 
           def split_jobs_by_cxxstd(jobs, max_cxx_stds):
               """Split jobs whose cxxstd exceeds max_cxx_stds into multiple copies,
@@ -239,16 +332,27 @@ jobs:
                   else:
                       yield job
 
-          def write_matrix(name, jobs):
+          def finalize_and_write_matrix(name, env_var, jobs):
+              enabled = is_true(env_var)
+              job_type = env_var.removeprefix('ENABLE_').lower()
+              if enabled:  # Don't apply filters if explicitely disabled so unmatched filters can be reported properly
+                  jobs = apply_job_filters(jobs, job_type)
               if not isinstance(jobs, list):
                   jobs = list(jobs)
+
+              if enabled and not jobs:
+                  print(f'::warning::tile=${env_var} disabled::All jobs removed, disabling ${env_var}')
+              elif not enabled:
+                  jobs = None
+              if not jobs:
+                  return  # Leave matrix output empty
               num_jobs = len(jobs)
               max_cxx_stds = int(os.environ.get('MAX_CXX_STDS_PER_JOB') or '0')
               jobs = list(split_jobs_by_cxxstd(jobs, max_cxx_stds))
               if len(jobs) < num_jobs:
-                  print(f"Splitting jobs encountered an error: {len(jobs)} jobs after splitting, expected at least {num_jobs}")
-                  sys.exit(1)
-              print(f"Writing {len(jobs)} jobs ({num_jobs} unique) to matrix '{name}'")
+                  sys.exit(f"Splitting jobs encountered an error: {len(jobs)} jobs after splitting, expected at least {num_jobs}")
+              unique_msg = f" ({num_jobs} unique)" if len(jobs) != num_jobs else ""
+              print(f"Writing {len(jobs)} jobs{unique_msg} to matrix '{name}'")
               with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
                   print(f"{name}={json.dumps({'include': jobs})}", file=fh)
 
@@ -330,25 +434,9 @@ jobs:
                   {"name": "GCC 16 w/ reflection",
                    "compiler": "gcc-16", "cxxstd": "26",                   "os": "ubuntu-latest", "container": "ubuntu:26.04", "reflection": "yes", "cxxflags": "-freflection"},
               ]
-
-              filtered = all_jobs
-              filtered = filter_multi_valued(filtered, 'cxxstd', os.environ['EXCLUDE_CXXSTD'])
-              filtered = filter_multi_valued(filtered, 'compiler', os.environ['EXCLUDE_COMPILER'])
-              filtered = filter_os(filtered, os.environ['EXCLUDE_OS'])
-              if not is_true('ENABLE_32BIT'):
-                  filtered = filter_multi_valued(filtered, 'address-model', '32')
-              if not is_true('ENABLE_MULTIARCH'):
-                  filtered = filter_yes_values(filtered, 'multiarch')
-              if not is_true('ENABLE_SANITIZERS'):
-                  filtered = filter_yes_values(filtered, 'sanitize')
-              if not os.environ.get('CODECOV_TOKEN') and not is_true('ENABLE_PR_COVERAGE'):
-                  filtered = filter_yes_values(filtered, 'coverage')
-              if not os.environ.get('COVERITY_SCAN_TOKEN'):
-                  filtered = filter_yes_values(filtered, 'coverity')
-              if not is_true('ENABLE_REFLECTION'):
-                  filtered = filter_yes_values(filtered, 'reflection')
-
-              write_matrix('posix-matrix', filtered)
+          else:
+              all_jobs = ()
+          finalize_and_write_matrix('posix-matrix', 'ENABLE_POSIX', all_jobs)
 
           # ═══════════════════════════════════════════════════════════════
           # Windows matrix
@@ -367,19 +455,9 @@ jobs:
                 {"toolset": "gcc",       "cxxstd": "11,14,17,2a",     "address-model": "32",    "os": "windows-2025", "target-os": "cygwin"},
                 {"toolset": "gcc",       "cxxstd": "11,14,17,2a",     "address-model": "64",    "os": "windows-2025", "target-os": "cygwin"},
               ]
-
-              filtered = all_jobs
-              filtered = filter_multi_valued(filtered, 'cxxstd', os.environ['EXCLUDE_CXXSTD'])
-              filtered = filter_multi_valued(filtered, 'toolset', os.environ['EXCLUDE_COMPILER'])
-              filtered = filter_os(filtered, os.environ['EXCLUDE_OS'])
-              if not os.environ.get('CODECOV_TOKEN') and not is_true('ENABLE_PR_COVERAGE'):
-                  filtered = filter_yes_values(filtered, 'coverage')
-              if not is_true('ENABLE_32BIT'):
-                  filtered = filter_multi_valued(filtered, 'address-model', '32')
-              if not is_true('ENABLE_CYGWIN'):
-                  filtered = filter_multi_valued(filtered, 'target-os', 'cygwin')
-
-              write_matrix('windows-matrix', filtered)
+          else:
+              all_jobs = ()
+          finalize_and_write_matrix('windows-matrix', 'ENABLE_WINDOWS', all_jobs)
 
           # ═══════════════════════════════════════════════════════════════
           # MinGW matrix
@@ -389,13 +467,9 @@ jobs:
                   {"sys": "MINGW32", "compiler": "gcc", "cxxstd": "11,17,20"},
                   {"sys": "MINGW64", "compiler": "gcc", "cxxstd": "11,17,20"},
               ]
-
-              filtered = all_jobs
-              filtered = filter_multi_valued(filtered, 'cxxstd', os.environ['EXCLUDE_CXXSTD'])
-              if not is_true('ENABLE_32BIT'):
-                  filtered = filter_multi_valued(filtered, 'sys', 'MINGW32')
-
-              write_matrix('mingw-matrix', filtered)
+          else:
+              all_jobs = ()
+          finalize_and_write_matrix('mingw-matrix', 'ENABLE_MINGW', all_jobs)
 
           # ═══════════════════════════════════════════════════════════════
           # CMake matrix
@@ -408,16 +482,15 @@ jobs:
                 { "os": "windows-2022",         "build_shared": "OFF", "build_type": "Debug", "generator": "Visual Studio 17 2022" },
                 { "os": "windows-2025-vs2026",  "build_shared": "OFF", "build_type": "Debug", "generator": "Visual Studio 18 2026" },
                 { "name": "Min. CMake", "cmake_version": os.environ["MIN_CMAKE_VERSION"],
-                  "os": "ubuntu-latest",            "build_shared": "ON",  "build_type": "Debug", "generator": "Unix Makefiles" },
+                  "os": "ubuntu-latest",        "build_shared": "ON",  "build_type": "Debug", "generator": "Unix Makefiles" },
               ]
-              filtered = all_jobs
-              compiler_map = {
-                "msvc-14.3": "Visual Studio 17 2022",
-                "msvc-14.5": "Visual Studio 18 2026",
-              }
-              filtered = filter_multi_valued(filtered, 'generator', [compiler_map.get(x.strip(), x.strip()) for x in os.environ['EXCLUDE_COMPILER'].split(',')])
+          else:
+              all_jobs = ()
+          finalize_and_write_matrix('cmake-matrix', 'ENABLE_CMAKE', all_jobs)
 
-              write_matrix('cmake-matrix', filtered)
+          for (filter, matched) in zip(job_filters[:num_custom_job_filters], job_filter_matched):
+              if not matched:
+                  print(f"::warning title=Unmatched filters::Filter `{filter}` didn't match any jobs")
         shell: python
         env:
           ENABLE_POSIX: ${{ inputs.enable_posix }}
@@ -433,13 +506,14 @@ jobs:
           EXCLUDE_COMPILER: ${{ inputs.exclude_compiler }}
           EXCLUDE_CXXSTD: ${{ inputs.exclude_cxxstd }}
           EXCLUDE_OS: ${{ inputs.exclude_os }}
+          EXCLUDE_JOBS: ${{ inputs.exclude_jobs }}
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
           COVERITY_SCAN_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
           MIN_CMAKE_VERSION: ${{ inputs.min_cmake_version }}
           MAX_CXX_STDS_PER_JOB: ${{ inputs.max_cxx_stds_per_job }}
 
   posix:
-    if: ${{ inputs.enable_posix }}
+    if: ${{needs.generate-job-matrix.outputs.posix-matrix}}
     needs: generate-job-matrix
     runs-on: ${{matrix.os}}
     timeout-minutes: ${{inputs.timeout}}
@@ -692,7 +766,7 @@ jobs:
           COVERITY_SCAN_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
 
   windows:
-    if: ${{ inputs.enable_windows }}
+    if: ${{needs.generate-job-matrix.outputs.windows-matrix}}
     needs: generate-job-matrix
     runs-on: ${{matrix.os}}
     timeout-minutes: ${{inputs.timeout}}
@@ -777,7 +851,7 @@ jobs:
           verbose: true
 
   mingw:
-    if: ${{ inputs.enable_mingw }}
+    if: ${{needs.generate-job-matrix.outputs.mingw-matrix}}
     needs: generate-job-matrix
     runs-on: windows-latest
     timeout-minutes: ${{inputs.timeout}}
@@ -841,7 +915,7 @@ jobs:
             ctest --output-on-failure --build-config Debug
 
   cmake:
-    if: ${{ inputs.enable_cmake }}
+    if: ${{needs.generate-job-matrix.outputs.cmake-matrix}}
     needs: generate-job-matrix
     runs-on: ${{matrix.os}}
     timeout-minutes: ${{inputs.timeout}}
