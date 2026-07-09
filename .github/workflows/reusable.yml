@@ -1123,7 +1123,7 @@ jobs:
           mingw_entries = load_from_env('MINGW_MATRIX_ENTRIES')
           cmake_entries = load_from_env('CMAKE_MATRIX_ENTRIES')
           posix_entries = load_from_env('POSIX_MATRIX_ENTRIES')
-          linux_entries = [e for e in posix_entries if 'ubuntu' in e.get('os', '') or 'ubuntu' in e.get('container', '') or 'arm' in e.get('os', '')]
+          linux_entries = [e for e in posix_entries if 'ubuntu' in e.get('os', '') or 'ubuntu' in e.get('container', '')]
           macos_entries = [e for e in posix_entries if 'macos' in e.get('os', '')]
 
           # B2 build options (apply to all B2 jobs)
@@ -1176,13 +1176,13 @@ jobs:
 
           if macos_entries:
               summary += "## macOS\n\n"
-              summary += "| Job | Compiler | C++ std |\n"
-              summary += "|-----|----------|---------|\n"
+              summary += "| Job | Compiler | C++ std | OS |\n"
+              summary += "|-----|----------|---------|----|\n"
               for e in sorted(macos_entries, key=sort_key):
                   compiler = e['compiler']
                   name = e.get('name', compiler.replace('-', ' ').capitalize())
                   cxxstd = e.get('cxxstd', '[default]')
-                  summary += f"| {name} | {compiler} | {cxxstd} |\n"
+                  summary += f"| {name} | {compiler} | {cxxstd}  | {e['os'].replace('-', ' ').upper()} |\n"
               summary += "\n"
 
           if windows_entries or mingw_entries:
