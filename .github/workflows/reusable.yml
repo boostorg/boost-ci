@@ -282,6 +282,7 @@ jobs:
               for job in jobs:
                   removed = False
                   for i, f in enumerate(job_filters):
+                      filter_type = "Custom filter" if i < num_custom_job_filters else "Filter"
                       matched_all = True
                       remainings = {}
                       for key, filter_value in f.items():
@@ -299,7 +300,7 @@ jobs:
                           continue
                       job_filter_matched[i] = True
                       if not any(remainings.values()):
-                          print(f"Filter '{f}' matched, removing '{job}'")
+                          print(f"{filter_type} '{f}' matched, removing '{job}'")
                           removed = True
                           break
 
@@ -308,7 +309,7 @@ jobs:
                           if remaining:
                               original = parse_csv(job[key])
                               job[key] = ','.join(v for v in original if v in remaining)
-                      print(f"Filter '{f}' matched '{orig_job}', reduced to '{job}'")
+                      print(f"{filter_type} '{f}' matched '{orig_job}', reduced to '{job}'")
                   if not removed:
                       yield job
 
@@ -350,7 +351,8 @@ jobs:
               jobs = list(split_jobs_by_cxxstd(jobs, max_cxx_stds))
               if len(jobs) < num_jobs:
                   sys.exit(f"Splitting jobs encountered an error: {len(jobs)} jobs after splitting, expected at least {num_jobs}")
-              print(f"Writing {len(jobs)} jobs ({num_jobs} unique) to matrix '{name}'")
+              unique_msg = f" ({num_jobs} unique)" if len(jobs) != num_jobs else ""
+              print(f"Writing {len(jobs)} jobs{unique_msg} to matrix '{name}'")
               with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
                   print(f"{name}={json.dumps({'include': jobs})}", file=fh)
 
