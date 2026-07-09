@@ -512,6 +512,182 @@ jobs:
           MIN_CMAKE_VERSION: ${{ inputs.min_cmake_version }}
           MAX_CXX_STDS_PER_JOB: ${{ inputs.max_cxx_stds_per_job }}
 
+      - name: Determine library name
+        run: |
+          set -x
+          if [[ -z "$SELF" ]]; then
+            REF="${GITHUB_WORKFLOW_REF#*@}" # Extract version of this workflow used
+            mkdir meta
+            wget -q -O meta/libraries.json "https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${GITHUB_SHA}/meta/libraries.json" && \
+            wget -q -O get_libname.py "https://raw.githubusercontent.com/boostorg/boost-ci/${REF:-master}/ci/get_libname.py" && \
+            SELF=$(BOOST_CI_SRC_FOLDER="$PWD" python3 get_libname.py) || SELF='(failed to extract)'
+          fi
+          echo "SELF=$SELF" >> "$GITHUB_ENV"
+        env:
+          SELF: ${{inputs.library_folder}}
+
+      - name: Generate CI summary
+        run: |
+          import json
+          import os
+          import re
+
+          def merge_cxxstd_duplicates(entries):
+              """Merge consecutive entries identical except for 'cxxstd', concatenating cxxstd.
+                 Works because jobs split by C++ std are emitted consecutively by the matrix generator."""
+              merged = []
+              for e in entries:
+                  if merged:
+                      prev = merged[-1]
+                      if {k: v for k, v in prev.items() if k != 'cxxstd'} == {k: v for k, v in e.items() if k != 'cxxstd'}:
+                          a, b = prev.get('cxxstd', ''), e.get('cxxstd', '')
+                          prev['cxxstd'] = f"{a},{b}" if a and b else (a or b)
+                          continue
+                  merged.append(e)
+              return merged
+          def load_from_env(name):
+            value = os.environ.get(name)
+            return merge_cxxstd_duplicates(json.loads(value)['include']) if value else []
+          def sort_key(entry):
+              # Natural sort for compiler
+              compiler = tuple(int(p) if p.isdigit() else p
+                               for p in re.findall(r'\D+|\d+', entry.get('compiler', entry.get('toolset')))
+                         )
+              return (compiler, entry.get('name') or '    ') # Named entries after non-named with same compiler
+          def compiler_name(toolset):
+            result = toolset.replace('-', ' ').upper()
+            result = result.replace('CLANG', 'Clang')
+            result = result.replace('ICPX', 'Intel OneAPI')
+            return {'msvc-14.3': 'Visual Studio 2022',
+                    'msvc-14.5': 'Visual Studio 2026',
+                    'clang-win': 'Clang',
+                   }.get(toolset, result)
+
+          summary = "# Tested Configurations\n\n"
+
+          windows_entries = load_from_env('WINDOWS_MATRIX_ENTRIES')
+          mingw_entries = load_from_env('MINGW_MATRIX_ENTRIES')
+          cmake_entries = load_from_env('CMAKE_MATRIX_ENTRIES')
+          posix_entries = load_from_env('POSIX_MATRIX_ENTRIES')
+          linux_entries = [e for e in posix_entries if 'ubuntu' in e.get('os', '') or 'ubuntu' in e.get('container', '')]
+          macos_entries = [e for e in posix_entries if 'macos' in e.get('os', '')]
+
+          # B2 build options (apply to all B2 jobs)
+          if posix_entries or windows_entries or mingw_entries:
+              options = []
+              library_folder = os.environ.get('LIBRARY_FOLDER')
+              if not library_folder:
+                  library_folder = os.environ.get('SELF') + " (default)"
+              options.append(("Library folder", library_folder))
+              options.append(("Variant", os.environ.get('B2_VARIANT') or '[default]'))
+              options.append(("Link", os.environ.get('B2_LINK') or '[default]'))
+              defines = os.environ.get('B2_DEFINES')
+              if defines:
+                  options.append(("Defines", defines))
+              targets = os.environ.get('B2_TARGETS')
+              if targets:
+                  options.append(("Targets", targets))
+              b2_headers_flags = os.environ.get('B2_HEADERS_FLAGS')
+              if b2_headers_flags:
+                  options.append(("Extra flags for `b2 headers`", b2_headers_flags))
+              parallelism = os.environ.get('B2_JOBS')
+              if parallelism:
+                  options.append(("Parallelism (`-j`)", parallelism))
+              summary += "## B2 Build Options\n\n"
+              summary += "| Option | Value |\n"
+              summary += "|--------|-------|\n"
+              for name, value in options:
+                  summary += f"| {name} | {value} |\n"
+              summary += "\n"
+
+          if linux_entries:
+              summary += "## Linux\n\n"
+              summary += "| Job | Compiler | C++ std | Arch |\n"
+              summary += "|-----|----------|---------|------|\n"
+              for e in sorted(linux_entries, key=sort_key):
+                  compiler = e['compiler']
+                  stdlib = e.get('stdlib', '')
+                  name = e.get('name')
+                  if name:
+                    if stdlib:
+                        compiler += f" ({stdlib})"
+                  else:
+                      name = compiler_name(compiler)
+                      if stdlib:
+                          name += f" ({stdlib})"
+                  cxxstd = e.get('cxxstd', '[default]')
+                  arch = e.get('address-model', '')
+                  summary += f"| {name} | {compiler} | {cxxstd} | {arch} |\n"
+              summary += "\n"
+
+          if macos_entries:
+              summary += "## macOS\n\n"
+              summary += "| Job | Compiler | C++ std | OS |\n"
+              summary += "|-----|----------|---------|----|\n"
+              for e in sorted(macos_entries, key=sort_key):
+                  compiler = e['compiler']
+                  name = e.get('name', compiler.replace('-', ' ').capitalize())
+                  cxxstd = e.get('cxxstd', '[default]')
+                  summary += f"| {name} | {compiler} | {cxxstd}  | {e['os'].replace('-', ' ').upper()} |\n"
+              summary += "\n"
+
+          if windows_entries or mingw_entries:
+              summary += "## Windows\n\n"
+              summary += "| Job | Toolset | C++ std | Arch |\n"
+              summary += "|-----|---------|---------|------|\n"
+              for e in sorted(windows_entries, key=sort_key):
+                  toolset = e['toolset']
+                  cxxstd = e.get('cxxstd', '[default]')
+                  arch = e.get('address-model', '')
+                  name = e.get('name')
+                  if not name:
+                      if e.get('target-os') == 'cygwin':
+                          name = 'Cygwin'
+                      else:
+                          name = ''
+                      name += ' ' + compiler_name(toolset)
+                  if 'arm' in e['os'] and 'arm' not in name.lower():
+                      name = 'ARM: ' + name
+                  summary += f"| {name} | {toolset} | {cxxstd} | {arch} |\n"
+
+              if mingw_entries:
+                  for e in mingw_entries:
+                      sys = e['sys']
+                      compiler = e['compiler']
+                      cxxstd = e.get('cxxstd', '[default]')
+                      arch = e.get('address-model', sys.upper().replace('MINGW', '')) # Default: MINGW64 -> 64
+                      summary += f"| {sys} | {compiler} | {cxxstd} | {arch} |\n"
+                  summary += "\n"
+
+          if cmake_entries:
+              summary += "## CMake\n\n"
+              summary += "| Generator | Build Type | Shared | OS | |\n"
+              summary += "|-----------|------------|--------|----|-|\n"
+
+              for c in cmake_entries:
+                  summary += f"| {c['generator']} | {c['build_type']} | {c['build_shared']} | {c['os']} |"
+                  cmake_version = c.get('cmake_version')
+                  if cmake_version:
+                      summary += f" CMake {cmake_version} "
+                  summary += "|\n"
+
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as fh:
+              fh.write(summary)
+        shell: python
+        env:
+          POSIX_MATRIX_ENTRIES: ${{steps.generate-matrix.outputs.posix-matrix}}
+          WINDOWS_MATRIX_ENTRIES: ${{steps.generate-matrix.outputs.windows-matrix}}
+          MINGW_MATRIX_ENTRIES: ${{steps.generate-matrix.outputs.mingw-matrix}}
+          CMAKE_MATRIX_ENTRIES: ${{steps.generate-matrix.outputs.cmake-matrix}}
+          MIN_CMAKE_VERSION: ${{inputs.min_cmake_version}}
+          B2_JOBS: ${{inputs.parallelism}}
+          B2_HEADERS_FLAGS: ${{inputs.b2_headers_flags}}
+          B2_VARIANT: ${{inputs.b2_variant}}
+          B2_LINK: ${{inputs.b2_link}}
+          B2_DEFINES: ${{inputs.b2_defines}}
+          B2_TARGETS: ${{inputs.b2_targets}}
+          LIBRARY_FOLDER: ${{inputs.library_folder}}
+
   posix:
     if: ${{needs.generate-job-matrix.outputs.posix-matrix}}
     needs: generate-job-matrix
@@ -1060,184 +1236,3 @@ jobs:
       - name: Run CMake install tests w/ B2 installed library
         run: ci/test_installed_cmake_config.sh
         env: {BOOST_CI_INSTALLED_BY: B2}
-
-  ci-summary:
-    needs: generate-job-matrix
-    runs-on: ubuntu-latest
-    if: always()
-    steps:
-      - name: Determine library name
-        run: |
-          set -x
-          if [[ -z "$SELF" ]]; then
-            REF="${GITHUB_WORKFLOW_REF#*@}" # Extract version of this workflow used
-            mkdir meta
-            wget -q -O meta/libraries.json "https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${GITHUB_SHA}/meta/libraries.json" && \
-            wget -q -O get_libname.py "https://raw.githubusercontent.com/boostorg/boost-ci/${REF:-master}/ci/get_libname.py" && \
-            SELF=$(BOOST_CI_SRC_FOLDER="$PWD" python3 get_libname.py) || SELF='(failed to extract)'
-          fi
-          echo "SELF=$SELF" >> "$GITHUB_ENV"
-        env:
-          SELF: ${{inputs.library_folder}}
-          
-      - name: Generate CI summary
-        run: |
-          import json
-          import os
-          import re
-
-          def merge_cxxstd_duplicates(entries):
-              """Merge consecutive entries identical except for 'cxxstd', concatenating cxxstd.
-                 Works because jobs split by C++ std are emitted consecutively by the matrix generator."""
-              merged = []
-              for e in entries:
-                  if merged:
-                      prev = merged[-1]
-                      if {k: v for k, v in prev.items() if k != 'cxxstd'} == {k: v for k, v in e.items() if k != 'cxxstd'}:
-                          a, b = prev.get('cxxstd', ''), e.get('cxxstd', '')
-                          prev['cxxstd'] = f"{a},{b}" if a and b else (a or b)
-                          continue
-                  merged.append(e)
-              return merged
-          def load_from_env(name):
-            value = os.environ.get(name)
-            return merge_cxxstd_duplicates(json.loads(value)['include']) if value else []
-          def sort_key(entry):
-              # Natural sort for compiler
-              compiler = tuple(int(p) if p.isdigit() else p
-                               for p in re.findall(r'\D+|\d+', entry.get('compiler', entry.get('toolset')))
-                         )
-              return (compiler, entry.get('name') or '    ') # Named entries after non-named with same compiler
-          def compiler_name(toolset):
-            result = toolset.replace('-', ' ').upper()
-            result = result.replace('CLANG', 'Clang')
-            result = result.replace('ICPX', 'Intel OneAPI')
-            return {'msvc-14.3': 'Visual Studio 2022',
-                    'msvc-14.5': 'Visual Studio 2026',
-                    'clang-win': 'Clang',
-                   }.get(toolset, result)
-
-          summary = "# Tested Configurations\n\n"
-
-          windows_entries = load_from_env('WINDOWS_MATRIX_ENTRIES')
-          mingw_entries = load_from_env('MINGW_MATRIX_ENTRIES')
-          cmake_entries = load_from_env('CMAKE_MATRIX_ENTRIES')
-          posix_entries = load_from_env('POSIX_MATRIX_ENTRIES')
-          linux_entries = [e for e in posix_entries if 'ubuntu' in e.get('os', '') or 'ubuntu' in e.get('container', '')]
-          macos_entries = [e for e in posix_entries if 'macos' in e.get('os', '')]
-
-          # B2 build options (apply to all B2 jobs)
-          if posix_entries or windows_entries or mingw_entries:
-              options = []
-              library_folder = os.environ.get('LIBRARY_FOLDER')
-              if not library_folder:
-                  library_folder = os.environ.get('SELF') + " (default)"
-              options.append(("Library folder", library_folder))
-              options.append(("Variant", os.environ.get('B2_VARIANT') or '[default]'))
-              options.append(("Link", os.environ.get('B2_LINK') or '[default]'))
-              defines = os.environ.get('B2_DEFINES')
-              if defines:
-                  options.append(("Defines", defines))
-              targets = os.environ.get('B2_TARGETS')
-              if targets:
-                  options.append(("Targets", targets))
-              b2_headers_flags = os.environ.get('B2_HEADERS_FLAGS')
-              if b2_headers_flags:
-                  options.append(("Extra flags for `b2 headers`", b2_headers_flags))
-              parallelism = os.environ.get('B2_JOBS')
-              if parallelism:
-                  options.append(("Parallelism (`-j`)", parallelism))
-              summary += "## B2 Build Options\n\n"
-              summary += "| Option | Value |\n"
-              summary += "|--------|-------|\n"
-              for name, value in options:
-                  summary += f"| {name} | {value} |\n"
-              summary += "\n"
-
-          if linux_entries:
-              summary += "## Linux\n\n"
-              summary += "| Job | Compiler | C++ std | Arch |\n"
-              summary += "|-----|----------|---------|------|\n"
-              for e in sorted(linux_entries, key=sort_key):
-                  compiler = e['compiler']
-                  stdlib = e.get('stdlib', '')
-                  name = e.get('name')
-                  if name:
-                    if stdlib:
-                        compiler += f" ({stdlib})"
-                  else:
-                      name = compiler_name(compiler)
-                      if stdlib:
-                          name += f" ({stdlib})"
-                  cxxstd = e.get('cxxstd', '[default]')
-                  arch = e.get('address-model', '')
-                  summary += f"| {name} | {compiler} | {cxxstd} | {arch} |\n"
-              summary += "\n"
-
-          if macos_entries:
-              summary += "## macOS\n\n"
-              summary += "| Job | Compiler | C++ std | OS |\n"
-              summary += "|-----|----------|---------|----|\n"
-              for e in sorted(macos_entries, key=sort_key):
-                  compiler = e['compiler']
-                  name = e.get('name', compiler.replace('-', ' ').capitalize())
-                  cxxstd = e.get('cxxstd', '[default]')
-                  summary += f"| {name} | {compiler} | {cxxstd}  | {e['os'].replace('-', ' ').upper()} |\n"
-              summary += "\n"
-
-          if windows_entries or mingw_entries:
-              summary += "## Windows\n\n"
-              summary += "| Job | Toolset | C++ std | Arch |\n"
-              summary += "|-----|---------|---------|------|\n"
-              for e in sorted(windows_entries, key=sort_key):
-                  toolset = e['toolset']
-                  cxxstd = e.get('cxxstd', '[default]')
-                  arch = e.get('address-model', '')
-                  name = e.get('name')
-                  if not name:
-                      if e.get('target-os') == 'cygwin':
-                          name = 'Cygwin'
-                      else:
-                          name = ''
-                      name += ' ' + compiler_name(toolset)
-                  if 'arm' in e['os'] and 'arm' not in name.lower():
-                      name = 'ARM: ' + name
-                  summary += f"| {name} | {toolset} | {cxxstd} | {arch} |\n"
-
-              if mingw_entries:
-                  for e in mingw_entries:
-                      sys = e['sys']
-                      compiler = e['compiler']
-                      cxxstd = e.get('cxxstd', '[default]')
-                      arch = e.get('address-model', sys.upper().replace('MINGW', '')) # Default: MINGW64 -> 64
-                      summary += f"| {sys} | {compiler} | {cxxstd} | {arch} |\n"
-                  summary += "\n"
-
-          if cmake_entries:
-              summary += "## CMake\n\n"
-              summary += "| Generator | Build Type | Shared | OS | |\n"
-              summary += "|-----------|------------|--------|----|-|\n"
-
-              for c in cmake_entries:
-                  summary += f"| {c['generator']} | {c['build_type']} | {c['build_shared']} | {c['os']} |"
-                  cmake_version = c.get('cmake_version')
-                  if cmake_version:
-                      summary += f" CMake {cmake_version} "
-                  summary += "|\n"
-
-          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as fh:
-              fh.write(summary)
-        shell: python
-        env:
-          POSIX_MATRIX_ENTRIES: ${{needs.generate-job-matrix.outputs.posix-matrix}}
-          WINDOWS_MATRIX_ENTRIES: ${{needs.generate-job-matrix.outputs.windows-matrix}}
-          MINGW_MATRIX_ENTRIES: ${{needs.generate-job-matrix.outputs.mingw-matrix}}
-          CMAKE_MATRIX_ENTRIES: ${{needs.generate-job-matrix.outputs.cmake-matrix}}
-          MIN_CMAKE_VERSION: ${{inputs.min_cmake_version}}
-          B2_JOBS: ${{inputs.parallelism}}
-          B2_HEADERS_FLAGS: ${{inputs.b2_headers_flags}}
-          B2_VARIANT: ${{inputs.b2_variant}}
-          B2_LINK: ${{inputs.b2_link}}
-          B2_DEFINES: ${{inputs.b2_defines}}
-          B2_TARGETS: ${{inputs.b2_targets}}
-          LIBRARY_FOLDER: ${{inputs.library_folder}}
