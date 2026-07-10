@@ -321,8 +321,8 @@ jobs:
                   return
               for job in jobs:
                   stds = job.get('cxxstd', '').split(',')
-                  if len(stds) > cur_max:
-                      num_jobs = math.ceil(len(stds) / cur_max)
+                  if len(stds) > max_cxx_stds:
+                      num_jobs = math.ceil(len(stds) / max_cxx_stds)
                       per_job = math.ceil(len(stds) / num_jobs)
                       print(f"Splitting job {job} into {num_jobs} jobs with {per_job} C++ standards each")
                       for i in range(0, len(stds), per_job):
