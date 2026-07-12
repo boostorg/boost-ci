@@ -117,6 +117,24 @@ on:
         required: false
         type: string
         default: ''
+      include_jobs:
+        description: |
+          Filters to run only matching jobs. Each non-empty line (after stripping comments) is an object of job attributes with comma-separated values.
+          Uses the same YAML-like syntax as exclude_jobs.
+          When set, only jobs matching at least one filter are selected. They can then still be filtered out using exclude_jobs.
+          A match is when for every key in a filter, all filter values are present in the job's values for that key.
+          So keys have AND (subset) semantics, not OR as in exclude_jobs. To match "GCC 7 OR Clang 12", write two separate filter lines.
+          For each filter key, the filters value will be used. E.g.:
+            compiler: gcc-7                     # Test using GCC 7
+            compiler: clang-12                  # Test using Clang 12
+            os: macos-14, sanitize: yes         # Add sanitizer job on MacOS 14
+            compiler: clang-22, cxxstd: "14,17" # Add a test with Clang 22 and C++14 & C++17, i.e. a subset of e.g.:
+                                                # {"compiler": "clang-22",  "cxxstd": "11,14,17,20,23,2c",...},
+          The first filter matching a job will be used, skipping all further filters on that job, so order matters!
+          E.g. `cxxstd: 14` will run all jobs with any compiler and C++14 (using only C++14), further filters are only considered if the initial job doesn't include C++14
+        required: false
+        type: string
+        default: ''
       b2_headers_flags:
         description: "Extra flags to pass to the `b2 headers` command during setup"
         required: false
@@ -219,24 +237,31 @@ jobs:
               job_os = job.get('sys', job.get('container', job.get('os', ''))).replace('-', ':')
               return any(job_os.startswith(p.replace('-', ':')) for p in os_patterns)
 
-          job_filters = []
-          for line in os.environ['EXCLUDE_JOBS'].split('\n'):
-              line = re.sub('#.*', '', line).strip().replace("'", '"')
-              # Convert YAML to JSON by quoting unquoted keys/values for simple tokens.
-              # The regex matches quoted strings first, then excludes structural chars and whitespace from matches that will be replaced.
-              line = re.sub(r'"[^"]*"|[^":,\s]+',
-                            lambda m: m[0] if m[0][0] == '"' else f'"{m[0]}"',
-                            line)
-              if not line:
-                  continue
-              try:
-                  f = json.loads('{' + line + '}')
-              except json.JSONDecodeError:
-                   sys.exit(f"Error: Invalid filter line (not valid JSON): {line}")
-              if not isinstance(f, dict):
-                  sys.exit(f"Error: Filter line is not a dict: {line}")
-              job_filters.append(f)
+          def parse_job_filters(text):
+              """Parse multi-line filter text into a list of filter dicts."""
+              filters = []
+              for line in text.split('\n'):
+                  line = re.sub('#.*', '', line).strip().replace("'", '"')
+                  # Convert YAML to JSON by quoting unquoted keys/values for simple tokens.
+                  # The regex matches quoted strings first, then excludes structural chars and whitespace from matches that will be replaced.
+                  line = re.sub(r'"[^"]*"|[^":,\s]+',
+                                lambda m: m[0] if m[0][0] == '"' else f'"{m[0]}"',
+                                line)
+                  if not line:
+                      continue
+                  try:
+                      f = json.loads('{' + line + '}')
+                  except json.JSONDecodeError:
+                       sys.exit(f"Error: Invalid filter line (not valid JSON): {line}")
+                  if not isinstance(f, dict):
+                      sys.exit(f"Error: Filter line is not a dict: {line}")
+                  filters.append(f)
+              return filters
+
+          job_filters = parse_job_filters(os.environ['EXCLUDE_JOBS'])
           num_custom_job_filters = len(job_filters)
+          include_filters = parse_job_filters(os.environ.get('INCLUDE_JOBS', ''))
+          include_filter_matched = [False] * len(include_filters)
 
           # Transform excludes to filters
           if excluded_cxxstd := os.environ['EXCLUDE_CXXSTD']:
@@ -270,11 +295,39 @@ jobs:
 
           job_filter_matched = [False] * len(job_filters)
 
-          def apply_job_filters(jobs, job_type):
-              """Filter jobs by multi-line conditions, each a (Python) dict w/o braces.
-                 A job matches a filter if ALL conditions overlap.
+          def apply_include_filters(jobs, job_type):
+              """Keep only jobs matching at least one include filter.
+                 A match means for every key, all filter values are in the job's values, i.e. a subset each.
+                 Only the given values for each filter key will be kept."""
+              if not include_filters:
+                  yield from jobs
+                  return
+              for job in jobs:
+                  for i, f in enumerate(include_filters):
+                      matched_all = True
+                      new_job = dict(job)
+                      for key, filter_value in f.items():
+                          filter_values = set(parse_csv(filter_value))
+                          if key == 'os':
+                              matched_all &= os_matches(job, filter_values)
+                          elif key == 'type':
+                              matched_all &= job_type in filter_values
+                          else:
+                              job_values = set(parse_csv(job.get(key, '')))
+                              if not filter_values <= job_values:
+                                  matched_all = False
+                                  break
+                              new_job[key] = filter_value
+                      if matched_all:
+                          include_filter_matched[i] = True
+                          print(f"Include filter '{f}' matched '{job}', kept as '{new_job}'")
+                          yield new_job
+                          break
+
+          def apply_exclude_filters(jobs, job_type):
+              """Remove jobs matching the exclude filters. A job matches a filter if ALL conditions overlap.
                  Reduce matched attributes if that doesn't yield an empty list,
-                 except when all matched attributes turn up empty it will remove the job completely."""
+                 except when all matched attributes turn up empty, which will remove the job completely."""
               if not job_filters:
                   yield from jobs
                   return
@@ -336,12 +389,13 @@ jobs:
               enabled = is_true(env_var)
               job_type = env_var.removeprefix('ENABLE_').lower()
               if enabled:  # Don't apply filters if explicitely disabled so unmatched filters can be reported properly
-                  jobs = apply_job_filters(jobs, job_type)
+                  jobs = apply_include_filters(jobs, job_type)
+                  jobs = apply_exclude_filters(jobs, job_type)
               if not isinstance(jobs, list):
                   jobs = list(jobs)
 
               if enabled and not jobs:
-                  print(f'::warning::tile=${env_var} disabled::All jobs removed, disabling ${env_var}')
+                  print(f'::warning::tile=${env_var} disabled::All jobs removed, disabling ${name} jobs.')
               elif not enabled:
                   jobs = None
               if not jobs:
@@ -491,6 +545,21 @@ jobs:
           for (filter, matched) in zip(job_filters[:num_custom_job_filters], job_filter_matched):
               if not matched:
                   print(f"::warning title=Unmatched filters::Filter `{filter}` didn't match any jobs")
+          unmatched_includes = [filter for filter, matched in zip(include_filters, include_filter_matched) if not matched]
+          for filter in unmatched_includes:
+              print(f"::error title=No job found for include filter::Filter `{filter}` didn't match any jobs")
+          if unmatched_includes:
+              repo = os.environ["GITHUB_REPOSITORY"]
+              # GITHUB_WORKFLOW_REF:
+              # owner/repo/.github/workflows/ci.yml@refs/heads/master
+              workflow_file = os.environ["GITHUB_WORKFLOW_REF"].removeprefix(f"{repo}/").split("@", 1)[0]
+              workflow_sha = os.environ["GITHUB_WORKFLOW_SHA"]
+              url = f"https://github.com/{repo}/blob/{workflow_sha}/{workflow_file}"
+
+              sys.exit(f"For {len(unmatched_includes)} filters specified in `include_jobs` no matching job was found.\n"
+                       "Check https://github.com/boostorg/boost-ci/blob/master/.github/workflows/reusable.yml for the available jobs and update "
+                       f"your '{os.environ['GITHUB_WORKFLOW']}' workflow at {url}.\n Unmatched:\n"
+                       + "\n".join(map(str, unmatched_includes)))
         shell: python
         env:
           ENABLE_POSIX: ${{ inputs.enable_posix }}
@@ -507,6 +576,7 @@ jobs:
           EXCLUDE_CXXSTD: ${{ inputs.exclude_cxxstd }}
           EXCLUDE_OS: ${{ inputs.exclude_os }}
           EXCLUDE_JOBS: ${{ inputs.exclude_jobs }}
+          INCLUDE_JOBS: ${{ inputs.include_jobs }}
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
           COVERITY_SCAN_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
           MIN_CMAKE_VERSION: ${{ inputs.min_cmake_version }}
