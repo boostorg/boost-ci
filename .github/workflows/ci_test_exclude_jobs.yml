@@ -30,7 +30,7 @@ on:
 jobs:
   call-boost-ci:
     name: Run Boost.CI
-    uses: boostorg/boost-ci/.github/workflows/reusable.yml@master
+    uses: boostorg/boost-ci/.github/workflows/reusable.yml@feature/include_jobs
     with:
       exclude_jobs: |
         os: ubuntu-1 # Remove Ubuntu 16/18 jobs (substring match)
