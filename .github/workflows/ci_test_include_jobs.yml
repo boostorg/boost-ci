@@ -1,0 +1,48 @@
+#
+# Copyright 2026-2026 Alexander Grund
+#
+# Distributed under the Boost Software License, Version 1.0.
+# (See accompanying file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+#
+# This workflow uses the Boost.CI reusable workflow to test the `include_jobs` input.
+#
+---
+name: Test.IncludeJobs.CI
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - develop
+      - bugfix/**
+      - feature/**
+      - fix/**
+      - pr/**
+    paths-ignore:
+      - LICENSE
+      - meta/**
+      - README.md
+
+jobs:
+  call-boost-ci:
+    name: Run Boost.CI
+    uses: boostorg/boost-ci/.github/workflows/reusable.yml@master
+    with:
+      include_jobs: |
+        # compiler: gcc-7,clang-12 does NOT work as it can never match both compilers
+        compiler: gcc-7
+        compiler: clang-10
+        compiler: gcc-10, cxxstd: '11,14' # GCC 10 with only C++11 & C++14
+        sanitize: yes, os: ubuntu # Linux sanitizer jobs
+        # Add jobs that test both C++14 and C++17 (AND/subset within one key)
+        cxxstd: '14,17'
+        cxxstd: 2b  # All (remaining) jobs with C++2b
+        type: cmake # CMake tests
+      exclude_jobs: |
+        # Reduce cxxstd of clang-10 jobs by removing C++14 & C++17
+        compiler: clang-10, cxxstd: '14,17'
+        type: cmake, os: windows # No CMake tests on Windows
