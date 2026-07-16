@@ -395,7 +395,7 @@ jobs:
                   jobs = list(jobs)
 
               if enabled and not jobs:
-                  print(f'::warning::tile=${env_var} disabled::All jobs removed, disabling ${name} jobs.')
+                  print(f'::warning::tile=${env_var} disabled::All jobs removed, disabling {job_type} jobs.')
               elif not enabled:
                   jobs = None
               if not jobs:
