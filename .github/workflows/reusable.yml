@@ -15,7 +15,7 @@ name: Boost.CI
 
 permissions:
   contents: read
-  
+
 on:
   workflow_call:
     inputs:
@@ -65,7 +65,7 @@ on:
         type: boolean
         default: true
       enable_pr_coverage:
-        description: "When enabled, coverage will be collected even without a $CODECOV_TOKEN, e.g for PRs where it  usually is not available. Enabled by default."
+        description: "When enabled, coverage will be collected even without a $CODECOV_TOKEN in PRs, where it usually is not available. Enabled by default."
         required: false
         type: boolean
         default: true
@@ -220,6 +220,7 @@ jobs:
         name: Generate job matrices
         run: |
           import json, math, os, sys, re
+          print(f"{os.environ['GITHUB_EVENT_NAME']} build from {os.environ['GITHUB_ACTOR']} on {os.environ['GITHUB_REF_NAME']} ({os.environ['GITHUB_SHA']})")
 
           # ═══════════════════════════════════════════════════════════════
           # Helper functions
@@ -284,7 +285,7 @@ jobs:
               job_filters.append({'multiarch': 'yes'})
           if not is_true('ENABLE_SANITIZERS'):
               job_filters.append({'sanitize': 'yes'})
-          if not os.environ.get('CODECOV_TOKEN') and not is_true('ENABLE_PR_COVERAGE'):
+          if not (os.environ.get('CODECOV_TOKEN') or (os.environ['GITHUB_EVENT_NAME'] == 'pull_request' and is_true('ENABLE_PR_COVERAGE'))):
               job_filters.append({'coverage': 'yes'})
           if not os.environ.get('COVERITY_SCAN_TOKEN'):
               job_filters.append({'coverity': 'yes'})
@@ -468,7 +469,7 @@ jobs:
                   {"stdlib": "libc++",
                    "compiler": "clang-7",   "cxxstd": "11,14,17",          "os": "ubuntu-latest", "container": "ubuntu:20.04"},
                   {"name": "Clang w/ sanitizers", "sanitize": "yes", "stdlib": "libc++",
-                   "compiler": "clang-12",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:20.04"}, 
+                   "compiler": "clang-12",  "cxxstd": "11,14,17,20",       "os": "ubuntu-latest", "container": "ubuntu:20.04"},
                 # MacOS
                   {"name": "MacOS sanitize w/ clang",
                    "os": "macos-14", "compiler": "clang",     "cxxstd": "11,14,17,20,2b", "sanitize": "yes"},
