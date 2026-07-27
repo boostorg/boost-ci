@@ -185,6 +185,11 @@ on:
         required: false
         type: string
         default: ''
+      concurrency-key:
+        description: Unique identifier for this invocation. Required only when invoking this multiple times in the same workflow file
+        required: false
+        type: string
+        default: ''
     secrets:
       CODECOV_TOKEN:
         description: "The token for covecov.io; if defined then coverage will be collected."
@@ -197,7 +202,7 @@ on:
         required: false
 
 concurrency:
-  group: ${{format('{0}:{1}:{2}', github.repository, github.ref, github.workflow_ref)}}
+  group: ${{format('{0}:{1}:{2}', github.ref, github.workflow_ref, inputs.concurrency-key)}}
   cancel-in-progress: true
 
 env:

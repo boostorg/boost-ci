@@ -46,3 +46,10 @@ jobs:
         # Reduce cxxstd of clang-10 jobs by removing C++14 & C++17
         compiler: clang-10, cxxstd: '14,17'
         type: cmake, os: windows # No CMake tests on Windows
+  call-boost-ci-gcc-10:
+    name: Run Boost.CI only with GCC 10
+    uses: boostorg/boost-ci/.github/workflows/reusable.yml@master
+    with:
+      include_jobs: 'compiler: gcc-10'
+      # Required so this does not cancel the run invoked above
+      concurrency-key: gcc-10
