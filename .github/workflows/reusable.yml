@@ -7,8 +7,8 @@
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE_1_0.txt or copy at http://boost.org/LICENSE_1_0.txt)
 #
-# This reusable workflow is called from ci.yml, if you want to use it you should do the
-# same. See the README for more details.
+# This reusable workflow is called from ci.yml, if you want to use it you should do the same.
+# See the README for more details and CI files adjacent to this workflow file (reusable.yml) for usage examples.
 #
 ---
 name: Boost.CI
