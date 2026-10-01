@@ -116,6 +116,8 @@ on:
                                                   # E.g.    {"toolset": "msvc", "cxxstd": "11,17", "address-model": "32,64"}
                                                   # Becomes {"toolset": "msvc", "cxxstd": "11",    "address-model": "64"}
               type: windows, compiler: gcc        # Remove GCC jobs on Windows. `type` can be one or more of: posix,windows,mingw,cmake
+          The `compiler` filter key also applies to Windows jobs (matched against `toolset`) and CMake jobs (matched against `generator`).
+          E.g. `compiler: msvc-14.3` excludes both Windows jobs with `toolset: msvc-14.3` and CMake jobs with `generator: "Visual Studio 17 2022"`.
         required: false
         type: string
         default: ''
@@ -135,6 +137,8 @@ on:
                                                 # {"compiler": "clang-22",  "cxxstd": "11,14,17,20,23,2c",...},
           The first filter matching a job will be used, skipping all further filters on that job, so order matters!
           E.g. `cxxstd: 14` will run all jobs with any compiler and C++14 (using only C++14), further filters are only considered if the initial job doesn't include C++14
+          The `compiler` filter key also applies to Windows jobs (matched against `toolset`) and CMake jobs (matched against `generator`).
+          E.g. `compiler: msvc-14.3` matches both Windows jobs with `toolset: msvc-14.3` and CMake jobs with `generator: "Visual Studio 17 2022"`.
         required: false
         type: string
         default: ''
@@ -272,18 +276,15 @@ jobs:
           include_filters = parse_job_filters(os.environ.get('INCLUDE_JOBS', ''))
           include_filter_matched = [False] * len(include_filters)
 
+          compiler_to_generator = {
+            "msvc-14.3": "Visual Studio 17 2022",
+            "msvc-14.5": "Visual Studio 18 2026",
+          }
           # Transform excludes to filters
           if excluded_cxxstd := os.environ['EXCLUDE_CXXSTD']:
               job_filters.append({'cxxstd': excluded_cxxstd})
           if excluded_compilers := os.environ['EXCLUDE_COMPILER']:
               job_filters.append({'compiler': excluded_compilers})
-              compiler_map = {
-                "msvc-14.3": "Visual Studio 17 2022",
-                "msvc-14.5": "Visual Studio 18 2026",
-              }
-              job_filters.append({'toolset': excluded_compilers})
-              excluded_generators = ','.join(compiler_map.get(x, x) for x in parse_csv(excluded_compilers))
-              job_filters.append({'generator': excluded_generators})
           if excluded_os := os.environ['EXCLUDE_OS']:
               job_filters.append({'os': excluded_os})
           if not is_true('ENABLE_32BIT'):
@@ -322,6 +323,12 @@ jobs:
                           elif key == 'type':
                               matched_all &= job_type in filter_values
                           else:
+                              if key == 'compiler' and key not in job:
+                                  if 'toolset' in job:
+                                      key = 'toolset'
+                                  elif 'generator' in job:
+                                      key = 'generator'
+                                      filter_values = {compiler_to_generator.get(v, v) for v in filter_values}
                               job_values = set(parse_csv(job.get(key, '')))
                               if not filter_values <= job_values:
                                   matched_all = False
@@ -354,6 +361,12 @@ jobs:
                           elif key == 'type':
                               matched_all &= job_type in filter_values
                           else:
+                              if key == 'compiler' and key not in job:
+                                  if 'toolset' in job:
+                                      key = 'toolset'
+                                  elif 'generator' in job:
+                                      key = 'generator'
+                                      filter_values = {compiler_to_generator.get(v, v) for v in filter_values}
                               job_values = set(parse_csv(job.get(key, '')))
                               matched_all &= bool(job_values & filter_values)
                               remainings[key] = job_values - filter_values
