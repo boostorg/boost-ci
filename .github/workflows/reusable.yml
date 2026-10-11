@@ -1167,6 +1167,7 @@ jobs:
           B2_DEFINES: ${{inputs.b2_defines}}
           B2_LINK: ${{inputs.b2_link}}
           B2_VARIANT: ${{inputs.b2_variant}}
+          SELF: ${{inputs.library_folder}}
 
       - name: Run tests
         run: ci/build.sh
