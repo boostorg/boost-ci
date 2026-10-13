@@ -16,10 +16,13 @@ function print_on_gha {
 
 if ! command -v ccache &> /dev/null; then
     print_on_gha "::group::Installing CCache"
+    installed=0
     if [[ -f /etc/debian_version ]]; then
-        sudo apt-get -o Acquire::Retries="${NET_RETRY_COUNT:-3}" -y -q --no-install-suggests --no-install-recommends install ccache
-    else
-        installed=0
+        if sudo apt-get -o Acquire::Retries="${NET_RETRY_COUNT:-3}" -y -q --no-install-suggests --no-install-recommends install ccache; then
+            installed=1
+        fi
+    fi
+    if [[ $installed -eq 0 ]]; then
         # Try downloading from latest ccache GitHub releases
         if version=$(curl --retry 3 -fsSL https://api.github.com/repos/ccache/ccache/releases/latest \
           | sed -n 's/.*"tag_name": *"v\([^"]*\)".*/\1/p') \
