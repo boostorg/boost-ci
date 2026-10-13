@@ -898,6 +898,14 @@ jobs:
           # For coverage builds fetch the whole history, else only 1 commit using a 'fake ternary'
           fetch-depth: ${{ matrix.coverage && '0' || '1' }}
 
+      - name: Restore ccache binary (macOS)
+        if: env.B2_USE_CCACHE && startsWith(matrix.os, 'macos')
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: /usr/local/bin/ccache
+          key: ccache-bin
+          restore-keys: ccache-bin-
+
       - name: Cache ccache
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         if: env.B2_USE_CCACHE
@@ -995,6 +1003,12 @@ jobs:
           B2_VARIANT: ${{inputs.b2_variant}}
           SELF: ${{inputs.library_folder}}
 
+      - name: Save ccache binary (macOS)
+        if: env.B2_USE_CCACHE && env.CCACHE_DOWNLOADED_VERSION != '' && startsWith(matrix.os, 'macos')
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: /usr/local/bin/ccache
+          key: ccache-bin-${{env.CCACHE_DOWNLOADED_VERSION}}
 
       - name: Setup coverage collection
         if: matrix.coverage
