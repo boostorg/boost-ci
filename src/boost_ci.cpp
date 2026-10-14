@@ -16,6 +16,7 @@
 #include <functional>
 #include <map>
 #endif
+#include <string>
 #include <utility>
 
 // Some simple struct big enough so that the atomic is forced to use a lock
@@ -30,11 +31,12 @@ namespace boost
 {
   namespace boost_ci
   {
-    void reproducer();
+    void reproducer(std::string);
     // Some function to test
     int get_answer(const int isMsvc)
     {
-      reproducer();
+      std::string testStr = "123";
+      reproducer(std::move(testStr)); // MinGW may fail linking due to std::string move constructor in C++17 mode
       boost::atomic<X> answer;
       // Specifically crafted condition to check for coverage from MSVC and non MSVC builds
       if(isMsvc == 1)
@@ -56,7 +58,7 @@ namespace boost
     // Reproducer for a bug observed in Clang 16 with libstdc++
     void f(const std::pair<int, float>&) {}
 
-    void reproducer() {
+    void reproducer(std::string) {
       std::map<int, float> m{{0, 0.f}, {1, 1.f}};
 
       // Bind a map element (value_type is pair<const int, float>).
@@ -68,7 +70,7 @@ namespace boost
       (void)bound2;
     }
 #else
-    void reproducer() {}
+    void reproducer(std::string) {}
 #endif
   }
 }
