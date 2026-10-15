@@ -38,10 +38,11 @@ on:
 jobs:
   call-boost-ci:
     name: Run Boost.CI
-    uses: boostorg/boost-ci/.github/workflows/reusable.yml@master
+    uses: boostorg/boost-ci/.github/workflows/reusable.yml@fix/mingw-string-move
     # Customization:
     with:
       enable_reflection: true
+      b2_flags: 'optimization=space'
     #  enable_windows: false
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
