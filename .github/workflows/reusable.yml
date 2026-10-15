@@ -142,18 +142,18 @@ on:
         required: false
         type: string
         default: ''
+      b2_defines:
+        description: "Preprocessor defines to add"
+        required: false
+        type: string
+        default: ''
       b2_headers_flags:
         description: "Extra flags to pass to the `b2 headers` command during setup"
         required: false
         type: string
         default: ''
-      b2_targets:
-        description: "B2 targets to build, e.g. 'libs/foo/test//bar'. Defaults to auto-detecting the tests"
-        required: false
-        type: string
-        default: ''
-      b2_defines:
-        description: "Preprocessor defines to add"
+      b2_flags:
+        description: "Extra flags to pass to the `b2` command during build/test"
         required: false
         type: string
         default: ''
@@ -162,6 +162,11 @@ on:
         required: false
         type: string
         default: 'shared,static'
+      b2_targets:
+        description: "B2 targets to build, e.g. 'libs/foo/test//bar'. Defaults to auto-detecting the tests"
+        required: false
+        type: string
+        default: ''
       b2_variant:
         description: "Variants/Optimization level(s) to build"
         required: false
@@ -682,6 +687,9 @@ jobs:
               b2_headers_flags = os.environ.get('B2_HEADERS_FLAGS')
               if b2_headers_flags:
                   options.append(("Extra flags for `b2 headers`", b2_headers_flags))
+              b2_flags = os.environ.get('B2_FLAGS')
+              if b2_flags:
+                  options.append(("Extra flags for `b2` (build)", b2_flags))
               parallelism = os.environ.get('B2_JOBS')
               if parallelism:
                   options.append(("Parallelism (`-j`)", parallelism))
@@ -772,12 +780,13 @@ jobs:
           MINGW_MATRIX_ENTRIES: ${{steps.generate-matrix.outputs.mingw-matrix}}
           CMAKE_MATRIX_ENTRIES: ${{steps.generate-matrix.outputs.cmake-matrix}}
           MIN_CMAKE_VERSION: ${{inputs.min_cmake_version}}
-          B2_JOBS: ${{inputs.parallelism}}
-          B2_HEADERS_FLAGS: ${{inputs.b2_headers_flags}}
-          B2_VARIANT: ${{inputs.b2_variant}}
-          B2_LINK: ${{inputs.b2_link}}
           B2_DEFINES: ${{inputs.b2_defines}}
+          B2_FLAGS: ${{inputs.b2_flags}}
+          B2_HEADERS_FLAGS: ${{inputs.b2_headers_flags}}
+          B2_JOBS: ${{inputs.parallelism}}
+          B2_LINK: ${{inputs.b2_link}}
           B2_TARGETS: ${{inputs.b2_targets}}
+          B2_VARIANT: ${{inputs.b2_variant}}
           LIBRARY_FOLDER: ${{inputs.library_folder}}
 
   posix:
@@ -990,16 +999,17 @@ jobs:
         env:
           ENABLE_REFLECTION: ${{ matrix.reflection }}
           XCODE_APP: ${{matrix.xcode_app}}
-          B2_JOBS: ${{inputs.parallelism}}
-          B2_HEADERS_FLAGS: ${{inputs.b2_headers_flags}}
           B2_ADDRESS_MODEL: ${{matrix.address-model}}
           B2_COMPILER: ${{matrix.compiler}}
           B2_CXXFLAGS: ${{matrix.cxxflags}}
           B2_CXXSTD: ${{matrix.cxxstd}}
+          B2_DEFINES: ${{inputs.b2_defines}}
+          B2_FLAGS: ${{inputs.b2_flags}}
+          B2_HEADERS_FLAGS: ${{inputs.b2_headers_flags}}
+          B2_JOBS: ${{inputs.parallelism}}
+          B2_LINK: ${{inputs.b2_link}}
           B2_SANITIZE: ${{matrix.sanitize}}
           B2_STDLIB: ${{matrix.stdlib}}
-          B2_DEFINES: ${{inputs.b2_defines}}
-          B2_LINK: ${{inputs.b2_link}}
           B2_VARIANT: ${{inputs.b2_variant}}
           SELF: ${{inputs.library_folder}}
 
