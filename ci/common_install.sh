@@ -34,14 +34,26 @@ function print_on_gha {
     set -x
 }
 
+if [[ "${RUNNER_OS:-}" == "macOS" ]]; then
+    { set +x; } &> /dev/null
+    echo "Default XCode version: $(xcodebuild -version)"
+    echo "Available XCode versions:"
+    for app in /Applications/Xcode*.app; do
+        [[ -d "$app" ]] || continue
+        version=$(defaults read "$app/Contents/Info" CFBundleShortVersionString)
+        echo "${app}: ${version}"
+    done
+    set -x
+fi
 if [ -n "${XCODE_APP:-}" ]; then
-  if [[ $XCODE_APP =~ ^[0-9]+.[0-9]+$ ]]; then
-      XCODE_APP="Xcode_${XCODE_APP}"
-  fi
-  if [[ $XCODE_APP =~ ^Xcode_[0-9]+.[0-9]+$ ]]; then
-      XCODE_APP="/Applications/${XCODE_APP}.app"
-  fi
-  sudo xcode-select -switch "${XCODE_APP}"
+    if [[ $XCODE_APP =~ ^[0-9]+.[0-9]+$ ]]; then
+        XCODE_APP="Xcode_${XCODE_APP}"
+    fi
+    if [[ $XCODE_APP =~ ^Xcode_[0-9]+.[0-9]+$ ]]; then
+        XCODE_APP="/Applications/${XCODE_APP}.app"
+    fi
+    sudo xcode-select -switch "${XCODE_APP}"
+    echo "Selected XCode version: $(xcodebuild -version)"
 fi
 
 # Setup ccache
