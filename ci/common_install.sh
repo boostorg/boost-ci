@@ -193,6 +193,13 @@ if [[ "${B2_TOOLSET:-}" == clang* ]]; then
                     export PATH="$brew_clang_prefix/bin:$PATH"
                     echo "Clang to be used: $(command -v clang)"
                     B2_COMPILER=clang
+                    # HomeBrew's clang takes its SDK from a config file chosen by target triple.
+                    # The one for the unversioned `--target=arm64-apple-darwin` that B2 passes
+                    # names the Command Line Tools' `MacOSX.sdk`, which can be newer than the
+                    # selected Xcode, whose linker then rejects its `.tbd` stubs.
+                    # Use the SDK of the selected Xcode instead: a later `-isysroot` wins.
+                    brew_clang_sysroot=$(xcrun --show-sdk-path)
+                    echo "SDK to be used: $brew_clang_sysroot"
                 else
                     echo "Failed to find Clang $clang_version as requested from B2_COMPILER=${B2_COMPILER} in system or $brew_clang_prefix"
                     if [[ -d $brew_clang_prefix ]]; then
@@ -286,6 +293,8 @@ if [ -n "${B2_COMPILER:-}" ]; then
     fi
     if [ -n "$GCC_TOOLCHAIN_ROOT" ]; then
         echo -n " : <compileflags>\"--gcc-toolchain=$GCC_TOOLCHAIN_ROOT\" <linkflags>\"--gcc-toolchain=$GCC_TOOLCHAIN_ROOT\"" >> "$userConfigPath"
+    elif [ -n "${brew_clang_sysroot:-}" ]; then
+        echo -n " : <compileflags>\"-isysroot $brew_clang_sysroot\" <linkflags>\"-isysroot $brew_clang_sysroot\"" >> "$userConfigPath"
     fi
     echo " ;" >> "$userConfigPath"
 
