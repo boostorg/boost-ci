@@ -986,7 +986,7 @@ jobs:
           BDDE_ARCH: ${{matrix.arch}}
 
       - name: Setup Boost
-        run: source ci/github/install.sh
+        run: ci/github/install.sh
         env:
           ENABLE_REFLECTION: ${{ matrix.reflection }}
           XCODE_APP: ${{matrix.xcode_app}}
@@ -1271,7 +1271,7 @@ jobs:
             rm -rf boost-ci-cloned
 
       - name: Setup Boost
-        run: source ci/github/install.sh
+        run: ci/github/install.sh
         env:
           B2_JOBS: ${{inputs.parallelism}}
           B2_DONT_BOOTSTRAP: 1

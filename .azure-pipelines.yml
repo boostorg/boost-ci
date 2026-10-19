@@ -162,7 +162,7 @@ stages:
                 # Copy ci folder if not testing Boost.CI
                 [[ $(basename "$BUILD_REPOSITORY_NAME") = "boost-ci" ]] || cp -prf boost-ci-cloned/ci .
                 rm -rf boost-ci-cloned
-                source ci/azure-pipelines/install.sh
+                ci/azure-pipelines/install.sh
               displayName: Setup build environment
             - bash: |
                 set -ex
