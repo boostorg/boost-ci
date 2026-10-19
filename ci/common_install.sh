@@ -54,15 +54,6 @@ if [ -n "${XCODE_APP:-}" ]; then
     fi
     sudo xcode-select -switch "${XCODE_APP}"
 fi
-if [[ "${RUNNER_OS:-}" == "macOS" ]]; then
-    { set +x; } &> /dev/null
-    echo "Selected XCode version: $(xcodebuild -version)"
-    echo "DEVELOPER_DIR= '${DEVELOPER_DIR:-}'"
-    echo "SDKROOT= '${SDKROOT:-}'"
-    SDK=$(xcrun --sdk macosx --show-sdk-path)
-    echo "Selected SDK: $SDK"
-    set -x
-fi
 
 # Setup ccache
 if [ "${B2_USE_CCACHE:-}" == "1" ]; then
@@ -207,28 +198,27 @@ if [[ "${B2_TOOLSET:-}" == clang* ]]; then
             else
                 # When the default clang doesn't match the requested version try using the brew installed one
                 if brew_clang_prefix=$(brew --prefix "llvm@$clang_version"); then
-                if [[ -f "$brew_clang_prefix/bin/clang" ]]; then
-                    echo "$brew_clang_prefix/bin" >> "$GITHUB_PATH"
-                    echo "Found Clangs in HomeBrew: " "$brew_clang_prefix/bin/"clang* /opt/homebrew/opt/llvm/bin/clang*
-                    export PATH="$brew_clang_prefix/bin:$PATH"
-                    echo "Clang to be used: $(command -v clang)"
-                    B2_COMPILER=clang
-                    # HomeBrew's clang takes its SDK from a config file chosen by target triple.
-                    # The one for the unversioned `--target=arm64-apple-darwin` that B2 passes
-                    # names the Command Line Tools' `MacOSX.sdk`, which can be newer than the
-                    # selected Xcode, whose linker then rejects its `.tbd` stubs.
-                    # Use the SDK of the selected Xcode instead: a later `-isysroot` wins.
-                    brew_clang_sysroot=$(xcrun --show-sdk-path)
-                    echo "SDK to be used: $brew_clang_sysroot"
-                else
-                    echo "Failed to find Clang $clang_version as requested from B2_COMPILER=${B2_COMPILER} in system or $brew_clang_prefix"
-                    if [[ -d $brew_clang_prefix ]]; then
-                    echo "Available brew binaries: $(ls "$brew_clang_prefix/bin")"
+                    if [[ -f "$brew_clang_prefix/bin/clang" ]]; then
+                        echo "$brew_clang_prefix/bin" >> "$GITHUB_PATH"
+                        echo "Found Clangs in Homebrew: " "$brew_clang_prefix/bin/"clang* /opt/homebrew/opt/llvm/bin/clang*
+                        export PATH="$brew_clang_prefix/bin:$PATH"
+                        echo "Clang to be used: $(command -v clang)"
+                        B2_COMPILER=clang
+                        # Homebrew's clang takes its SDK from a config file chosen by target triple.
+                        # The one for the unversioned `--target=arm64-apple-darwin` that B2 passes names the Command Line Tools' `MacOSX.sdk`,
+                        # which can be newer than the selected Xcode, whose linker then rejects its `.tbd` stubs.
+                        # Use the SDK of the selected Xcode instead: a later `-isysroot` wins.
+                        brew_clang_sysroot=$(xcrun --sdk macosx --show-sdk-path)
+                        echo "SDK to be used: $brew_clang_sysroot"
                     else
-                    echo "HomeBrew installation is missing"
+                        echo "Failed to find Clang $clang_version as requested from B2_COMPILER=${B2_COMPILER} in system or $brew_clang_prefix"
+                        if [[ -d $brew_clang_prefix ]]; then
+                            echo "Available brew binaries: $(ls "$brew_clang_prefix/bin")"
+                        else
+                            echo "Homebrew installation is missing"
+                        fi
+                        exit 1
                     fi
-                    exit 1
-                fi
                 else
                     echo "Failed to find Clang $clang_version as requested from B2_COMPILER=${B2_COMPILER}"
                     exit 1

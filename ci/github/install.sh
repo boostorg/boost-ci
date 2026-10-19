@@ -40,10 +40,23 @@ fi
 # shellcheck disable=SC1091
 . "$(dirname "${BASH_SOURCE[0]}")"/../common_install.sh
 
+if [[ "${RUNNER_OS:-}" == "macOS" ]]; then
+    { set +x; } &> /dev/null
+    echo "Selected XCode version: $(xcodebuild -version)"
+    DEVELOPER_DIR=$(xcode-select --print-path)
+    echo "DEVELOPER_DIR: '$DEVELOPER_DIR'"
+    SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
+    echo "SDKROOT: '$SDKROOT'"
+    set -x
+fi
+
 # Persist the environment for all future steps
 
 # Set by common_install.sh
 {
+  [ -z "$DEVELOPER_DIR" ] || echo "DEVELOPER_DIR=$DEVELOPER_DIR"
+  [ -z "$SDKROOT" ] || echo "SDKROOT=$SDKROOT"
+
   echo "SELF=$SELF"
   echo "BOOST_ROOT=$BOOST_ROOT"
   echo "B2_TOOLSET=$B2_TOOLSET"
