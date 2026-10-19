@@ -53,7 +53,15 @@ if [ -n "${XCODE_APP:-}" ]; then
         XCODE_APP="/Applications/${XCODE_APP}.app"
     fi
     sudo xcode-select -switch "${XCODE_APP}"
+fi
+if [[ "${RUNNER_OS:-}" == "macOS" ]]; then
+    { set +x; } &> /dev/null
     echo "Selected XCode version: $(xcodebuild -version)"
+    echo "DEVELOPER_DIR= '${DEVELOPER_DIR:-}'"
+    echo "SDKROOT= '${SDKROOT:-}'"
+    SDK=$(xcrun --sdk macosx --show-sdk-path)
+    echo "Selected SDK: $SDK"
+    set -x
 fi
 
 # Setup ccache
