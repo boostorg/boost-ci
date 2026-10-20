@@ -101,7 +101,7 @@ on:
         type: string
         default: ''
       exclude_jobs:
-        description: |
+        description: >-
           (Multiline) string of filters to remove jobs.
           Each non-empty line (after stripping comments) is an object of job attributes with comma-separated values.
           Uses YAML(-like) syntax: (Only) values containing `,` or `:` must be quoted using single or double quotes, comments start with '#'.
@@ -122,7 +122,7 @@ on:
         type: string
         default: ''
       include_jobs:
-        description: |
+        description: >-
           (Multiline) string of filters to run only matching jobs.
           Each non-empty line (after stripping comments) is an object of job attributes with comma-separated values.
           Uses the same YAML-like syntax as exclude_jobs.
@@ -172,6 +172,14 @@ on:
         required: false
         type: string
         default: 'Github Actions'
+      coverage_service:
+        description: >-
+          Coverage service(s) to upload to.
+          Comma-separated combination of 'codecov' and 'coveralls'.
+          Defaults to 'codecov'.
+        required: false
+        type: string
+        default: codecov
       library_folder:
         description: "Name of the subfolder of the Boost tree the library should be. Will be determined by the value of 'key' in meta/libraries.json."
         required: false
@@ -294,8 +302,16 @@ jobs:
               job_filters.append({'multiarch': 'yes'})
           if not is_true('ENABLE_SANITIZERS'):
               job_filters.append({'sanitize': 'yes'})
-          if not (os.environ.get('CODECOV_TOKEN') or (os.environ['GITHUB_EVENT_NAME'] == 'pull_request' and is_true('ENABLE_PR_COVERAGE'))):
-              job_filters.append({'coverage': 'yes'})
+          coverage_services = set(parse_csv(os.environ['COVERAGE_SERVICE']))
+          invalid = coverage_services - {'codecov', 'coveralls'}
+          if invalid:
+              sys.exit(f"Invalid coverage_service value(s): {', '.join(sorted(invalid))}. "
+                       "Valid values are 'codecov', 'coveralls', or comma-separated combinations thereof.")
+          # Disable coverage jobs when only Codecov is selected but no token is set
+          if coverage_services == {'codecov'} and not os.environ.get('CODECOV_TOKEN'):
+              # For PRs you can still enable it with `enable_pr_coverage`
+              if not (os.environ['GITHUB_EVENT_NAME'] == 'pull_request' and is_true('ENABLE_PR_COVERAGE')):
+                  job_filters.append({'coverage': 'yes'})
           if not os.environ.get('COVERITY_SCAN_TOKEN'):
               job_filters.append({'coverity': 'yes'})
           if not is_true('ENABLE_REFLECTION'):
@@ -594,6 +610,7 @@ jobs:
           ENABLE_REFLECTION: ${{ inputs.enable_reflection }}
           ENABLE_PR_COVERAGE: ${{ inputs.enable_pr_coverage }}
           ENABLE_CYGWIN: ${{ inputs.enable_cygwin }}
+          COVERAGE_SERVICE: ${{ inputs.coverage_service }}
           EXCLUDE_COMPILER: ${{ inputs.exclude_compiler }}
           EXCLUDE_CXXSTD: ${{ inputs.exclude_cxxstd }}
           EXCLUDE_OS: ${{ inputs.exclude_os }}
@@ -1029,8 +1046,8 @@ jobs:
         if: matrix.coverage
         run: ci/codecov.sh "collect"
 
-      - name: Upload coverage
-        if: matrix.coverage
+      - name: Upload coverage (Codecov)
+        if: matrix.coverage && contains(inputs.coverage_service, 'codecov')
         uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           fail_ci_if_error: true
@@ -1039,6 +1056,17 @@ jobs:
           name: ${{env.CODECOV_NAME}} (POSIX)
           token: ${{secrets.CODECOV_TOKEN}}
           verbose: true
+
+      - name: Upload coverage (coveralls)
+        if: matrix.coverage && contains(inputs.coverage_service, 'coveralls')
+        uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2.3.8
+        with:
+          file: coverage.info
+          format: lcov
+          parallel: true
+          flag-name: POSIX-${{ matrix.os }}
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          carryforward: coverage
 
       - name: Run coverity
         if: matrix.coverity && github.event_name == 'push' && (github.ref_name == 'develop' || github.ref_name == 'master')
@@ -1122,8 +1150,8 @@ jobs:
         if: matrix.coverage
         run: ci\opencppcoverage.ps1
 
-      - name: Upload coverage
-        if: matrix.coverage
+      - name: Upload coverage (Codecov)
+        if: matrix.coverage && contains(inputs.coverage_service, 'codecov')
         uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           disable_search: true
@@ -1131,6 +1159,29 @@ jobs:
           name: ${{env.CODECOV_NAME}} (Windows)
           token: ${{secrets.CODECOV_TOKEN}}
           verbose: true
+
+      - name: Upload coverage (coveralls)
+        if: matrix.coverage && contains(inputs.coverage_service, 'coveralls')
+        uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2.3.8
+        with:
+          format: cobertura
+          file: __out/cobertura.xml
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          parallel: true
+          flag-name: Windows
+          carryforward: windows
+
+  coveralls-finish:
+    needs: [posix, windows]
+    if: contains(inputs.coverage_service, 'coveralls')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Coveralls Finished
+        uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2.3.8
+        with:
+          parallel-finished: true
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          carryforward: coverage
 
   mingw:
     if: ${{needs.generate-job-matrix.outputs.mingw-matrix}}

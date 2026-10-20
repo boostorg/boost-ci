@@ -83,8 +83,9 @@ For other CI types, here are all the steps you need to take as a Boost repositor
 Multiple CI configs contain jobs collecting code coverage data.
 E.g. GitHub Actions and Drone CI for Linux and Appveyor for Windows.
 Especially the latter allows collecting coverage data for Windows-only code parts or code using e.g. `wchar_t` which is different on Windows than on other platforms.
+You can choose between [Codecov](https://codecov.io/) and [Coveralls](https://coveralls.io/) (or both) by setting the `coverage_service` input of the reusable workflow to `codecov`, `coveralls`, or `codecov,coveralls`.
 
-Besides using Codecov, it's also possible to generate coverage reports with [GitHub Actions + GitHub Pages](docs/code-coverage.md).
+Besides using those, it's also possible to generate coverage reports with [GitHub Actions + GitHub Pages](docs/code-coverage.md).
 
 ### Exclusion of coverage data
 
