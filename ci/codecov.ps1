@@ -1,4 +1,4 @@
-# Copyright 2019 - 2021 Alexander Grund
+# Copyright 2019 - 2026 Alexander Grund
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE or copy at http://boost.org/LICENSE_1_0.txt)
 
@@ -7,17 +7,16 @@ $ErrorActionPreference = "Stop"
 $scriptPath = split-path $MyInvocation.MyCommand.Path
 
 # Install uploader
-Invoke-WebRequest -Uri https://uploader.codecov.io/latest/windows/codecov.exe -Outfile codecov.exe
+& "$scriptPath\download-file.ps1" 'https://uploader.codecov.io/latest/windows/codecov.exe'
 
 # Verify integrity
 if (Get-Command "gpg.exe" -ErrorAction SilentlyContinue){
-    $ProgressPreference = 'SilentlyContinue'
     # 2026-06-07: Codecov bricked the legacy keybase account `codecovsecurity`
     # and migrated the PGP key to `codecovsecops`. See
     # https://github.com/codecov/codecov-action/issues/1956
-    Invoke-WebRequest -Uri https://keybase.io/codecovsecops/pgp_keys.asc -OutFile codecov.asc
-    Invoke-WebRequest -Uri https://uploader.codecov.io/latest/windows/codecov.exe.SHA256SUM -Outfile codecov.exe.SHA256SUM
-    Invoke-WebRequest -Uri https://uploader.codecov.io/latest/windows/codecov.exe.SHA256SUM.sig -Outfile codecov.exe.SHA256SUM.sig
+    & "$scriptPath\download-file.ps1" 'https://keybase.io/codecovsecops/pgp_keys.asc' codecov.asc
+    & "$scriptPath\download-file.ps1" 'https://uploader.codecov.io/latest/windows/codecov.exe.SHA256SUM'
+    & "$scriptPath\download-file.ps1" 'https://uploader.codecov.io/latest/windows/codecov.exe.SHA256SUM.sig'
 
     $ErrorActionPreference = "Continue"
     gpg.exe --logger-fd 1 --import codecov.asc

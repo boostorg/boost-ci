@@ -1,11 +1,9 @@
-# Copyright 2019 - 2021 Alexander Grund
+# Copyright 2019 - 2026 Alexander Grund
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE or copy at http://boost.org/LICENSE_1_0.txt)
 
-$scriptPath = split-path $MyInvocation.MyCommand.Path
-
 # Install coverage collector (Similar to LCov)
-choco install opencppcoverage
+& "$PSScriptRoot\install-opencppcoverage.ps1"
 $env:Path += ";C:\Program Files\OpenCppCoverage"
 
 # Run build with coverage collection
@@ -31,7 +29,7 @@ $exclusions = @(
 )
 $cmd += $exclusions.ForEach({"--excluded_line_regex '{0}'" -f $_}) -join " "
 # Cover all subprocess of the build script (-> b2 -> test binary)
-$cmd += "--cover_children -- cmd.exe /c $scriptPath\build.bat"
+$cmd += "--cover_children -- cmd.exe /c $PSScriptRoot\build.bat"
 
 # Print generated command and run
 $cmd
