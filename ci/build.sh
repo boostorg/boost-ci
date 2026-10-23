@@ -26,10 +26,11 @@ if [[ -f "$b2_config" ]]; then
   mv "$b2_config" "$prev_config"
   function prepend_new_config_log_to_old_config_log {
     { set +x; } 2>/dev/null
-    [[ -f "$b2_config" ]] || return
-    echo "=========================== END PREVIOUS CONFIG ======================" >> "$prev_config"
-    cat "$b2_config" >> "$prev_config"
-    mv "$prev_config" "$b2_config"
+    if [[ -f "$b2_config" ]]; then
+      echo "=========================== END PREVIOUS CONFIG ======================" >> "$prev_config"
+      cat "$b2_config" >> "$prev_config"
+      mv "$prev_config" "$b2_config"
+    fi
   }
   trap prepend_new_config_log_to_old_config_log EXIT
 fi

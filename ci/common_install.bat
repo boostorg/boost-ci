@@ -105,7 +105,7 @@ IF NOT %ERRORLEVEL% == 0 (
     EXIT /B 1
 )
 
-b2 -d0 headers
+b2 -d0 headers %B2_HEADERS_FLAGS%
 ENDLOCAL
 
 if %B2_CI_VERSION% GTR 0 (

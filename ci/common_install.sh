@@ -34,18 +34,29 @@ function print_on_gha {
     set -x
 }
 
-if [ -n "${XCODE_APP:-}" ]; then
-  if [[ $XCODE_APP =~ ^[0-9]+.[0-9]+$ ]]; then
-      XCODE_APP="Xcode_${XCODE_APP}"
-  fi
-  if [[ $XCODE_APP =~ ^Xcode_[0-9]+.[0-9]+$ ]]; then
-      XCODE_APP="/Applications/${XCODE_APP}.app"
-  fi
-  sudo xcode-select -switch "${XCODE_APP}"
+if [[ "${RUNNER_OS:-}" == "macOS" ]]; then
+    { set +x; } &> /dev/null
+    echo "Default XCode version: $(xcodebuild -version)"
+    echo "Available XCode versions:"
+    for app in /Applications/Xcode*.app; do
+        [[ -d "$app" ]] || continue
+        version=$(defaults read "$app/Contents/Info" CFBundleShortVersionString)
+        echo "${app}: ${version}"
+    done
+    set -x
+fi
+if [[ -n "${XCODE_APP:-}" ]]; then
+    if [[ $XCODE_APP =~ ^[0-9]+.[0-9]+$ ]]; then
+        XCODE_APP="Xcode_${XCODE_APP}"
+    fi
+    if [[ $XCODE_APP =~ ^Xcode_[0-9]+.[0-9]+$ ]]; then
+        XCODE_APP="/Applications/${XCODE_APP}.app"
+    fi
+    sudo xcode-select -switch "${XCODE_APP}"
 fi
 
 # Setup ccache
-if [ "${B2_USE_CCACHE:-}" == "1" ]; then
+if [[ "${B2_USE_CCACHE:-}" == "1" ]]; then
     if ! "$CI_DIR"/setup_ccache.sh 2>&1; then
         { set +x; } &> /dev/null
         echo
@@ -70,12 +81,12 @@ print_on_gha "::group::Checkout and setup Boost build tree"
 pythonexecutable=$(get_python_executable)
 $pythonexecutable --version
 
-if [ -z "${SELF:-}" ]; then
+if [[ -z "${SELF:-}" ]]; then
     export SELF=$($pythonexecutable "$CI_DIR/get_libname.py")
 fi
 
 # Handle also /refs/head/master
-if [ "$BOOST_CI_TARGET_BRANCH" == "master" ] || [[ "$BOOST_CI_TARGET_BRANCH" == */master ]]; then
+if [[ "$BOOST_CI_TARGET_BRANCH" == "master" ]] || [[ "$BOOST_CI_TARGET_BRANCH" == */master ]]; then
     export BOOST_BRANCH="master"
 else
     export BOOST_BRANCH="develop"
@@ -83,7 +94,7 @@ fi
 
 cd ..
 
-if [ ! -d boost-root ]; then
+if [[ ! -d boost-root ]]; then
     git clone -b $BOOST_BRANCH --depth 1 https://github.com/boostorg/boost.git boost-root
     cd boost-root
 else
@@ -94,7 +105,7 @@ else
 fi
 
 git submodule update -q --init tools/boostdep
-if [ -d "libs/$SELF" ]; then
+if [[ -d "libs/$SELF" ]]; then
     rm -rf "libs/$SELF"
 fi
 mkdir -p "libs/$SELF"
@@ -142,7 +153,7 @@ print_on_gha "::endgroup::"
 
 print_on_gha "::group::Setup B2"
 # Deduce B2_TOOLSET if unset from B2_COMPILER
-if [ -z "${B2_TOOLSET:-}" ] && [ -n "${B2_COMPILER:-}" ]; then
+if [[ -z "${B2_TOOLSET:-}" ]] && [[ -n "${B2_COMPILER:-}" ]]; then
     if [[ "$B2_COMPILER" =~ clang ]]; then
         export B2_TOOLSET=clang
     elif [[ "$B2_COMPILER" =~ gcc|g\+\+ ]]; then
@@ -155,10 +166,12 @@ if [ -z "${B2_TOOLSET:-}" ] && [ -n "${B2_COMPILER:-}" ]; then
     fi
 fi
 
+# Set only if required
+brew_clang_sysroot=
 if [[ "${B2_TOOLSET:-}" == clang* ]]; then
     # If clang was installed from LLVM APT it will not have a /usr/bin/clang++
     # so we need to add the correctly versioned llvm bin path to the PATH
-    if [ -f "/etc/debian_version" ]; then
+    if [[ -f "/etc/debian_version" ]]; then
         ver=""
         if [[ "$B2_TOOLSET" == clang-* ]]; then
             ver="${B2_TOOLSET#*-}"
@@ -187,21 +200,27 @@ if [[ "${B2_TOOLSET:-}" == clang* ]]; then
             else
                 # When the default clang doesn't match the requested version try using the brew installed one
                 if brew_clang_prefix=$(brew --prefix "llvm@$clang_version"); then
-                if [[ -f "$brew_clang_prefix/bin/clang" ]]; then
-                    echo "$brew_clang_prefix/bin" >> "$GITHUB_PATH"
-                    echo "Found Clangs in HomeBrew: " "$brew_clang_prefix/bin/"clang* /opt/homebrew/opt/llvm/bin/clang*
-                    export PATH="$brew_clang_prefix/bin:$PATH"
-                    echo "Clang to be used: $(command -v clang)"
-                    B2_COMPILER=clang
-                else
-                    echo "Failed to find Clang $clang_version as requested from B2_COMPILER=${B2_COMPILER} in system or $brew_clang_prefix"
-                    if [[ -d $brew_clang_prefix ]]; then
-                    echo "Available brew binaries: $(ls "$brew_clang_prefix/bin")"
+                    if [[ -f "$brew_clang_prefix/bin/clang" ]]; then
+                        echo "$brew_clang_prefix/bin" >> "$GITHUB_PATH"
+                        echo "Found Clangs in Homebrew: " "$brew_clang_prefix/bin/"clang* /opt/homebrew/opt/llvm/bin/clang*
+                        export PATH="$brew_clang_prefix/bin:$PATH"
+                        echo "Clang to be used: $(command -v clang)"
+                        B2_COMPILER=clang
+                        # Homebrew's clang takes its SDK from a config file chosen by target triple.
+                        # The one for the unversioned `--target=arm64-apple-darwin` that B2 passes names the Command Line Tools' `MacOSX.sdk`,
+                        # which can be newer than the selected Xcode, whose linker then rejects its `.tbd` stubs.
+                        # Use the SDK of the selected Xcode instead: a later `-isysroot` wins.
+                        brew_clang_sysroot=$(xcrun --sdk macosx --show-sdk-path)
+                        echo "SDK to be used: $brew_clang_sysroot"
                     else
-                    echo "HomeBrew installation is missing"
+                        echo "Failed to find Clang $clang_version as requested from B2_COMPILER=${B2_COMPILER} in system or $brew_clang_prefix"
+                        if [[ -d $brew_clang_prefix ]]; then
+                            echo "Available brew binaries: $(ls "$brew_clang_prefix/bin")"
+                        else
+                            echo "Homebrew installation is missing"
+                        fi
+                        exit 1
                     fi
-                    exit 1
-                fi
                 else
                     echo "Failed to find Clang $clang_version as requested from B2_COMPILER=${B2_COMPILER}"
                     exit 1
@@ -212,7 +231,7 @@ if [[ "${B2_TOOLSET:-}" == clang* ]]; then
     fi
     command -v clang || true
     command -v clang++ || true
-    if [ -n "${B2_COMPILER:-}" ]; then
+    if [[ -n "${B2_COMPILER:-}" ]]; then
         command -v "${B2_COMPILER}" || true
     fi
 
@@ -228,7 +247,7 @@ fi
 
 # Set up user-config to actually use B2_COMPILER if set
 userConfigPath=$HOME/user-config.jam
-if [ -n "${B2_COMPILER:-}" ]; then
+if [[ -n "${B2_COMPILER:-}" ]]; then
     # shellcheck disable=SC2016
     echo '$B2_COMPILER set. Configuring user-config'
 
@@ -256,7 +275,7 @@ if [ -n "${B2_COMPILER:-}" ]; then
 
     { set +x; } &> /dev/null
     echo "Compiler location: $(command -v "$CXX")"
-    if [[ "$CXX" == *"clang++"* ]] && [ -z "$GCC_TOOLCHAIN_ROOT" ]; then
+    if [[ "$CXX" == *"clang++"* ]] && [[ -z "$GCC_TOOLCHAIN_ROOT" ]]; then
         # Show also information on selected GCC lib
        version=$($CXX -v 2>&1 || $CXX --version)
     else
@@ -274,7 +293,7 @@ if [ -n "${B2_COMPILER:-}" ]; then
         echo "Verified GCC version: $expected_version"
     fi
 
-    if [ "$B2_USE_CCACHE" == "1" ]; then
+    if [[ "$B2_USE_CCACHE" == "1" ]]; then
         CXX="ccache $CXX"
     fi
     export CXX
@@ -284,8 +303,10 @@ if [ -n "${B2_COMPILER:-}" ]; then
     if [[ $OSTYPE == "msys" || $OSTYPE == "cygwin" ]]; then
       echo -n ".exe" >> "$userConfigPath"
     fi
-    if [ -n "$GCC_TOOLCHAIN_ROOT" ]; then
+    if [[ -n "$GCC_TOOLCHAIN_ROOT" ]]; then
         echo -n " : <compileflags>\"--gcc-toolchain=$GCC_TOOLCHAIN_ROOT\" <linkflags>\"--gcc-toolchain=$GCC_TOOLCHAIN_ROOT\"" >> "$userConfigPath"
+    elif [[ -n "${brew_clang_sysroot:-}" ]]; then
+        echo -n " : <compileflags>\"-isysroot $brew_clang_sysroot\" <linkflags>\"-isysroot $brew_clang_sysroot\"" >> "$userConfigPath"
     fi
     echo " ;" >> "$userConfigPath"
 
@@ -293,7 +314,7 @@ if [ -n "${B2_COMPILER:-}" ]; then
     cat "$userConfigPath"
 
     set -x
-elif [ -f "$userConfigPath" ]; then
+elif [[ -f "$userConfigPath" ]]; then
     { set +x; } &> /dev/null
     echo "Existing user-config ($userConfigPath):"
     cat "$userConfigPath"
@@ -313,7 +334,7 @@ if [[ "${B2_DONT_BOOTSTRAP:0}" != "1" ]]; then
     trap show_bootstrap_log ERR
     # Check if b2 already exists. This would (only) happen in a caching scenario. The purpose of caching is to save time by not recompiling everything.
     # The user may clear cache or delete b2 beforehand if they wish to rebuild.
-    if [ ! -f b2 ] || ! b2_version_output=$(./b2 --version); then
+    if [[ ! -f b2 ]] || ! b2_version_output=$(./b2 --version); then
         ${B2_WRAPPER:-} ./bootstrap.sh
     else
         # b2 expects versions to match
@@ -329,6 +350,6 @@ if [[ "${B2_DONT_BOOTSTRAP:0}" != "1" ]]; then
         fi
     fi
     trap - ERR
-    ${B2_WRAPPER:-} ./b2 -d0 headers
+    ${B2_WRAPPER:-} ./b2 -d0 headers ${B2_HEADERS_FLAGS:-}
     print_on_gha "::endgroup::"
 fi

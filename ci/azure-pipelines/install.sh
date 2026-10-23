@@ -40,8 +40,8 @@ if [ -z "$B2_COMPILER" ]; then
 fi
 
 if [ "$AGENT_OS" != "Darwin" ]; then
-    # If no package set install at least the compiler if not already found
-    if [[ -z "$PACKAGES" ]] && ! command -v "$B2_COMPILER"; then
+    # If no package set install at least the compiler
+    if [[ -z "$PACKAGES" ]]; then
         PACKAGES="$(get_compiler_package "$B2_COMPILER")"
     fi
 
