@@ -937,7 +937,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: boostorg/boost-ci
-          ref: master
+          ref: ${{job.workflow_sha}}
           path: boost-ci-cloned
 
       - name: Get CI scripts folder
@@ -1096,7 +1096,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: boostorg/boost-ci
-          ref: master
+          ref: ${{job.workflow_sha}}
           path: boost-ci-cloned
       - name: Get CI scripts folder
         run: |
@@ -1212,7 +1212,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: boostorg/boost-ci
-          ref: master
+          ref: ${{job.workflow_sha}}
           path: boost-ci-cloned
       - name: Get CI scripts folder
         run: |
@@ -1312,7 +1312,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: boostorg/boost-ci
-          ref: master
+          ref: ${{job.workflow_sha}}
           path: boost-ci-cloned
 
       - name: Get CI scripts folder
