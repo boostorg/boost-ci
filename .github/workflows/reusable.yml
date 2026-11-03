@@ -40,10 +40,14 @@ on:
         type: boolean
         default: true
       min_cmake_version:
-        description: "Minimal required CMake version, defaults to 3.16. Default of ubuntu-latest is always tested additionally."
+        description: >-
+          Minimal required CMake version.
+          'auto' (default) reads the minimum from the root CMakeLists.txt and falls back to 3.16 if that fails.
+          If set to an explicit version, e.g. '3.16', that version will be used. The patch number os optional.
+          Default of ubuntu-latest is always tested additionally.
         required: false
         type: string
-        default: '3.16'
+        default: 'auto'
       enable_cygwin:
         description: "When enabled, Cygwin jobs will be added. Enabled by default."
         required: false
@@ -236,6 +240,36 @@ jobs:
       mingw-matrix: ${{ steps.generate-matrix.outputs.mingw-matrix }}
       cmake-matrix: ${{ steps.generate-matrix.outputs.cmake-matrix }}
     steps:
+      - name: Resolve minimum CMake version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MIN_CMAKE_VERSION: ${{ inputs.min_cmake_version }}
+          FALLBACK_CMAKE_VERSION: 3.16
+        run: |
+          MIN_CMAKE_VERSION="${MIN_CMAKE_VERSION:-auto}"
+          if [[ -n "$MIN_CMAKE_VERSION" ]] && [[ "$MIN_CMAKE_VERSION" != "auto" ]]; then
+            echo "MIN_CMAKE_VERSION=$MIN_CMAKE_VERSION" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          # Parse the minimum from cmake_minimum_required(VERSION <min>[...<max>]) of the root CMakeLists
+          content="$(gh api "repos/${GITHUB_REPOSITORY}/contents/CMakeLists.txt?ref=${GITHUB_SHA}" \
+            --header "Accept: application/vnd.github.raw+json" 2>/dev/null || true)"
+          if [[ -z "$content" ]]; then
+            echo "::warning::Failed to fetch CMakeLists.txt via GitHub API; falling back to $FALLBACK_CMAKE_VERSION"
+            MIN_CMAKE_VERSION=$FALLBACK_CMAKE_VERSION
+          else
+            min="$(grep -m1 -oE 'cmake_minimum_required\s*\(\s*VERSION\s+[0-9]+(\.[0-9]+)*' <<< "$content" \
+                   | grep -oE '[0-9]+(\.[0-9]+)*' || true)"
+            if [[ -n "$min" ]]; then
+              MIN_CMAKE_VERSION=$min
+            else
+              echo "::warning::No cmake_minimum_required found in CMakeLists.txt; falling back to $FALLBACK_CMAKE_VERSION"
+              MIN_CMAKE_VERSION=$FALLBACK_CMAKE_VERSION
+            fi
+          fi
+          echo "Using CMake $MIN_CMAKE_VERSION"
+          echo "MIN_CMAKE_VERSION=$MIN_CMAKE_VERSION" >> "$GITHUB_ENV"
+
       - id: generate-matrix
         name: Generate job matrices
         run: |
@@ -618,7 +652,6 @@ jobs:
           INCLUDE_JOBS: ${{ inputs.include_jobs }}
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
           COVERITY_SCAN_TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
-          MIN_CMAKE_VERSION: ${{ inputs.min_cmake_version }}
           MAX_CXX_STDS_PER_JOB: ${{ inputs.max_cxx_stds_per_job }}
 
       - name: Determine library name
@@ -788,7 +821,6 @@ jobs:
           WINDOWS_MATRIX_ENTRIES: ${{steps.generate-matrix.outputs.windows-matrix}}
           MINGW_MATRIX_ENTRIES: ${{steps.generate-matrix.outputs.mingw-matrix}}
           CMAKE_MATRIX_ENTRIES: ${{steps.generate-matrix.outputs.cmake-matrix}}
-          MIN_CMAKE_VERSION: ${{inputs.min_cmake_version}}
           B2_JOBS: ${{inputs.parallelism}}
           B2_HEADERS_FLAGS: ${{inputs.b2_headers_flags}}
           B2_VARIANT: ${{inputs.b2_variant}}
