@@ -244,7 +244,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MIN_CMAKE_VERSION: ${{ inputs.min_cmake_version }}
-          FALLBACK_CMAKE_VERSION: 3.16
+          FALLBACK_CMAKE_VERSION: 3.16   # Fallback if auto-CMake version detection failed
+          GLOBAL_MIN_CMAKE_VERSION: 3.8  # Use at least this even if a project claims support for older CMake versions
         run: |
           MIN_CMAKE_VERSION="${MIN_CMAKE_VERSION:-auto}"
           if [[ -n "$MIN_CMAKE_VERSION" ]] && [[ "$MIN_CMAKE_VERSION" != "auto" ]]; then
@@ -261,7 +262,12 @@ jobs:
             min="$(grep -m1 -oE 'cmake_minimum_required\s*\(\s*VERSION\s+[0-9]+(\.[0-9]+)*' <<< "$content" \
                    | grep -oE '[0-9]+(\.[0-9]+)*' || true)"
             if [[ -n "$min" ]]; then
-              MIN_CMAKE_VERSION=$min
+              if [[ "$min" != "$(printf '%s\n' "$min" "$GLOBAL_MIN_CMAKE_VERSION" | sort -V | tail -n1)" ]]; then
+                echo "::warning::Automatically determined minimum CMake version $min was raised to the global minimum of $GLOBAL_MIN_CMAKE_VERSION"
+                MIN_CMAKE_VERSION=$GLOBAL_MIN_VERSION
+              else
+                MIN_CMAKE_VERSION=$min
+              fi
             else
               echo "::warning::No cmake_minimum_required found in CMakeLists.txt; falling back to $FALLBACK_CMAKE_VERSION"
               MIN_CMAKE_VERSION=$FALLBACK_CMAKE_VERSION
