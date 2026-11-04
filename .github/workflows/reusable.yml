@@ -503,7 +503,8 @@ jobs:
                   {"compiler": "clang-20",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "ubuntu:25.04"},
                   {"compiler": "clang-21",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "ubuntu:26.04"},
                   {"compiler": "clang-22",  "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "ubuntu:26.04"},
-                  {"compiler": "icpx-2025", "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "intel/oneapi-hpckit:2025.2.2-0-devel-ubuntu24.04"},
+                  {"compiler": "icpx-2025", "cxxstd": "11,14,17,20,23,2c", "os": "ubuntu-latest", "container": "intel/oneapi-hpckit:2025.2.2-0-devel-ubuntu24.04",
+                   "b2_linkflags": "-ipo"}, # Workaround for B2 compiling with -ipo but not linking with it
                 # libc++
                   {"stdlib": "libc++",
                    "compiler": "clang-6.0", "cxxstd": "11,14",             "os": "ubuntu-latest", "container": "ubuntu:18.04", "install": "clang-6.0 libc++-dev libc++abi-dev"},
@@ -1048,6 +1049,7 @@ jobs:
           B2_SANITIZE: ${{matrix.sanitize}}
           B2_STDLIB: ${{matrix.stdlib}}
           B2_DEFINES: ${{inputs.b2_defines}}
+          B2_LINKFLAGS: ${{matrix.b2_linkflags}}
           B2_LINK: ${{inputs.b2_link}}
           B2_VARIANT: ${{inputs.b2_variant}}
           SELF: ${{inputs.library_folder}}
