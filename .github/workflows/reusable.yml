@@ -307,6 +307,8 @@ jobs:
           if invalid:
               sys.exit(f"Invalid coverage_service value(s): {', '.join(sorted(invalid))}. "
                        "Valid values are 'codecov', 'coveralls', or comma-separated combinations thereof.")
+          with open(os.environ['GITHUB_ENV'], 'a') as f:
+            print("COVERAGE_SERVICE=" + ','.join(coverage_services), file=f)
           # Disable coverage jobs when only Codecov is selected but no token is set
           if coverage_services == {'codecov'} and not os.environ.get('CODECOV_TOKEN'):
               # For PRs you can still enable it with `enable_pr_coverage`
@@ -688,6 +690,28 @@ jobs:
           linux_entries = [e for e in posix_entries if 'ubuntu' in e.get('os', '') or 'ubuntu' in e.get('container', '')]
           macos_entries = [e for e in posix_entries if 'macos' in e.get('os', '')]
 
+          all_jobs = {'Windows': windows_entries, 'MinGW': mingw_entries, 'Linux': linux_entries, 'MacOS': macos_entries, 'CMake': cmake_entries}
+
+          summary += f'- {sum(len(jobs) for jobs in all_jobs.values())} Jobs ('
+          summary += ", ".join(f"{name}: {len(jobs)}" for name, jobs in all_jobs.items() if jobs)
+          summary += ")\n"
+          if any(job.get('coverity') == 'yes' for jobs in all_jobs.values() for job in jobs):
+            summary += '- Coverity Scan\n'
+          if any(job.get('coverage') == 'yes' for jobs in all_jobs.values() for job in jobs):
+            coverage_services = os.environ['COVERAGE_SERVICE'].split(',')
+            summary += '- Code coverage'
+            if 'codecov' in coverage_services:
+              summary += ': Codecov'
+              if not os.environ['CODECOV_TOKEN']:
+                summary += ' (tokenless)'
+            if 'coveralls' in coverage_services:
+              if len(coverage_services) > 1:
+                summary += ', Coveralls'
+              else:
+                summary += ': Coveralls'
+            summary += '\n'
+          summary += '\n'
+
           # B2 build options (apply to all B2 jobs)
           if posix_entries or windows_entries or mingw_entries:
               options = []
@@ -802,6 +826,7 @@ jobs:
           B2_LINK: ${{inputs.b2_link}}
           B2_DEFINES: ${{inputs.b2_defines}}
           B2_TARGETS: ${{inputs.b2_targets}}
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
           LIBRARY_FOLDER: ${{inputs.library_folder}}
 
   posix:
