@@ -311,6 +311,7 @@ jobs:
           if coverage_services == {'codecov'} and not os.environ.get('CODECOV_TOKEN'):
               # For PRs you can still enable it with `enable_pr_coverage`
               if not (os.environ['GITHUB_EVENT_NAME'] == 'pull_request' and is_true('ENABLE_PR_COVERAGE')):
+                  print('::warning title=Coverage disabled::CODECOV_TOKEN not set, coverage jobs are disabled.')
                   job_filters.append({'coverage': 'yes'})
           if not os.environ.get('COVERITY_SCAN_TOKEN'):
               job_filters.append({'coverity': 'yes'})
@@ -437,7 +438,7 @@ jobs:
               elif not enabled:
                   jobs = None
               if not jobs:
-                  return  # Leave matrix output empty
+                  return [] # Leave matrix output empty
               num_jobs = len(jobs)
               max_cxx_stds = int(os.environ.get('MAX_CXX_STDS_PER_JOB') or '0')
               jobs = list(split_jobs_by_cxxstd(jobs, max_cxx_stds))
@@ -447,6 +448,7 @@ jobs:
               print(f"Writing {len(jobs)} jobs{unique_msg} to matrix '{name}'")
               with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
                   print(f"{name}={json.dumps({'include': jobs})}", file=fh)
+              return jobs
 
           # ═══════════════════════════════════════════════════════════════
           # Posix matrix
@@ -528,7 +530,8 @@ jobs:
               ]
           else:
               all_jobs = ()
-          finalize_and_write_matrix('posix-matrix', 'ENABLE_POSIX', all_jobs)
+          jobs = finalize_and_write_matrix('posix-matrix', 'ENABLE_POSIX', all_jobs)
+          has_coverage_job = any(job.get('coverage') == 'yes' for job in jobs)
 
           # ═══════════════════════════════════════════════════════════════
           # Windows matrix
@@ -549,7 +552,11 @@ jobs:
               ]
           else:
               all_jobs = ()
-          finalize_and_write_matrix('windows-matrix', 'ENABLE_WINDOWS', all_jobs)
+          jobs = finalize_and_write_matrix('windows-matrix', 'ENABLE_WINDOWS', all_jobs)
+          has_coverage_job = has_coverage_job or any(job.get('coverage') == 'yes' for job in jobs)
+
+          if not os.environ.get('CODECOV_TOKEN') and 'codecov' in coverage_services and has_coverage_job:
+              print('::notice title=No Codecov token::CODECOV_TOKEN not set, coverage upload to codecov may fail.')
 
           # ═══════════════════════════════════════════════════════════════
           # MinGW matrix
