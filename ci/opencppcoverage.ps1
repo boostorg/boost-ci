@@ -14,8 +14,15 @@ mkdir __out
 
 # Build command to collect coverage
 $cmd = 'OpenCppCoverage.exe --export_type cobertura:__out/cobertura.xml --modules "{0}" ' -f ${env:BOOST_ROOT}
-# Include own headers (relocated to boost\*)
-$cmd += (Get-ChildItem -Name "${env:BOOST_CI_SRC_FOLDER}\include\boost").ForEach({'--sources "boost\{0}"' -f $_}) -join " "
+Get-ChildItem -Directory "${env:BOOST_ROOT}\libs\${env:SELF}\include" | ForEach-Object {
+    if ($_.Name -eq 'boost') {
+        # Boost headers are symlinked/copied to the top-level boost folder
+        Get-ChildItem -Name $_.FullName | ForEach-Object {$cmd += ' --sources "boost\{0}"' -f $_}
+    } else {
+        # Other headers are used directly from the library's include folder
+        $cmd += ' --sources "{0}"' -f $_.FullName
+    }
+}
 # Include own cpp files
 $cmd += " --sources ${env:BOOST_ROOT}\libs\${env:SELF} "
 $exclusions = @(
