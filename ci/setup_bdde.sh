@@ -19,7 +19,12 @@
 set -ex
 
 if [ -f "/etc/debian_version" ]; then
-    sudo apt-get -o Acquire::Retries="${NET_RETRY_COUNT:-3}" -y -q --no-install-suggests --no-install-recommends install binfmt-support qemu-user-static
+    if grep -qF 'VERSION_ID="26.04"' /etc/os-release; then
+        pkgs=(qemu-user-binfmt)
+    else
+        pkgs=(binfmt-support qemu-user-static)
+    fi
+    sudo apt-get -o Acquire::Retries="${NET_RETRY_COUNT:-3}" -y -q --no-install-suggests --no-install-recommends install "${pkgs[@]}"
 fi
 
 git clone --depth=1 https://github.com/jeking3/bdde.git
