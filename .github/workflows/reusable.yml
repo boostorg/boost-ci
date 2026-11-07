@@ -1359,13 +1359,16 @@ jobs:
             cd "$(mktemp -d)"
             wget https://cmake.org/files/v${version%.*}/$filename
             tar -xf $filename --strip-components=1
+            cxx_flags='-include cstdint -include limits'  # Fix missing includes in CMake < 3.10
+            cxx_flags+=' -Wno-deprecated-declarations'  # Silence warnings caused by newer C++ standards
+            cxx_flags+=' -fpermissive'  # Allow conversion from ‘long int’ to ‘curl_proxytype’
             flags=(
               "-DCMAKE_BUILD_TYPE=Release"
               "-DCMAKE_INSTALL_PREFIX=/tmp/cmake"
               "-B" "__build"
               "-Wno-dev"  # Make configuring more silent
               "-DCMAKE_USE_SYSTEM_CURL=1"  # Avoid failures caused by newer (system) OpenSSL in CMake < 3.10
-              "-DCMAKE_CXX_FLAGS='-include cstdint -include limits'"  # Fix missing includes in CMake < 3.10
+              "-DCMAKE_CXX_FLAGS='$cxx_flags'"
             )
             # CMake >= 4 refuses the old minimums (3.5 and below) used in the sources until 3.14
             min=3.14
