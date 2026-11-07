@@ -264,7 +264,7 @@ jobs:
             if [[ -n "$min" ]]; then
               if [[ "$min" != "$(printf '%s\n' "$min" "$GLOBAL_MIN_CMAKE_VERSION" | sort -V | tail -n1)" ]]; then
                 echo "::warning::Automatically determined minimum CMake version $min was raised to the global minimum of $GLOBAL_MIN_CMAKE_VERSION"
-                MIN_CMAKE_VERSION=$GLOBAL_MIN_VERSION
+                MIN_CMAKE_VERSION=$GLOBAL_MIN_CMAKE_VERSION
               else
                 MIN_CMAKE_VERSION=$min
               fi
