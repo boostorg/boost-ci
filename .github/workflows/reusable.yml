@@ -1412,7 +1412,14 @@ jobs:
             cd "$BOOST_ROOT"
             mkdir __build_cmake_test__ && cd __build_cmake_test__
             cmake -G "${{matrix.generator}}" -DCMAKE_BUILD_TYPE=${{matrix.build_type}} -DBOOST_INCLUDE_LIBRARIES=$SELF -DBUILD_SHARED_LIBS=${{matrix.build_shared}} -DBUILD_TESTING=ON -DBoost_VERBOSE=ON ..
-            cmake --build . --target tests --config ${{matrix.build_type}} -j$B2_JOBS
+            cmake_version=$(cmake --version | awk 'NR==1 {print $3}')
+            min="3.12"
+            if [[ "$(printf '%s\n' "$min" "$cmake_version" | sort -V | head -n1)" == "$min" ]]; then
+                parallel="--parallel $B2_JOBS"
+            else
+                parallel=""
+            fi
+            cmake --build . --target tests --config ${{matrix.build_type}} $parallel
             ctest --output-on-failure --build-config ${{matrix.build_type}}
 
       - name: Run CMake subdir tests
