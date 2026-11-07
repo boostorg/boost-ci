@@ -1367,6 +1367,7 @@ jobs:
               "-DCMAKE_INSTALL_PREFIX=/tmp/cmake"
               "-B" "__build"
               "-Wno-dev"  # Make configuring more silent
+              "-DBUILD_CursesDialog=OFF"  # Disable ccmake
               "-DCMAKE_USE_SYSTEM_CURL=1"  # Avoid failures caused by newer (system) OpenSSL in CMake < 3.10
               "-DCMAKE_CXX_FLAGS='$cxx_flags'"
             )
