@@ -1370,8 +1370,8 @@ jobs:
               "-DCMAKE_USE_SYSTEM_CURL=1"  # Avoid failures caused by newer (system) OpenSSL in CMake < 3.10
               "-DCMAKE_CXX_FLAGS='$cxx_flags'"
             )
-            # CMake >= 4 refuses the old minimums (3.5 and below) used in the sources until 3.14
-            min=3.14
+            # CMake >= 4 refuses the old minimums (3.5 and below) used in the sources until 3.14 (root) and 3.24 (kwsys subfolder)
+            min=3.24
             if [[ "$version" != "$(printf '%s\n' "$min" "$version" | sort -V | tail -n1)" ]]; then
               flags+=("-DCMAKE_POLICY_VERSION_MINIMUM=3.5") 
             fi
