@@ -1367,6 +1367,11 @@ jobs:
               "-DCMAKE_USE_SYSTEM_CURL=1"  # Avoid failures caused by newer (system) OpenSSL in CMake < 3.10
               "-DCMAKE_CXX_FLAGS='-include cstdint -include limits'"  # Fix missing includes in CMake < 3.10
             )
+            # CMake >= 4 refuses the old minimums (3.5 and below) used in the sources until 3.14
+            min=3.14
+            if [[ "$version" != "$(printf '%s\n' "$min" "$version" | sort -V | tail -n1)" ]]; then
+              flags+=("-DCMAKE_POLICY_VERSION_MINIMUM=3.5") 
+            fi
             cmake "${flags[@]}" .
             cmake --build __build -- -j 3
             cmake --build __build --target install
