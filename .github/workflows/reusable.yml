@@ -245,7 +245,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MIN_CMAKE_VERSION: ${{ inputs.min_cmake_version }}
           FALLBACK_CMAKE_VERSION: 3.16   # Fallback if auto-CMake version detection failed
-          GLOBAL_MIN_CMAKE_VERSION: 3.8  # Use at least this even if a project claims support for older CMake versions
+          GLOBAL_MIN_CMAKE_VERSION: 3.13 # Use at least this even if a project claims support for older CMake versions
         run: |
           MIN_CMAKE_VERSION="${MIN_CMAKE_VERSION:-auto}"
           if [[ -n "$MIN_CMAKE_VERSION" ]] && [[ "$MIN_CMAKE_VERSION" != "auto" ]]; then
