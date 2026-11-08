@@ -29,6 +29,10 @@ set -eux
 
 coverage_action=${1:-'<unset>'}
 
+function print_on_gha {
+    [[ "${GITHUB_ACTIONS:-false}" != "true" ]] || echo "$@"
+}
+
 if [[ "$coverage_action" == "setup" ]]; then
     if [[ ${B2_CI_VERSION:-1} -eq 0 ]]; then
         # Old CI version needs to use the prefixes
@@ -42,6 +46,7 @@ if [[ "$coverage_action" == "setup" ]]; then
     fi
 
 elif [[ "$coverage_action" == "collect" ]] || [[ "$coverage_action" == "upload" ]]; then
+    print_on_gha "::group::Determine options"
     gcc_ver=
     if [[ "${B2_TOOLSET}" == gcc* ]]; then
         if [[ "${B2_TOOLSET}" =~ gcc-([0-9]+) ]]; then
@@ -88,6 +93,9 @@ elif [[ "$coverage_action" == "collect" ]] || [[ "$coverage_action" == "upload" 
         exit 1
     esac
 
+    print_on_gha "::endgroup::"
+
+    print_on_gha "::group::Install LCov"
     # The four LEVELs for error suppression above are meant to cover the most common cases.
     # You can still select a fully custom option by using $LCOV_OPTIONS (in which case you may set $LCOV_IGNORE_ERRORS_LEVEL=off).
 
@@ -116,6 +124,10 @@ elif [[ "$coverage_action" == "collect" ]] || [[ "$coverage_action" == "upload" 
     command -v lcov
     lcov --version
 
+    print_on_gha "::endgroup::"
+
+    print_on_gha "::group::Initial coverage data collection"
+
     # switch back to the original source code directory
     cd "$BOOST_CI_SRC_FOLDER"
 
@@ -123,6 +135,10 @@ elif [[ "$coverage_action" == "collect" ]] || [[ "$coverage_action" == "upload" 
     lcov "${LCOV_OPTIONS[@]}" --gcov-tool="$GCOV" --directory "$BOOST_ROOT" --capture --output-file all.info
     # dump a summary on the console
     lcov "${LCOV_OPTIONS[@]}" --list all.info
+
+    print_on_gha "::endgroup::"
+
+    print_on_gha "::group::Filter coverage data"
 
     # all.info contains all the coverage info for all projects - limit to ours
     # first we extract the interesting headers for our project then we use that list to extract the right things
@@ -137,8 +153,10 @@ elif [[ "$coverage_action" == "collect" ]] || [[ "$coverage_action" == "upload" 
     # must be checked into the default branch (it is not read or used from a
     # pull request)
     lcov "${LCOV_OPTIONS[@]}" --list coverage.info
+    print_on_gha "::endgroup::"
 
     if [[ "$coverage_action" == "upload" ]] && [[ "${BOOST_CI_CODECOV_IO_UPLOAD:-}" != "skip" ]]; then
+        print_on_gha "::group::Upload to Codecov"
         #
         # upload to codecov.io
         #
@@ -161,6 +179,7 @@ elif [[ "$coverage_action" == "collect" ]] || [[ "$coverage_action" == "upload" 
         chmod +x codecov
         ./codecov --verbose --nonZero ${CODECOV_NAME:+--name "$CODECOV_NAME"} ${CODECOV_TOKEN:+--token "$CODECOV_TOKEN"} -f coverage.info -X search
         # end of [[ "$BOOST_CI_CODECOV_IO_UPLOAD" != "skip" ]] section
+        print_on_gha "::endgroup::"
     fi
 else
     echo "Invalid parameter for codecov.sh: '$coverage_action'." >&2
