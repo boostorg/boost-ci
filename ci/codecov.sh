@@ -141,8 +141,17 @@ elif [[ "$coverage_action" == "collect" ]] || [[ "$coverage_action" == "upload" 
     print_on_gha "::group::Filter coverage data"
 
     # all.info contains all the coverage info for all projects - limit to ours
-    # first we extract the interesting headers for our project then we use that list to extract the right things
-    for f in $(for h in include/boost/*; do echo "$h"; done | cut -f2- -d/); do echo "*/$f*"; done > /tmp/interesting
+    # Collect headers of our project/repo
+    for d in include/*; do
+        if [[ "$(basename "$d")" == "boost" ]]; then
+            # `b2 headers` symlinks libs/<lib>/include/boost/<lib> into boost/<lib> -> add '*/boost/<lib>*'
+            for h in "$d"/*; do echo "*/boost/$(basename "$h")*"; done
+        else
+            # Collect other headers directly. Keep "include/" in the pattern
+            # so it cannot accidentally match the runner workspace path (/home/runner/work/<lib>/...)
+            echo "*/$d/*"
+        fi
+    done > /tmp/interesting
     echo headers that matter:
     cat /tmp/interesting
     xargs --verbose -L 999999 -a /tmp/interesting lcov "${LCOV_OPTIONS[@]}" --extract all.info "*/libs/$SELF/*" --output-file coverage.info
