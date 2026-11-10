@@ -156,6 +156,11 @@ elif [[ "$coverage_action" == "collect" ]] || [[ "$coverage_action" == "upload" 
     cat /tmp/interesting
     xargs --verbose -L 999999 -a /tmp/interesting lcov "${LCOV_OPTIONS[@]}" --extract all.info "*/libs/$SELF/*" --output-file coverage.info
 
+    # Normalize SF: paths to be relative to the superproject root
+    # so that the same source file maps to the same path on Linux and Windows.
+    # This is required for Coveralls to combine coverage across OSes.
+    sed -i "s|^SF:$BOOST_ROOT/|SF:|" coverage.info
+
     # dump a summary on the console - helps us identify problems in pathing
     # note this has test file coverage in it - if you do not want to count test
     # files against your coverage numbers then use a .codecov.yml file which

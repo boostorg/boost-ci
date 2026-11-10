@@ -41,3 +41,12 @@ $cmd += "--cover_children -- cmd.exe /c $PSScriptRoot\build.bat"
 # Print generated command and run
 $cmd
 Invoke-Expression $cmd
+
+# Normalize paths to be relative to the superproject root:
+# Strip the absolute $env:BOOST_ROOT prefix and convert backslashes to forward slashes
+# so that the same source file maps to the same path on Linux and Windows.
+# This is required for Coveralls to combine coverage across OSes.
+$xml = Get-Content __out\cobertura.xml -Raw
+$xml = $xml -replace [regex]::Escape("$env:BOOST_ROOT\"), ''
+$xml = $xml -replace '\\', '/'
+$xml | Set-Content __out\cobertura.xml
