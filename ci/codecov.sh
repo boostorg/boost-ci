@@ -154,8 +154,18 @@ elif [[ "$coverage_action" == "collect" ]] || [[ "$coverage_action" == "upload" 
     done > /tmp/interesting
     echo headers that matter:
     cat /tmp/interesting
+
     set -x
-    xargs --verbose -L 999999 -a /tmp/interesting lcov "${LCOV_OPTIONS[@]}" --extract all.info "*/libs/$SELF/*" --output-file coverage.info
+    xargs --verbose -L 999999 -a /tmp/interesting lcov "${LCOV_OPTIONS[@]}" --extract all.info --output-file coverage.info "*/libs/$SELF/*"
+
+    # Coveralls requires paths to be equal to combine coverage across OSes.
+    if [[ ${COVERAGE_SERVICE:-} == *coveralls* ]]; then
+        # Normalize SF: paths to be repo-relative so the coveralls lcov parser can find the files
+        # relative to the where the coveralls action runs from.
+        sed -i "s|^SF:$BOOST_ROOT/libs/$SELF/|SF:|" coverage.info
+        # Similar for headers symlinked to /boost
+        sed -i "s|^SF:$BOOST_ROOT/boost/|SF:include/boost/|" coverage.info
+    fi
     print_on_gha "::endgroup::"
 
     print_on_gha "::group::Show (final) coverage data"

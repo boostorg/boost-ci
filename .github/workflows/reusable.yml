@@ -1117,6 +1117,8 @@ jobs:
       - name: Collect coverage${{!matrix.coverage && ' (not applicable)' || ''}}
         if: matrix.coverage
         run: ci/codecov.sh "collect"
+        env:
+          COVERAGE_SERVICE: ${{inputs.coverage_service}}
 
       - name: Store coverage report as CI artifact${{!matrix.coverage && ' (not applicable)' || ''}}
         if: matrix.coverage
@@ -1230,6 +1232,8 @@ jobs:
         shell: powershell
         if: matrix.coverage
         run: ci\opencppcoverage.ps1
+        env:
+          COVERAGE_SERVICE: ${{inputs.coverage_service}}
 
       - name: Store coverage report as CI artifact${{!matrix.coverage && ' (not applicable)' || ''}}
         if: matrix.coverage
