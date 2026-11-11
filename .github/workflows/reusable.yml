@@ -1134,11 +1134,8 @@ jobs:
         uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2.3.8
         with:
           file: coverage.info
-          format: lcov
+          flag-name: POSIX
           parallel: true
-          flag-name: POSIX-${{ matrix.os }}
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          carryforward: coverage
 
       - name: Run coverity
         if: matrix.coverity && github.event_name == 'push' && (github.ref_name == 'develop' || github.ref_name == 'master')
@@ -1236,12 +1233,9 @@ jobs:
         if: matrix.coverage && contains(inputs.coverage_service, 'coveralls')
         uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2.3.8
         with:
-          format: cobertura
           file: __out/cobertura.xml
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          parallel: true
           flag-name: Windows
-          carryforward: windows
+          parallel: true
 
   coveralls-finish:
     needs: [posix, windows]
@@ -1252,8 +1246,7 @@ jobs:
         uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2.3.8
         with:
           parallel-finished: true
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          carryforward: coverage
+          carryforward: Windows,POSIX
 
   mingw:
     if: ${{needs.generate-job-matrix.outputs.mingw-matrix}}
