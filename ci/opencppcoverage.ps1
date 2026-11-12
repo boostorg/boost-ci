@@ -42,11 +42,13 @@ $cmd += "--cover_children -- cmd.exe /c $PSScriptRoot\build.bat"
 $cmd
 Invoke-Expression $cmd
 
-# Normalize paths to anchor them to the superproject root:
-# Strip the absolute $env:BOOST_ROOT prefix and convert backslashes to forward slashes
-# so that the same source file maps to the same path on Linux and Windows.
-# This is required for Coveralls to combine coverage across OSes.
-$xml = Get-Content __out\cobertura.xml -Raw
-$xml = $xml -replace [regex]::Escape("$env:BOOST_ROOT\"), '/'
-$xml = $xml -replace '\\', '/'
-$xml | Set-Content __out\cobertura.xml
+# Coveralls requires paths to be equal to combine coverage across OSes.
+if ( "$env:COVERAGE_SERVICE" -like '*coveralls*' ) {
+    # Normalize paths to be repo-relative, see codecov.sh.
+    $xml = Get-Content __out\cobertura.xml -Raw
+    # strip libs/<self>/ for test files
+    $xml = $xml -replace [regex]::Escape("$env:BOOST_ROOT\libs\$env:SELF\"), ''
+    # boost symlinks -> include/boost/
+    $xml = $xml -replace [regex]::Escape("$env:BOOST_ROOT\boost\"), 'include\boost\'
+    $xml | Set-Content __out\cobertura.xml
+}
