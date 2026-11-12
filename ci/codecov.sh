@@ -156,10 +156,14 @@ elif [[ "$coverage_action" == "collect" ]] || [[ "$coverage_action" == "upload" 
     cat /tmp/interesting
     xargs --verbose -L 999999 -a /tmp/interesting lcov "${LCOV_OPTIONS[@]}" --extract all.info "*/libs/$SELF/*" --output-file coverage.info
 
-    # Normalize SF: Anchor to the superproject root
-    # so that the same source file maps to the same path on Linux and Windows.
-    # This is required for Coveralls to combine coverage across OSes.
-    sed -i "s|^SF:$BOOST_ROOT/|SF:/|" coverage.info
+    # Normalize SF: paths to be repo-relative (strip the boost-root prefix AND
+    # the libs/<lib>/ prefix) so the coveralls lcov parser can find the files
+    # relative to the repository root (= CWD where `coveralls` runs from).
+    # The lcov parser checks File.exists?(sf_path) which is relative to CWD
+    # (= the standalone repo checkout). Paths like /libs/turtle/... don't exist
+    # at the filesystem root and /home/runner/work/turtle/boost-root/... is
+    # platform-specific, so we must produce paths that work from the repo root.
+    sed -i "s|^SF:$BOOST_ROOT/libs/$SELF/|SF:|" coverage.info
 
     # dump a summary on the console - helps us identify problems in pathing
     # note this has test file coverage in it - if you do not want to count test
