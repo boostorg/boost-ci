@@ -1118,6 +1118,17 @@ jobs:
         if: matrix.coverage
         run: ci/codecov.sh "collect"
 
+      - name: Store coverage report as CI artifact
+        if: matrix.coverage
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: coverage-${{matrix.compiler}}
+          path: |
+            all.info
+            coverage.info
+          retention-days: 3
+          if-no-files-found: ignore
+
       - name: Upload coverage (Codecov)
         if: matrix.coverage && contains(inputs.coverage_service, 'codecov')
         uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
@@ -1219,6 +1230,15 @@ jobs:
         shell: powershell
         if: matrix.coverage
         run: ci\opencppcoverage.ps1
+
+      - name: Store coverage report as CI artifact
+        if: matrix.coverage
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: coverage-${{matrix.toolset}}
+          path: __out/cobertura.xml
+          retention-days: 3
+          if-no-files-found: ignore
 
       - name: Upload coverage (Codecov)
         if: matrix.coverage && contains(inputs.coverage_service, 'codecov')
