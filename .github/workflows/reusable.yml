@@ -1099,7 +1099,7 @@ jobs:
           path: /usr/local/bin/ccache
           key: ccache-bin-${{env.CCACHE_DOWNLOADED_VERSION}}
 
-      - name: Setup coverage collection
+      - name: Setup coverage collection${{matrix.coverage && '' || ' (not applicable)'}}
         if: matrix.coverage
         run: ci/github/codecov.sh "setup"
 
@@ -1114,11 +1114,11 @@ jobs:
         if: always()
         run: cat "$BOOST_ROOT/bin.v2/config.log" || true
 
-      - name: Collect coverage
+      - name: Collect coverage${{matrix.coverage && '' || ' (not applicable)'}}
         if: matrix.coverage
         run: ci/codecov.sh "collect"
 
-      - name: Store coverage report as CI artifact
+      - name: Store coverage report as CI artifact${{matrix.coverage && '' || ' (not applicable)'}}
         if: matrix.coverage
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -1129,7 +1129,7 @@ jobs:
           retention-days: 3
           if-no-files-found: ignore
 
-      - name: Upload coverage (Codecov)
+      - name: Upload coverage (Codecov)${{matrix.coverage && '' || ' (not applicable)'}}
         if: matrix.coverage && contains(inputs.coverage_service, 'codecov')
         uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
@@ -1140,7 +1140,7 @@ jobs:
           token: ${{secrets.CODECOV_TOKEN}}
           verbose: true
 
-      - name: Upload coverage (coveralls)
+      - name: Upload coverage (coveralls)${{matrix.coverage && '' || ' (not applicable)'}}
         if: matrix.coverage && contains(inputs.coverage_service, 'coveralls')
         uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2.3.8
         with:
@@ -1226,12 +1226,12 @@ jobs:
         if: '!matrix.coverage'
         run: ci\build.bat
 
-      - name: Collect coverage
+      - name: Collect coverage${{matrix.coverage && '' || ' (not applicable)'}}
         shell: powershell
         if: matrix.coverage
         run: ci\opencppcoverage.ps1
 
-      - name: Store coverage report as CI artifact
+      - name: Store coverage report as CI artifact${{matrix.coverage && '' || ' (not applicable)'}}
         if: matrix.coverage
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
@@ -1240,7 +1240,7 @@ jobs:
           retention-days: 3
           if-no-files-found: ignore
 
-      - name: Upload coverage (Codecov)
+      - name: Upload coverage (Codecov)${{matrix.coverage && '' || ' (not applicable)'}}
         if: matrix.coverage && contains(inputs.coverage_service, 'codecov')
         uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
@@ -1250,7 +1250,7 @@ jobs:
           token: ${{secrets.CODECOV_TOKEN}}
           verbose: true
 
-      - name: Upload coverage (coveralls)
+      - name: Upload coverage (coveralls)${{matrix.coverage && '' || ' (not applicable)'}}
         if: matrix.coverage && contains(inputs.coverage_service, 'coveralls')
         uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2.3.8
         with:
