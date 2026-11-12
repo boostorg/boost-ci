@@ -25,13 +25,17 @@
 
 set -eux
 
+function print_on_gha {
+    { set +x; } &> /dev/null
+    [[ "${GITHUB_ACTIONS:-false}" != "true" ]] || echo "$@"
+    { set -x; } &> /dev/null
+}
+
+print_on_gha "::group::Set & Check B2 variables"
 . "$(dirname "${BASH_SOURCE[0]}")"/enforce.sh
+print_on_gha "::endgroup::"
 
 coverage_action=${1:-'<unset>'}
-
-function print_on_gha {
-    [[ "${GITHUB_ACTIONS:-false}" != "true" ]] || echo "$@"
-}
 
 if [[ "$coverage_action" == "setup" ]]; then
     if [[ ${B2_CI_VERSION:-1} -eq 0 ]]; then
@@ -139,7 +143,7 @@ elif [[ "$coverage_action" == "collect" ]] || [[ "$coverage_action" == "upload" 
     print_on_gha "::endgroup::"
 
     print_on_gha "::group::Filter coverage data"
-
+    { set +x; } &> /dev/null
     # all.info contains all the coverage info for all projects - limit to ours
     # Collect headers of our project/repo
     for d in include/*; do
@@ -154,6 +158,7 @@ elif [[ "$coverage_action" == "collect" ]] || [[ "$coverage_action" == "upload" 
     done > /tmp/interesting
     echo headers that matter:
     cat /tmp/interesting
+    set -x
     xargs --verbose -L 999999 -a /tmp/interesting lcov "${LCOV_OPTIONS[@]}" --extract all.info "*/libs/$SELF/*" --output-file coverage.info
 
     # dump a summary on the console - helps us identify problems in pathing
