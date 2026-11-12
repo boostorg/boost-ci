@@ -145,7 +145,11 @@ elif [[ "$coverage_action" == "collect" ]] || [[ "$coverage_action" == "upload" 
         else
             # Collect other headers directly. Keep "include/" in the pattern
             # so it cannot accidentally match the runner workspace path (/home/runner/work/<lib>/...)
-            echo "*/$d/*"
+            if [[ -d "$d" ]]; then
+                echo "*/$d/*"
+            else
+                echo "*/$d"
+            fi
         fi
     done > /tmp/interesting
     echo headers that matter:
