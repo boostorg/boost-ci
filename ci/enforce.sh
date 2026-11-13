@@ -10,6 +10,14 @@
 
 set -e
 
+function print_on_gha {
+    { set +x; } &> /dev/null
+    [[ "${GITHUB_ACTIONS:-false}" != "true" ]] || echo "$@"
+    { set -x; } &> /dev/null
+}
+
+print_on_gha "::group::Set & Check B2 variables"
+
 function get_python_executable {
     if command -v python &> /dev/null; then
         echo "python"
@@ -146,3 +154,5 @@ else
       -j"${B2_JOBS}"
   )
 fi
+
+print_on_gha "::endgroup::"
