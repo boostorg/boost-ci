@@ -1144,7 +1144,6 @@ jobs:
         if: matrix.coverage && contains(inputs.coverage_service, 'coveralls')
         uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2.3.8
         with:
-          debug: true
           file: coverage.info
           flag-name: POSIX
           parallel: true
@@ -1254,7 +1253,6 @@ jobs:
         if: matrix.coverage && contains(inputs.coverage_service, 'coveralls')
         uses: coverallsapp/github-action@8d6379e14d29928660c4ba802d8e85393440b329 # v2.3.8
         with:
-          debug: true
           file: __out/cobertura.xml
           flag-name: Windows
           parallel: true
@@ -1269,7 +1267,6 @@ jobs:
         with:
           parallel-finished: true
           carryforward: Windows,POSIX
-          debug: true
 
   mingw:
     if: ${{needs.generate-job-matrix.outputs.mingw-matrix}}
