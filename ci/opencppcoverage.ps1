@@ -42,12 +42,16 @@ $cmd += "--cover_children -- cmd.exe /c $PSScriptRoot\build.bat"
 $cmd
 Invoke-Expression $cmd
 
+echo "Coverage Service(s) : $env:COVERAGE_SERVICE"
+
 # Coveralls requires paths to be equal to combine coverage across OSes.
 if ( "$env:COVERAGE_SERVICE" -like '*coveralls*' ) {
     # Normalize paths to be repo-relative, see codecov.sh.
     $xml = Get-Content __out\cobertura.xml -Raw
     # Path without drive letter as found in `<class filename=`
     $boostRoot = $env:BOOST_ROOT -replace '^[A-Za-z]:\\?', ''
+    echo "Normalizing: Remove $boostRoot"
+
     # strip libs/<self>/ for test files
     $xml = $xml -replace [regex]::Escape("$boostRoot\libs\$env:SELF\"), ''
     # boost symlinks -> include/boost/
