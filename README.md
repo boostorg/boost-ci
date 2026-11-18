@@ -71,7 +71,7 @@ For other CI types, here are all the steps you need to take as a Boost repositor
     - Ensure that shell scripts are executable: `chmod 755 .drone/drone.sh`
     - The install-script (in `ci/drone`) and run-script (in `.drone`) for the Unix-ish jobs will be downloaded from Boost.CI if they don't exist, so you only need them when you want to customize the build.
     - The `.drone/{before,after}-install.*` scripts are sourced around the common_install step (which e.g. bootstraps B2) of the [default build](.drone/drone.sh), if they exist. So you can remove them when not required.
-    - "asan" jobs require elevated privileges. Contact an administrator or open an issue at [drone-ci](https://github.com/CPPAlliance/drone-ci) to set your drone repository to "Trusted".
+    - "ASAN" jobs require elevated privileges. Contact an administrator or open an issue at [drone-ci](https://github.com/CPPAlliance/drone-ci) to set your drone repository to "Trusted".
     - If not using ASAN, simply remove the jobs.
     - **Codecov:** Copy the "Repository Upload Token" from the settings page of your repo on [Codecov](https://codecov.io) to a secret named `codecov_token` on the settings page of your repo on [Drone](https://drone.cpp.al).
     - **Coverity:** Copy the token from the repos settings page on [Coverity](https://scan.coverity.com/) and an E-Mail-Address to secrets named `coverity_scan_token` and `coverity_scan_email` respectively on the settings page of your repo on [Drone](https://drone.cpp.al).
@@ -85,7 +85,26 @@ E.g. GitHub Actions and Drone CI for Linux and Appveyor for Windows.
 Especially the latter allows collecting coverage data for Windows-only code parts or code using e.g. `wchar_t` which is different on Windows than on other platforms.
 You can choose between [Codecov](https://codecov.io/) and [Coveralls](https://coveralls.io/) (or both) by setting the `coverage_service` input of the reusable workflow to `codecov`, `coveralls`, or `codecov,coveralls`.
 
-Besides using those, it's also possible to generate coverage reports with [GitHub Actions + GitHub Pages](docs/code-coverage.md).
+To exclude certain files or directories from the coverage report, set the `coverage_excludes` input to a multiline list of glob patterns.
+Only `*` (any chars including `/`) wildcards are supported.
+Patterns are relative to the library root.
+
+Example:
+
+```yaml
+with:
+  coverage_excludes: |
+    test/*
+    src/example/*
+    doc/*
+```
+
+**Portable wildcard semantics** — both `*` and `**` match any characters *including* `/`, so `test/**` and `test/*` are equivalent and match everything under `test/` recursively.
+
+For Codecov (only) you can also exclude files by using the `ignore` key in a `.codecov.yml` file similar to [this](./.codecov.yml),
+which must be in the default branch for the repository. It will **not** be picked up from a pull request!
+
+Besides using Codecov and Coveralls, it's also possible to generate coverage reports with [GitHub Actions + GitHub Pages](docs/code-coverage.md).
 
 ### Exclusion of coverage data
 
@@ -96,7 +115,7 @@ If you want to exclude parts of your code from coverage analysis you can use the
 
 See the LCOV manual for more information.
 
-To exclude whole files or folders you can use the `ignore`-object and glob patterns in the `.codecov.yml` file.
+To exclude whole files or folders you can use the `ignore`-object and glob patterns in the `.codecov.yml` file or the `coverage_excludes` input to the reusable workflow.
 See the example file in the root of this repository for a starting point.  
 **Important**: Codecov only considers the configuration file of the *default* branch (usually: `master`), **not** the one in the current build/PR branch.
 See the [Codecov documentation](https://docs.codecov.com/docs/codecov-yaml) for details.

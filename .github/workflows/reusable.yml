@@ -24,11 +24,6 @@ on:
         required: false
         type: string
         default: ''
-      branch_coverage:
-        description: "Collect branch coverage instead of line coverage. Enabled by default."
-        required: false
-        type: boolean
-        default: true
       enable_32bit:
         description: "When enabled, 32-bit jobs will be added. Enabled by default."
         required: false
@@ -65,11 +60,6 @@ on:
         default: true
       enable_posix:
         description: "When enabled, POSIX jobs will be added (includes macos). Enabled by default."
-        required: false
-        type: boolean
-        default: true
-      enable_pr_coverage:
-        description: "When enabled, coverage will be collected even without a $CODECOV_TOKEN in PRs, where it usually is not available. Enabled by default."
         required: false
         type: boolean
         default: true
@@ -171,11 +161,6 @@ on:
         required: false
         type: string
         default: 'debug,release'
-      codecov_name:
-        description: "Name (prefix) to use for coverage uploads to codecov.io"
-        required: false
-        type: string
-        default: 'Github Actions'
       coverage_service:
         description: >-
           Coverage service(s) to upload to.
@@ -184,6 +169,30 @@ on:
         required: false
         type: string
         default: codecov
+      codecov_name:
+        description: "Name (prefix) to use for coverage uploads to codecov.io"
+        required: false
+        type: string
+        default: 'Github Actions'
+      branch_coverage:
+        description: "Collect branch coverage instead of line coverage. Enabled by default."
+        required: false
+        type: boolean
+        default: true
+      enable_pr_coverage:
+        description: "When enabled, coverage will be collected even without a $CODECOV_TOKEN in PRs, where it usually is not available. Enabled by default."
+        required: false
+        type: boolean
+        default: true
+      coverage_excludes:
+        description: >-
+          (Multiline) list of glob patterns to exclude from coverage.
+          Both `*` and `**` match any characters including `/`, so `test/**` and `test/*` are equivalent and match everything under `test/` recursively.
+          Patterns are relative to the library root.
+          Example: `test/*` to exclude the test folder
+        required: false
+        type: string
+        default: ''
       library_folder:
         description: "Name of the subfolder of the Boost tree the library should be. Will be determined by the value of 'key' in meta/libraries.json."
         required: false
@@ -1118,6 +1127,7 @@ jobs:
         if: matrix.coverage
         run: ci/codecov.sh "collect"
         env:
+          COVERAGE_EXCLUDES: ${{ inputs.coverage_excludes }}
           COVERAGE_SERVICE: ${{inputs.coverage_service}}
 
       - name: Store coverage report as CI artifact${{!matrix.coverage && ' (not applicable)' || ''}}
@@ -1232,6 +1242,7 @@ jobs:
         if: matrix.coverage
         run: ci\opencppcoverage.ps1
         env:
+          COVERAGE_EXCLUDES: ${{ inputs.coverage_excludes }}
           COVERAGE_SERVICE: ${{inputs.coverage_service}}
 
       - name: Store coverage report as CI artifact${{!matrix.coverage && ' (not applicable)' || ''}}

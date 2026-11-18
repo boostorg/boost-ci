@@ -17,10 +17,10 @@
 # Call with either "setup", "collect" or "upload" as parameter
 
 #
-# If you want to exclude content from the coverage report you must check in
-# a .codecov.yml file as is found in the boost-ci project, and it must be
-# in the default branch for the repository.  It will not be picked up from
-# a pull request.
+# If you want to exclude content from the coverage report you must check in a .codecov.yml file
+# similar to that in the boost-ci project, and it must be in the default branch for the repository.
+# It will not be picked up from a pull request.
+# To exclude coverage during collection time use $COVERAGE_EXCLUDES
 #
 
 set -eux
@@ -157,6 +157,27 @@ elif [[ "$coverage_action" == "collect" ]] || [[ "$coverage_action" == "upload" 
 
     set -x
     xargs --verbose -L 999999 -a /tmp/interesting lcov "${LCOV_OPTIONS[@]}" --extract all.info --output-file coverage.info "*/libs/$SELF/*"
+
+    # Remove user-specified patterns from the coverage report
+    if [ -n "${COVERAGE_EXCLUDES:-}" ]; then
+        print_on_gha "::group::Show coverage data before exclusions"
+        lcov "${LCOV_OPTIONS[@]}" --list coverage.info
+        print_on_gha "::endgroup::"
+
+        # Split the multiline env var into an array of patterns relative to $BOOST_ROOT/libs/$SELF
+        patterns=()
+        while IFS= read -r pattern; do
+            pattern=$(sed 's/^[[:space:]]*//; s/[[:space:]]*$//' <<< "$pattern")
+            [[ -n "$pattern" ]] || continue
+            # Patterns are relative to the library root but include/boost is moved to BOOST_ROOT/boost
+            if [[ $pattern == 'include/boost/'* ]]; then
+                patterns+=("$BOOST_ROOT/${pattern#include/*}")
+            else
+                patterns+=("$BOOST_ROOT/libs/$SELF/$pattern")
+            fi
+        done <<< "$COVERAGE_EXCLUDES"
+        lcov "${LCOV_OPTIONS[@]}" --remove coverage.info "${patterns[@]}" --output-file coverage.info
+    fi
 
     # Coveralls requires paths to be equal to combine coverage across OSes.
     if [[ ${COVERAGE_SERVICE:-} == *coveralls* ]]; then

@@ -35,6 +35,23 @@ $exclusions = @(
   '\s*(\} )?else( \{)?\s*'
 )
 $cmd += $exclusions.ForEach({"--excluded_line_regex '{0}'" -f $_}) -join " "
+# Handle COVERAGE_EXCLUDES: exclude source paths from coverage via --excluded_sources
+if ($env:COVERAGE_EXCLUDES) {
+    foreach ($p in ($env:COVERAGE_EXCLUDES -split '\r?\n')) {
+        $p = $p.Trim()
+        if (-not $p) { continue }
+        # Patterns are relative to the library root but include/boost is moved to BOOST_ROOT/boost
+        if ($p.StartsWith('include/boost/')) {
+            $base = $env:BOOST_ROOT
+            $p = $p.Substring('include/'.Length)
+        } else {
+            $base = Join-Path $env:BOOST_ROOT "libs\$env:SELF"
+        }
+        $full = Join-Path $base ($p -replace '/', '\')
+        $cmd += "--excluded_sources `"$full`" "
+    }
+}
+
 # Cover all subprocess of the build script (-> b2 -> test binary)
 $cmd += "--cover_children -- cmd.exe /c $PSScriptRoot\build.bat"
 
