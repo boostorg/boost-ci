@@ -12,19 +12,22 @@ $env:B2_VARIANT = "debug"
 # Use a temporary folder to avoid codecov picking up wrong files
 mkdir __out
 
-# Build command to collect coverage
-$cmd = 'OpenCppCoverage.exe --export_type cobertura:__out/cobertura.xml --modules "{0}" ' -f ${env:BOOST_ROOT}
+# Build the OpenCppCoverage argument list (array, so nothing gets re-parsed)
+$occArgs = @(
+    '--export_type', 'cobertura:__out/cobertura.xml'
+    '--modules', ${env:BOOST_ROOT}
+)
 Get-ChildItem -Directory "${env:BOOST_ROOT}\libs\${env:SELF}\include" | ForEach-Object {
     if ($_.Name -eq 'boost') {
         # Boost headers are symlinked/copied to the top-level boost folder
-        Get-ChildItem -Name $_.FullName | ForEach-Object {$cmd += ' --sources "boost\{0}"' -f $_}
+        Get-ChildItem -Name $_.FullName | ForEach-Object { $occArgs += @('--sources', "boost\$_") }
     } else {
         # Other headers are used directly from the library's include folder
-        $cmd += ' --sources "{0}"' -f $_.FullName
+        $occArgs += @('--sources', $_.FullName)
     }
 }
 # Include own cpp files
-$cmd += " --sources ${env:BOOST_ROOT}\libs\${env:SELF} "
+$occArgs += @('--sources', "${env:BOOST_ROOT}\libs\${env:SELF}")
 $exclusions = @(
   # Lines marked with LCov or coverity exclusion comments
   '.*// LCOV_EXCL_LINE'
@@ -34,7 +37,9 @@ $exclusions = @(
   # Lines containing only else (and opt. braces)
   '\s*(\} )?else( \{)?\s*'
 )
-$cmd += $exclusions.ForEach({"--excluded_line_regex '{0}'" -f $_}) -join " "
+foreach ($e in $exclusions) {
+    $occArgs += @('--excluded_line_regex', $e)
+}
 # Handle COVERAGE_EXCLUDES: exclude source paths from coverage via --excluded_sources
 if ($env:COVERAGE_EXCLUDES) {
     foreach ($p in ($env:COVERAGE_EXCLUDES -split '\r?\n')) {
@@ -48,16 +53,16 @@ if ($env:COVERAGE_EXCLUDES) {
             $base = Join-Path $env:BOOST_ROOT "libs\$env:SELF"
         }
         $full = Join-Path $base ($p -replace '/', '\')
-        $cmd += "--excluded_sources `"$full`" "
+        $occArgs += @('--excluded_sources', $full)
     }
 }
 
 # Cover all subprocess of the build script (-> b2 -> test binary)
-$cmd += "--cover_children -- cmd.exe /c $PSScriptRoot\build.bat"
+$occArgs += @('--cover_children', '--', 'cmd.exe', '/c', "$PSScriptRoot\build.bat")
 
 # Print generated command and run
-$cmd
-Invoke-Expression $cmd
+"OpenCppCoverage.exe " + ($occArgs -join ' ')
+& OpenCppCoverage.exe @occArgs
 
 echo "Coverage Service(s) : $env:COVERAGE_SERVICE"
 
