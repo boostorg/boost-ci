@@ -160,9 +160,11 @@ elif [[ "$coverage_action" == "collect" ]] || [[ "$coverage_action" == "upload" 
 
     # Remove user-specified patterns from the coverage report
     if [ -n "${COVERAGE_EXCLUDES:-}" ]; then
+        print_on_gha "::endgroup::"
         print_on_gha "::group::Show coverage data before exclusions"
         lcov "${LCOV_OPTIONS[@]}" --list coverage.info
         print_on_gha "::endgroup::"
+        print_on_gha "::group::Final coverage filtering"
 
         # Split the multiline env var into an array of patterns relative to $BOOST_ROOT/libs/$SELF
         patterns=()
