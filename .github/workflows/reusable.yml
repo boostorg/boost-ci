@@ -1204,6 +1204,12 @@ jobs:
           packages: coreutils, gcc-g++, libstdc++6, make, moreutils, openssl, libbz2-devel, libgmp-devel, libicu-devel, libjpeg-devel, libmpfr-devel, libpng-devel, libssl-devel, libtiff-devel, libxslt-devel, libzstd-devel
           platform: ${{ matrix.address-model == '64' && 'x86_64' || 'x86' }}
 
+      - name: Workaround clang-win issue
+        if: ${{ matrix.toolset == 'clang-win' }}
+        shell: pwsh
+        run: |
+          echo "C:\Program Files\Microsoft Visual Studio\18\Enterprise\VC\Tools\Llvm\x64\bin" >> $env:GITHUB_PATH
+
       - name: Setup Boost
         run: ci\github\install.bat
         env:
