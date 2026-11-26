@@ -176,14 +176,13 @@ if [[ "${B2_TOOLSET:-}" == clang* ]]; then
         if [[ "$B2_TOOLSET" == clang-* ]]; then
             ver="${B2_TOOLSET#*-}"
         elif [[ "$B2_COMPILER" == clang-* ]] || [[ "$B2_COMPILER" == clang++-* ]]; then
-            # Don't change path if we do find the versioned compiler
-            if ! command -v "$B2_COMPILER"; then
-                ver="${B2_COMPILER#*-}"
-            fi
+            ver="${B2_COMPILER#*-}"
         else
             echo "Can't get clang version from B2_TOOLSET or B2_COMPILER. Skipping PATH setting." >&2
         fi
-        if [[ -n "$ver" ]]; then
+        # Add the versioned LLVM bin directory. Unversioned tools such as llvm-ar are shipped only there.
+        # This also shadows stale LLVM installations in PATH.
+        if [[ -n "$ver" ]] && [[ -d "/usr/lib/llvm-${ver}/bin" ]]; then
             export PATH="/usr/lib/llvm-${ver}/bin:$PATH"
             ls -ls "/usr/lib/llvm-${ver}/bin" || true
             hash -r || true
