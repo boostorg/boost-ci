@@ -491,8 +491,11 @@ def job_impl(
         '2004': 'focal',
         '2204': 'jammy',
       }
+      llvm_ver = compiler.split('-')[1]
       kwargs['llvm_os'] = names[image.split('ubuntu')[-1].split(':')[0]] # get part between 'ubuntu' and ':'
-      kwargs['llvm_ver'] = compiler.split('-')[1]
+      kwargs['llvm_ver'] = llvm_ver
+      # Install also the matching llvm-N package containing e.g. llvm-ar
+      packages += ' llvm-' + llvm_ver
 
     return linux_cxx(name, cxx, packages=packages, image=image, **kwargs)
   elif os.startswith('freebsd'):
