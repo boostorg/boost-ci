@@ -46,6 +46,8 @@ jobs:
         # Reduce cxxstd of clang-10 jobs by removing C++14 & C++17
         compiler: clang-10, cxxstd: '14,17'
         type: cmake, os: windows # No CMake tests on Windows
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
   call-boost-ci-gcc-10:
     name: Run Boost.CI only with GCC 10
     uses: boostorg/boost-ci/.github/workflows/reusable.yml@master
