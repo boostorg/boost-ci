@@ -175,18 +175,31 @@ if [[ "${B2_TOOLSET:-}" == clang* ]]; then
         ver=""
         if [[ "$B2_TOOLSET" == clang-* ]]; then
             ver="${B2_TOOLSET#*-}"
-        elif [[ "$B2_COMPILER" == clang-* ]] || [[ "$B2_COMPILER" == clang++-* ]]; then
+        elif [[ "${B2_COMPILER:-}" == clang-* ]] || [[ "${B2_COMPILER:-}" == clang++-* ]]; then
             ver="${B2_COMPILER#*-}"
         else
             echo "Can't get clang version from B2_TOOLSET or B2_COMPILER. Skipping PATH setting." >&2
         fi
+        { set +x; } &> /dev/null
+        echo "================> Before PATH change"
+        for cmd in "${B2_COMPILER:-}" "${B2_TOOLSET}" llvm-ar llvm-ar-${ver}; do
+          [[ -n $cmd ]] || continue
+          echo "$cmd: $(which "$cmd" || true)"
+        done
         # Add the versioned LLVM bin directory. Unversioned tools such as llvm-ar are shipped only there.
         # This also shadows stale LLVM installations in PATH.
         if [[ -n "$ver" ]] && [[ -d "/usr/lib/llvm-${ver}/bin" ]]; then
             export PATH="/usr/lib/llvm-${ver}/bin:$PATH"
             ls -ls "/usr/lib/llvm-${ver}/bin" || true
             hash -r || true
+            echo "================> After PATH change"
+            for cmd in "${B2_COMPILER:-}" "${B2_TOOLSET}" llvm-ar llvm-ar-${ver}; do
+              [[ -n $cmd ]] || continue
+              echo "$cmd: $(which "$cmd" || true)"
+            done
         fi
+        echo "================"
+        set -x
     else
         # On macOS GHA try to find right clang version if a versioned clang was requested
         if [[ "${RUNNER_OS:-}" == "macOS" ]] && [[ "${B2_COMPILER:-}" =~ "clang-" ]] && ! command -v "$B2_COMPILER"; then
